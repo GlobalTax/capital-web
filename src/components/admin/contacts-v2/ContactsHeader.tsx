@@ -2,9 +2,16 @@
 // Header with tabs and bulk actions
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send } from 'lucide-react';
+import { Star, Users, BarChart3, Archive, Trash2, Send, Plus, Calculator, FileText, ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { TabType, Contact } from './types';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useContactActions } from '@/features/contacts';
@@ -14,6 +21,7 @@ import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
 import { BulkDateSelect } from '../contacts/BulkDateSelect';
 import { StatusesEditor } from '../contacts/StatusesEditor';
 import { LeadFormsEditor } from '../contacts/LeadFormsEditor';
+import DuplicatesDialog from './DuplicatesDialog';
 
 interface ContactsHeaderProps {
   activeTab: TabType;
@@ -23,6 +31,7 @@ interface ContactsHeaderProps {
   contacts: Contact[];
   onClearSelection: () => void;
   onPatchContacts?: (ids: string[], updates: Partial<Contact>) => void;
+  allContacts?: Contact[];
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
@@ -33,13 +42,27 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   contacts,
   onClearSelection,
   onPatchContacts,
+  allContacts = [],
 }) => {
+  const navigate = useNavigate();
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   const { bulkSoftDelete, bulkHardDelete } = useContactActions();
 
   const handleBulkArchive = async () => {
     if (selectedIds.length === 0) return;
     const result = await bulkSoftDelete(contacts as any, selectedIds);
+    if (result.success || result.successCount > 0) {
+      onClearSelection();
+    }
+  };
+
+  const handleBulkHardDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const confirmed = window.confirm(
+      `⚠️ ¿Eliminar DEFINITIVAMENTE ${selectedIds.length} lead(s)?\n\nEsta acción NO se puede deshacer.`
+    );
+    if (!confirmed) return;
+    const result = await bulkHardDelete(contacts as any, selectedIds);
     if (result.success || result.successCount > 0) {
       onClearSelection();
     }
@@ -66,10 +89,6 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
               <Users className="h-3 w-3" />
               Todos
             </TabsTrigger>
-            <TabsTrigger value="pipeline" className="text-[11px] px-2.5 h-5 gap-1">
-              <Kanban className="h-3 w-3" />
-              Pipeline
-            </TabsTrigger>
             <TabsTrigger value="stats" className="text-[11px] px-2.5 h-5 gap-1">
               <BarChart3 className="h-3 w-3" />
               Stats
@@ -79,6 +98,27 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
         
         <StatusesEditor />
         <LeadFormsEditor />
+        <DuplicatesDialog allContacts={allContacts} onDone={onClearSelection} />
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" className="h-7 text-[11px] gap-1">
+              <Plus className="h-3 w-3" />
+              Añadir
+              <ChevronDown className="h-2.5 w-2.5 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => navigate('/admin/calculadora-manual')}>
+              <Calculator className="h-4 w-4 mr-2" />
+              Entrada manual de lead
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/admin/valoraciones-pro/nueva')}>
+              <FileText className="h-4 w-4 mr-2" />
+              Valoración profesional
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Bulk Actions */}
@@ -92,6 +132,16 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
           >
             <Archive className="h-3 w-3 mr-1" />
             Archivar ({selectedIds.length})
+          </Button>
+
+          <Button
+            onClick={handleBulkHardDelete}
+            variant="destructive"
+            size="sm"
+            className="h-7 text-xs"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Eliminar ({selectedIds.length})
           </Button>
 
           <BulkStatusSelect

@@ -9,9 +9,13 @@ import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
   Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2,
-  Search, X
+  Search, X, MoreVertical, MailCheck, Clock
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { RegisterManualSendDialog } from '@/components/admin/campanas-valoracion/RegisterManualSendDialog';
+import { FollowUpReminderConfig } from '@/components/admin/campanas-valoracion/FollowUpReminderConfig';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences } from '@/hooks/useFollowupSequences';
@@ -20,6 +24,7 @@ import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { differenceInDays } from 'date-fns';
 import { useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -49,23 +54,15 @@ const CHART_COLORS = [
   'hsl(var(--primary) / 0.25)',
 ];
 
-// Seguimiento states config
-const SEGUIMIENTO_OPTIONS = [
-  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
-  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
-  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
-] as const;
-
-function getSeguimientoOption(value: string | null) {
-  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
-}
+// Seguimiento states loaded from DB
+import { useSeguimientoOptions, getSeguimientoOption } from '@/hooks/useSeguimientoOptions';
 
 // ─── Inline Seguimiento Badge Select ────────────────────────────────────
 function SeguimientoBadge({ company, campaignId }: { company: CampaignCompany; campaignId: string }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const current = getSeguimientoOption(company.seguimiento_estado);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, company.seguimiento_estado);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
@@ -179,6 +176,7 @@ function NotasPopover({ company, campaignId }: { company: CampaignCompany; campa
 // ─── Main Component ─────────────────────────────────────────────────────
 export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
   const { companies, stats } = useCampaignCompanies(campaignId);
   const { emails } = useCampaignEmails(campaignId);
   const { sequences, allSends } = useFollowupSequences(campaignId);
@@ -221,6 +219,29 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     return map;
   }, [companies, allSends, sequences]);
 
+  // ─── Per-company days since last contact (for FU indicator) ────────────
+  const daysSinceContactMap = useMemo(() => {
+    if (!campaign.followup_reminder_days) return new Map<string, number>();
+    const now = new Date();
+    const map = new Map<string, number>();
+    for (const c of companies) {
+      // Initial email sent date
+      const sentAt = emailSentMap.get(c.id);
+      if (!sentAt) continue;
+      const initialDate = new Date(sentAt);
+
+      // Latest follow-up sent date for this company
+      const fuSends = allSends
+        .filter(s => s.company_id === c.id && s.status === 'sent' && s.sent_at)
+        .map(s => new Date(s.sent_at!));
+      const lastFU = fuSends.length > 0 ? fuSends.sort((a, b) => b.getTime() - a.getTime())[0] : null;
+
+      const lastContact = lastFU && lastFU > initialDate ? lastFU : initialDate;
+      map.set(c.id, differenceInDays(now, lastContact));
+    }
+    return map;
+  }, [companies, emailSentMap, allSends, campaign.followup_reminder_days]);
+
   // ─── Filters ───────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
   const [filterEstado, setFilterEstado] = useState<string | null>(null);
@@ -230,6 +251,8 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+  const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
+  const queryClient = useQueryClient();
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -287,7 +310,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     setFilterValuation({ min: null, max: null });
   }, []);
 
-  const sentCount = companies.filter(c => c.status === 'sent').length;
+  const sentCount = companies.filter(c => {
+    const tracking = emailTrackingMap.get(c.id);
+    return tracking?.delivery_status && tracking.delivery_status !== 'pending';
+  }).length;
   const createdCount = companies.filter(c => ['created', 'sent'].includes(c.status)).length;
   const failedCount = companies.filter(c => c.status === 'failed').length;
   const successRate = stats.total > 0 ? ((sentCount / stats.total) * 100).toFixed(0) : '0';
@@ -420,7 +446,19 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-3">
-            <CardTitle className="text-base">Resumen de empresas</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Resumen de empresas</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Aviso FU:</span>
+                <FollowUpReminderConfig
+                  campaignId={campaignId}
+                  currentDays={campaign.followup_reminder_days ?? null}
+                />
+                {campaign.followup_reminder_days && (
+                  <Badge variant="outline" className="text-[10px] h-5">{campaign.followup_reminder_days}d</Badge>
+                )}
+              </div>
+            </div>
             
             {/* Search + Filters */}
             <div className="flex flex-col sm:flex-row gap-2">
@@ -504,12 +542,13 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Follow Up</TableHead>
                 <TableHead className="text-center w-[40px]">Notas</TableHead>
+                <TableHead className="w-[40px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCompanies.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No se encontraron empresas con los filtros aplicados
                   </TableCell>
                 </TableRow>
@@ -558,16 +597,52 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     <SeguimientoBadge company={c} campaignId={campaignId} />
                   </TableCell>
                   <TableCell className="text-center">
-                    {followupLabels.get(c.id) ? (
-                      <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
-                        {followupLabels.get(c.id)}
-                      </Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    {(() => {
+                      const fuLabel = followupLabels.get(c.id);
+                      const days = daysSinceContactMap.get(c.id);
+                      const threshold = campaign.followup_reminder_days;
+                      const estado = c.seguimiento_estado || 'sin_respuesta';
+                      const isPending = threshold && days !== undefined && days >= threshold && estado === 'sin_respuesta';
+                      const isNear = threshold && days !== undefined && days >= threshold * 0.7 && !isPending && estado === 'sin_respuesta';
+
+                      return (
+                        <div className="flex flex-col items-center gap-0.5">
+                          {fuLabel ? (
+                            <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                              {fuLabel}
+                            </Badge>
+                          ) : null}
+                          {days !== undefined && threshold ? (
+                            <span className={cn(
+                              "text-[10px] font-medium",
+                              isPending ? "text-red-600" : isNear ? "text-amber-600" : "text-muted-foreground"
+                            )}>
+                              {days}d {isPending ? '🔴' : isNear ? '🟡' : ''}
+                            </span>
+                          ) : !fuLabel ? (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-center">
                     <NotasPopover company={c} campaignId={campaignId} />
+                  </TableCell>
+                  <TableCell className="text-center" onClick={e => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setManualSendTargets([{ companyId: c.id, companyName: c.client_company || '', campaignId }])}>
+                          <MailCheck className="h-4 w-4 mr-2" />
+                          Registrar envío manual
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -575,6 +650,17 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
           </Table>
         </CardContent>
       </Card>
+
+      <RegisterManualSendDialog
+        open={manualSendTargets.length > 0}
+        onOpenChange={(open) => { if (!open) setManualSendTargets([]); }}
+        targets={manualSendTargets}
+        onSuccess={() => {
+          setManualSendTargets([]);
+          queryClient.invalidateQueries({ queryKey: ['campaign-emails', campaignId] });
+          queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+        }}
+      />
 
       {/* Navigation */}
       <div className="flex items-center gap-3">

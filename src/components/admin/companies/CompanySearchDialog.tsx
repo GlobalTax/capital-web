@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Building2, Plus, Check } from 'lucide-react';
-import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
+import { Search, Building2, Check, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Empresa } from '@/hooks/useEmpresas';
 import { formatCompactCurrency } from '@/shared/utils/format';
 
 interface CompanySearchDialogProps {
@@ -18,6 +19,7 @@ interface CompanySearchDialogProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (empresa: Empresa) => void;
   initialSearch?: string;
+  isLinking?: boolean;
 }
 
 export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
@@ -25,44 +27,54 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
   onOpenChange,
   onSelect,
   initialSearch,
+  isLinking = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [results, setResults] = useState<Empresa[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const { searchEmpresas, empresas } = useEmpresas();
+  const [error, setError] = useState<string | null>(null);
 
-  // Initial load with all empresas or initial search
-  useEffect(() => {
-    if (open) {
-      if (initialSearch) {
-        handleSearch(initialSearch);
-      } else {
-        setResults(empresas.slice(0, 20));
-      }
-    }
-  }, [open, empresas, initialSearch]);
-
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    
-    if (!query.trim()) {
-      setResults(empresas.slice(0, 20));
-      return;
-    }
-
+  const searchEmpresas = useCallback(async (query: string) => {
     setIsSearching(true);
+    setError(null);
     try {
-      const data = await searchEmpresas(query);
-      setResults(data);
-    } catch (error) {
-      console.error('Error searching empresas:', error);
+      let queryBuilder = supabase
+        .from('empresas')
+        .select('*')
+        .limit(20);
+
+      if (query.trim()) {
+        queryBuilder = queryBuilder.or(
+          `nombre.ilike.%${query}%,cif.ilike.%${query}%`
+        );
+      } else {
+        queryBuilder = queryBuilder.order('created_at', { ascending: false });
+      }
+
+      const { data, error: queryError } = await queryBuilder;
+
+      if (queryError) throw queryError;
+      setResults((data as Empresa[]) || []);
+    } catch (err: any) {
+      console.error('Error searching empresas:', err);
+      setError('Error al buscar empresas');
+      setResults([]);
     } finally {
       setIsSearching(false);
     }
-  };
+  }, []);
 
-  const handleSelect = (empresa: Empresa) => {
-    onSelect(empresa);
+  // Load when dialog opens
+  useEffect(() => {
+    if (open) {
+      setSearchQuery(initialSearch || '');
+      searchEmpresas(initialSearch || '');
+    }
+  }, [open, initialSearch, searchEmpresas]);
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    searchEmpresas(query);
   };
 
   return (
@@ -76,23 +88,28 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Search input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nombre o CIF..."
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9"
               autoFocus
             />
           </div>
 
-          {/* Results */}
           <ScrollArea className="h-[400px]">
             {isSearching ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-destructive">{error}</p>
+                <Button variant="outline" size="sm" className="mt-2" onClick={() => searchEmpresas(searchQuery)}>
+                  Reintentar
+                </Button>
               </div>
             ) : results.length === 0 ? (
               <div className="text-center py-8">
@@ -112,7 +129,7 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
                   <div
                     key={empresa.id}
                     className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleSelect(empresa)}
+                    onClick={() => onSelect(empresa)}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -146,9 +163,13 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
                         )}
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost">
-                      <Check className="h-4 w-4 mr-1" />
-                      Vincular
+                    <Button size="sm" variant="ghost" disabled={isLinking}>
+                      {isLinking ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      ) : (
+                        <Check className="h-4 w-4 mr-1" />
+                      )}
+                      {isLinking ? 'Vinculando...' : 'Vincular'}
                     </Button>
                   </div>
                 ))}
@@ -156,7 +177,6 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
             )}
           </ScrollArea>
 
-          {/* Footer */}
           <div className="flex justify-between items-center pt-2 border-t">
             <p className="text-xs text-muted-foreground">
               {results.length} empresas encontradas

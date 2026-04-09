@@ -49,7 +49,9 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send } = body;
+    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send, include_valuation_pdf, include_study_pdf } = body;
+    const shouldIncludeValuationPdf = include_valuation_pdf !== false; // default true
+    const shouldIncludeStudyPdf = include_study_pdf !== false; // default true
 
     const isFollowupSendMode = is_followup_send && Array.isArray(followup_send_ids) && followup_send_ids.length > 0;
     const isFollowupMode = is_followup && Array.isArray(followup_ids) && followup_ids.length > 0;
@@ -139,8 +141,9 @@ serve(async (req) => {
       .is("company_id", null)
       .eq("status", "assigned");
 
-    // Get CC recipients: use campaign-specific list if defined, otherwise fall back to global defaults
+    // Get CC and BCC recipients
     let ccList: string[] = [];
+    let bccList: string[] = [];
     
     // Check if any campaign has specific cc_recipient_ids configured
     const firstCampaignId = campaignIds[0];
@@ -153,21 +156,21 @@ serve(async (req) => {
     const campaignCcIds = campaignRow?.cc_recipient_ids;
     
     if (campaignCcIds && Array.isArray(campaignCcIds) && campaignCcIds.length > 0) {
-      // Use campaign-specific CC recipients
       const { data: ccRecipients } = await serviceClient
         .from("email_recipients_config")
-        .select("email")
+        .select("email, is_bcc")
         .in("id", campaignCcIds)
         .eq("is_active", true);
-      ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
+      ccList = (ccRecipients || []).filter((r: any) => !r.is_bcc).map((r: any) => r.email).filter(Boolean);
+      bccList = (ccRecipients || []).filter((r: any) => r.is_bcc).map((r: any) => r.email).filter(Boolean);
     } else if (campaignCcIds === null) {
-      // No explicit config → use global defaults (is_default_copy = true)
       const { data: ccRecipients } = await serviceClient
         .from("email_recipients_config")
-        .select("email")
+        .select("email, is_bcc")
         .eq("is_active", true)
         .eq("is_default_copy", true);
-      ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
+      ccList = (ccRecipients || []).filter((r: any) => !r.is_bcc).map((r: any) => r.email).filter(Boolean);
+      bccList = (ccRecipients || []).filter((r: any) => r.is_bcc).map((r: any) => r.email).filter(Boolean);
     }
     // If campaignCcIds is an empty array [], send with NO CC (explicit opt-out)
 
@@ -195,20 +198,20 @@ serve(async (req) => {
         const attachments: { filename: string; content: string }[] = [];
 
         // 1. Valuation PDF from valuation_campaign_companies.pdf_url (public URL in 'valuations' bucket)
-        if (company?.pdf_url) {
+        if (shouldIncludeValuationPdf && company?.pdf_url) {
           const att = await downloadPdfFromUrl(company.pdf_url, `Valoracion_${company.client_company || "empresa"}.pdf`);
           if (att) attachments.push(att);
         }
 
         // 2. Study/Presentation PDF from campaign_presentations.storage_path (private bucket)
         const pres = presentationMap.get(email.company_id);
-        if (pres?.storage_path) {
+        if (shouldIncludeStudyPdf && pres?.storage_path) {
           const att = await downloadPdfFromStorage(serviceClient, pres.storage_path, pres.file_name || "Estudio.pdf");
           if (att) attachments.push(att);
         }
 
         // 3. Fallback: shared campaign document (Document mode, company_id is null)
-        if (!pres) {
+        if (shouldIncludeStudyPdf && !pres) {
           const shared = (sharedDocs || []).filter((d: any) => d.campaign_id === email.campaign_id);
           for (const doc of shared) {
             if (doc.storage_path) {
@@ -248,6 +251,9 @@ serve(async (req) => {
         };
         if (ccList.length > 0) {
           resendPayload.cc = ccList;
+        }
+        if (bccList.length > 0) {
+          resendPayload.bcc = bccList;
         }
         if (attachments.length > 0) {
           resendPayload.attachments = attachments;

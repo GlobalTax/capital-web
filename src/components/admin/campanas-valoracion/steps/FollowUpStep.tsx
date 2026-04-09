@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
+import { differenceInDays } from 'date-fns';
+import { FollowUpReminderConfig } from '@/components/admin/campanas-valoracion/FollowUpReminderConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +23,7 @@ import {
   Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -34,17 +37,8 @@ import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
-// Seguimiento config (same as CampaignSummaryStep)
-const SEGUIMIENTO_OPTIONS = [
-  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
-  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
-  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
-] as const;
-
-function getSeguimientoOption(value: string | null) {
-  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
-}
+// Seguimiento states loaded from DB
+import { useSeguimientoOptions, getSeguimientoOption } from '@/hooks/useSeguimientoOptions';
 
 interface Props {
   campaignId: string;
@@ -91,8 +85,10 @@ function TemplateEditor({
     { key: 'numero_followup', label: 'Nº follow up', category: 'Follow Up' },
   ];
 
-  const eligible = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
-  const excluded = companies.length - eligible.length;
+  const companiesWithInitialEmail = companies.filter(c => emailSentMap.get(c.id));
+  const eligible = companiesWithInitialEmail.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
+  const withoutInitialEmail = companies.length - companiesWithInitialEmail.length;
+  const excluded = companiesWithInitialEmail.length - eligible.length;
 
   const insertVariable = useCallback((key: string) => {
     const tag = `{{${key}}}`;
@@ -159,7 +155,8 @@ function TemplateEditor({
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará a <strong>{eligible.length}</strong> empresa(s) (sin respuesta).
-          Se han excluido <strong>{excluded}</strong> empresa(s).
+          {excluded > 0 && <> Se han excluido <strong>{excluded}</strong> empresa(s) con respuesta.</>}
+          {withoutInitialEmail > 0 && <> Se han excluido <strong>{withoutInitialEmail}</strong> empresa(s) sin envío inicial.</>}
         </p>
       </div>
 
@@ -290,7 +287,8 @@ function FUSeguimientoBadge({
 
   // Per-round state: use send record's seguimiento, fallback to sin_respuesta
   const currentValue = sendRecord?.seguimiento_estado || 'sin_respuesta';
-  const current = getSeguimientoOption(currentValue);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, currentValue);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === currentValue) return;
@@ -458,6 +456,7 @@ function SendList({
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+  const isDocument = campaign.campaign_type === 'document';
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
@@ -467,6 +466,26 @@ function SendList({
     }
     return m;
   }, [sends, sequence.id]);
+
+  // Days since last contact per company (initial email or latest FU)
+  const daysSinceContactMap = useMemo(() => {
+    if (!campaign.followup_reminder_days) return new Map<string, number>();
+    const now = new Date();
+    const map = new Map<string, number>();
+    for (const c of companies) {
+      const sentAt = emailSentMap.get(c.id);
+      if (!sentAt) continue;
+      const initialDate = new Date(sentAt);
+      // Find latest FU send for this company across all sequences
+      const fuDates = sends
+        .filter(s => s.company_id === c.id && s.status === 'sent' && s.sent_at)
+        .map(s => new Date(s.sent_at!));
+      const lastFU = fuDates.length > 0 ? fuDates.sort((a, b) => b.getTime() - a.getTime())[0] : null;
+      const lastContact = lastFU && lastFU > initialDate ? lastFU : initialDate;
+      map.set(c.id, differenceInDays(now, lastContact));
+    }
+    return map;
+  }, [companies, emailSentMap, sends, campaign.followup_reminder_days]);
 
   // Companies marked as responded in PREVIOUS rounds (sequence_number < current)
   const respondedInPreviousRounds = useMemo(() => {
@@ -484,6 +503,8 @@ function SendList({
 
   // Visible in this round: not responded in previous rounds, AND (sin_respuesta globally OR has record in this round)
   const visible = companies.filter(c => {
+    // Solo mostrar empresas que ya recibieron el email inicial
+    if (!emailSentMap.get(c.id)) return false;
     if (respondedInPreviousRounds.has(c.id)) return false;
     const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const hasRoundRecord = sendMap.has(c.id);
@@ -534,12 +555,12 @@ function SendList({
 
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
-    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
+    if (!isDocument) result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
 
     return applySortToList(result, sort);
   }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, sendMap, sort]);
 
-  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || (!isDocument && (filterValuation.min !== null || filterValuation.max !== null));
   const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
@@ -550,6 +571,7 @@ function SendList({
     setFilterEbitda({ min: null, max: null });
     setFilterValuation({ min: null, max: null });
   }, []);
+  const withoutInitialEmailCount = companies.filter(c => !emailSentMap.get(c.id)).length;
   const excluded = companies.length - visible.length;
 
   // Pending: visible + per-round seguimiento is sin_respuesta + not already sent
@@ -648,7 +670,8 @@ function SendList({
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará este follow up a <strong>{pendingCompanies.length}</strong> empresa(s) pendiente(s).
-          Se han excluido <strong>{excluded}</strong> empresa(s) que ya respondieron.
+          {excluded > 0 && <> Se han excluido <strong>{excluded}</strong> empresa(s).</>}
+          {withoutInitialEmailCount > 0 && <> ({withoutInitialEmailCount} sin envío inicial)</>}
         </p>
       </div>
 
@@ -725,7 +748,7 @@ function SendList({
 
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+            {!isDocument && <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />}
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
@@ -750,11 +773,17 @@ function SendList({
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                   <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
-                  <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                  {!isDocument && <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>}
                   <TableHead className="text-center">Seguimiento</TableHead>
                   <TableHead className="text-center">Estado envío</TableHead>
                   <TableHead className="text-center">Entrega</TableHead>
                   <TableHead className="w-[100px]">Acción</TableHead>
+                  {campaign.followup_reminder_days && <TableHead className="text-center w-[70px]">
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Días</span>
+                      <FollowUpReminderConfig campaignId={campaignId} currentDays={campaign.followup_reminder_days ?? null} />
+                    </div>
+                  </TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -778,7 +807,7 @@ function SendList({
                       <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm">{c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}</TableCell>
-                      <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
+                      {!isDocument && <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>}
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />
@@ -814,6 +843,26 @@ function SendList({
                           {isSent ? 'Enviado' : !canSend ? '—' : 'Enviar'}
                         </Button>
                       </TableCell>
+                      {campaign.followup_reminder_days && (
+                        <TableCell className="text-center">
+                          {(() => {
+                            const days = daysSinceContactMap.get(c.id);
+                            if (days === undefined) return <span className="text-xs text-muted-foreground">—</span>;
+                            const threshold = campaign.followup_reminder_days!;
+                            const estado = c.seguimiento_estado || 'sin_respuesta';
+                            const isPending = days >= threshold && estado === 'sin_respuesta';
+                            const isNear = days >= threshold * 0.7 && !isPending && estado === 'sin_respuesta';
+                            return (
+                              <span className={cn(
+                                "text-[11px] font-medium",
+                                isPending ? "text-red-600" : isNear ? "text-amber-600" : "text-muted-foreground"
+                              )}>
+                                {days}d {isPending ? '🔴' : isNear ? '🟡' : ''}
+                              </span>
+                            );
+                          })()}
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })}
@@ -934,8 +983,11 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
   }
 
   return (
-    <div className="flex gap-4 min-h-[500px]">
-      {/* Sidebar */}
+    <div className="space-y-4">
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
+      <div className="flex gap-4 min-h-[500px]">
       <div className="w-56 shrink-0 border rounded-lg p-2 space-y-1 bg-muted/20">
         <p className="text-xs font-semibold text-muted-foreground px-2 py-1 uppercase tracking-wide">Rondas</p>
         {sequences.map(seq => {
@@ -1045,6 +1097,7 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
     </div>
   );
 }

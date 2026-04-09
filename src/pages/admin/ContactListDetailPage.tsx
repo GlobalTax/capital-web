@@ -1,10 +1,14 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useListColumnPreferences } from '@/hooks/useListColumnPreferences';
+import { ListColumnConfigurator } from '@/components/admin/contact-lists/ListColumnConfigurator';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '@/hooks/useExcelImportValidation';
 import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
 import { ImportResultModal } from '@/components/admin/contact-lists/ImportResultModal';
 import { supabase } from '@/integrations/supabase/client';
+import { EditableSelect } from '@/components/admin/shared/EditableSelect';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +28,14 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+} from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
@@ -35,7 +47,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List, Megaphone,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, ArrowLeft, Layers, List, Megaphone, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -50,6 +62,34 @@ import {
 } from '@/hooks/useContactLists';
 import * as XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
+import DeleteCompaniesDialog from '@/components/admin/contact-lists/DeleteCompaniesDialog';
+
+// ===== EXPANDABLE DESCRIPTION COMPONENT =====
+const ExpandableDescription = ({ text, maxLength = 80, highlighted = false }: { text: string; maxLength?: number; highlighted?: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+  const needsTruncation = text.length > maxLength;
+  const displayText = expanded || !needsTruncation ? text : text.slice(0, maxLength) + '…';
+
+  return (
+    <span
+      className={cn(
+        "text-xs px-2 py-0.5 rounded transition-colors inline",
+        highlighted ? "bg-primary/10 text-primary" : "text-muted-foreground"
+      )}
+    >
+      {displayText}
+      {needsTruncation && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          className="ml-1 text-xs font-medium text-primary hover:underline focus:outline-none"
+        >
+          {expanded ? 'ver menos' : 'ver más'}
+        </button>
+      )}
+    </span>
+  );
+};
 
 // ===== UTILS =====
 const normalizeColumnName = (name: string): string =>
@@ -73,14 +113,69 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   posicion_contacto: ['posicion_contacto', 'posicion', 'cargo', 'puesto', 'position', 'rol', 'job_title'],
   cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
   descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
+  tipo_accionista: ['tipo_accionista', 'tipo', 'type', 'tipo_propietario'],
+  nombre_accionista: ['nombre_accionista', 'accionista', 'shareholder', 'shareholder_name', 'nombre_propietario'],
 };
+
+const TIPO_ACCIONISTA_OPTIONS = [
+  { value: 'Una o más personas físicas o familias', label: 'Personas físicas/familias' },
+  { value: 'Empresa', label: 'Empresa' },
+  { value: 'Empresa financiera', label: 'Empresa financiera' },
+  { value: 'Fondos mutuos & de pensiones/Nominee/Trust/Trustee', label: 'Fondos/Nominee/Trust' },
+  { value: 'Auto participación', label: 'Auto participación' },
+  { value: 'Banco', label: 'Banco' },
+  { value: 'Autoridades públicas, Estado, Gobierno', label: 'Autoridades públicas' },
+  { value: 'Firmas Private Equity', label: 'Private Equity' },
+  { value: 'Venture capital', label: 'Venture capital' },
+  { value: 'Seguro', label: 'Seguro' },
+  { value: 'Fundaciones/Institutos de investigación', label: 'Fundaciones/Institutos' },
+  { value: 'Accionistas privados no identificados, agregados', label: 'Accionistas privados n/i' },
+  { value: 'Empleados/Administradores/Directores', label: 'Empleados/Directores' },
+  { value: 'Otros accionistas no identificados, agregados', label: 'Otros n/i agregados' },
+];
 
 function parseSpanishNumber(val: any): number | null {
   if (val == null || val === '') return null;
   if (typeof val === 'number') return val;
-  const str = String(val).trim().replace(/[€$%\s]/g, '');
-  const parsed = parseFloat(str.replace(/\./g, '').replace(',', '.'));
-  return isNaN(parsed) ? null : parsed;
+
+  // Strip currency symbols, comparison operators, whitespace
+  let str = String(val).trim().replace(/[€$£¥%>\<~\s]/g, '');
+  if (!str) return null;
+
+  // Detect magnitude suffix (K, M, B) before cleaning
+  let multiplier = 1;
+  const upper = str.toUpperCase();
+  if (upper.endsWith('B')) { multiplier = 1_000_000_000; str = str.slice(0, -1); }
+  else if (upper.endsWith('M')) { multiplier = 1_000_000; str = str.slice(0, -1); }
+  else if (upper.endsWith('K')) { multiplier = 1_000; str = str.slice(0, -1); }
+
+  if (!str) return null;
+
+  // Detect locale: if last separator is comma, treat comma as decimal
+  const lastComma = str.lastIndexOf(',');
+  const lastDot = str.lastIndexOf('.');
+
+  if (lastComma > lastDot) {
+    // Spanish: 1.234,56 → remove dots, replace comma with dot
+    str = str.replace(/\./g, '').replace(',', '.');
+  } else if (lastDot > lastComma) {
+    // Check if the dot is a thousands separator (digits after last dot are exactly 3 and there are multiple dots or no commas)
+    const afterLastDot = str.substring(lastDot + 1);
+    const dotCount = (str.match(/\./g) || []).length;
+    if (afterLastDot.length === 3 && /^\d{3}$/.test(afterLastDot) && (dotCount > 1 || (dotCount === 1 && lastComma === -1 && /^\d{1,3}(\.\d{3})+$/.test(str)))) {
+      // All dots are thousands separators: 4.073.864.894 or 1.000
+      str = str.replace(/\./g, '');
+    } else {
+      // Anglo: 1,234.56 → remove commas
+      str = str.replace(/,/g, '');
+    }
+  } else {
+    // No separators or equal position — just remove commas
+    str = str.replace(/,/g, '');
+  }
+
+  const parsed = parseFloat(str);
+  return isNaN(parsed) ? null : parsed * multiplier;
 }
 
 function mapColumn(normalized: string): string | null {
@@ -95,7 +190,7 @@ function downloadTemplate() {
   const headers = [
     'Nombre empresa', 'CIF', 'CNAE', 'Descripción Actividad', 'Año datos', 'Facturación', 'EBITDA',
     'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto', 'Posición Contacto',
-    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma',
+    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma', 'Tipo', 'Nombre Accionista',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   // Set column widths
@@ -209,12 +304,25 @@ const InlineTextCell = React.memo(({ companyId, field, initialValue, placeholder
     }
   }, [value, linkType]);
 
+  const isLinkedIn = linkType === 'url' && value && value.toLowerCase().includes('linkedin');
+
   if (!isEditing) {
     return (
       <div className="min-h-[28px] px-1 rounded text-sm flex items-center gap-1">
         {value ? (
           <>
-            {linkType ? (
+            {isLinkedIn ? (
+              <a
+                href={value.startsWith('http') ? value : `https://${value}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-[#0A66C2] hover:text-[#004182] transition-colors flex-shrink-0"
+                title={value}
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              </a>
+            ) : linkType ? (
               <span
                 className="truncate cursor-pointer hover:text-primary hover:underline transition-colors"
                 onClick={handleLinkClick}
@@ -230,16 +338,14 @@ const InlineTextCell = React.memo(({ companyId, field, initialValue, placeholder
                 {value}
               </span>
             )}
-            {linkType && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 opacity-0 group-hover/row:opacity-100"
-                title="Editar"
-              >
-                <Pencil className="h-3 w-3" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+              className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 opacity-0 group-hover/row:opacity-100"
+              title="Editar"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
           </>
         ) : (
           <span
@@ -282,6 +388,7 @@ const ESTADO_CONFIG: Record<string, { label: string; className: string }> = {
 export default function ContactListDetailPage() {
   const { id: listId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { role } = useAdminAuth();
   const queryClient = useQueryClient();
 
   const { data: list, isLoading: isLoadingList } = useQuery({
@@ -298,7 +405,7 @@ export default function ContactListDetailPage() {
     },
   });
 
-  const { companies, isLoading: isLoadingCompanies, addCompany, addCompanies, updateCompany, deleteCompany, deleteCompanies } = useContactListCompanies(listId);
+  const { companies, isLoading: isLoadingCompanies, addCompany, addCompanies, updateCompany, deleteCompany, deleteCompanies } = useContactListCompanies(listId, list?.lista_madre_id);
   const { campaigns, isLoading: isLoadingCampaigns, linkCampaign } = useContactListCampaigns(listId);
 
   // State
@@ -311,6 +418,7 @@ export default function ContactListDetailPage() {
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
   const [isSendToCampaignOpen, setIsSendToCampaignOpen] = useState(false);
   const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
+  const [isDedupLoading, setIsDedupLoading] = useState(false);
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
 
@@ -324,6 +432,32 @@ export default function ContactListDetailPage() {
   const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
   const [moveCopyFromSublistId, setMoveCopyFromSublistId] = useState<string | null>(null);
 
+  // Bulk Move/Copy state
+  const [bulkMoveCopyOpen, setBulkMoveCopyOpen] = useState(false);
+  const [bulkMoveCopyMode, setBulkMoveCopyMode] = useState<'move' | 'copy'>('copy');
+  const [bulkMoveCopyTargetId, setBulkMoveCopyTargetId] = useState('');
+  const [bulkIsCreatingNewList, setBulkIsCreatingNewList] = useState(false);
+  const [bulkNewListName, setBulkNewListName] = useState('');
+  const [bulkMoveCopyLoading, setBulkMoveCopyLoading] = useState(false);
+  const [moveCopySearchTerm, setMoveCopySearchTerm] = useState('');
+  const [moveCopyPopoverOpen, setMoveCopyPopoverOpen] = useState(false);
+  const [bulkMoveCopySearchTerm, setBulkMoveCopySearchTerm] = useState('');
+  const [bulkMoveCopyPopoverOpen, setBulkMoveCopyPopoverOpen] = useState(false);
+  const [moveCopySectorFilter, setMoveCopySectorFilter] = useState('');
+  const [moveCopySectorSearch, setMoveCopySectorSearch] = useState('');
+  const [moveCopySectorPopoverOpen, setMoveCopySectorPopoverOpen] = useState(false);
+  const [bulkMoveCopySectorFilter, setBulkMoveCopySectorFilter] = useState('');
+  const [bulkMoveCopySectorSearch, setBulkMoveCopySectorSearch] = useState('');
+  const [bulkMoveCopySectorPopoverOpen, setBulkMoveCopySectorPopoverOpen] = useState(false);
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargetIds, setDeleteTargetIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Data scale factor: 1000 for legacy lists, 1 for lists with real euro values
+  const dataScale = (list as any)?.data_scale ?? 1000;
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
@@ -331,7 +465,15 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+  // Generic column filters: colKey → selected values
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [headerSearches, setHeaderSearches] = useState<Record<string, string>>({});
+  const [customRanges, setCustomRanges] = useState<Record<string, { min: string; max: string }>>({});
   const [groupBlocked, setGroupBlocked] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
 
   // AI generation state - stores the company ID currently being generated
   const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
@@ -357,27 +499,47 @@ export default function ContactListDetailPage() {
 
   // Query: sublists + their companies (only for madre lists)
   const { data: sublistCompanyMap } = useQuery({
-    queryKey: ['sublist-company-map', listId],
+    queryKey: ['sublist-company-map', listId, 'v2'],
     enabled: !!listId,
     queryFn: async () => {
       // 1. Get sublists
       const { data: sublists, error: subErr } = await supabase
         .from('outbound_lists' as any)
         .select('id, name')
-        .eq('lista_madre_id', listId!);
+        .eq('lista_madre_id', listId!)
+        .order('name', { ascending: true });
       if (subErr || !sublists || sublists.length === 0) return null;
 
       const sublistArr = (sublists as unknown) as { id: string; name: string }[];
       const sublistIds = sublistArr.map(s => s.id);
       const nameMap = Object.fromEntries(sublistArr.map(s => [s.id, s.name]));
 
-      // 2. Get companies from those sublists
-      const { data: subCompanies, error: compErr } = await supabase
-        .from('outbound_list_companies' as any)
-        .select('cif, list_id')
-        .in('list_id', sublistIds)
-        .not('cif', 'is', null);
-      if (compErr || !subCompanies) return null;
+      // 2. Get companies from those sublists (paginated with deterministic ordering)
+      const subCompanies = await (async () => {
+        const allRows: { cif: string; list_id: string }[] = [];
+        let from = 0;
+        const pageSize = 1000;
+
+        while (true) {
+          const { data, error } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id, cif, list_id')
+            .in('list_id', sublistIds)
+            .not('cif', 'is', null)
+            .order('id', { ascending: true })
+            .range(from, from + pageSize - 1);
+
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+
+          allRows.push(...((data as unknown) as { cif: string; list_id: string }[]));
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+
+        return allRows;
+      })();
+      if (!subCompanies || subCompanies.length === 0) return null;
 
       // 3. Build map: cif → sublist names[] and cifToListId: cif → list_id
       const map = new Map<string, Set<string>>();
@@ -400,10 +562,89 @@ export default function ContactListDetailPage() {
   });
 
   const isMadreList = !!sublistCompanyMap;
+  const isSublist = !!list?.lista_madre_id;
+  const { allColumns, visibleColumns: visibleCols, toggleColumn, moveColumn, resetToDefault } = useListColumnPreferences(listId, isMadreList, isSublist);
   const companiesInSublists = useMemo(() => {
     if (!sublistCompanyMap) return 0;
     return companies.filter(c => c.cif && sublistCompanyMap.map.has(c.cif.toUpperCase().trim())).length;
   }, [companies, sublistCompanyMap]);
+
+
+
+
+  // Text columns that support multi-select filtering
+  const TEXT_FILTER_COLUMNS = ['provincia', 'comunidad_autonoma', 'cnae', 'posicion_contacto', 'director_ejecutivo', 'tipo_accionista'] as const;
+  const KEYWORD_FILTER_COLUMNS = ['descripcion_actividad'] as const;
+  // Columns that support "has value / no value" presence filtering
+  const PRESENCE_FILTER_COLUMNS = ['email', 'linkedin', 'web', 'cif', 'contacto', 'director_ejecutivo', 'telefono', 'provincia', 'comunidad_autonoma', 'cnae', 'posicion_contacto', 'facturacion', 'ebitda', 'num_trabajadores', 'nombre_accionista', 'notas'] as const;
+
+  // Numeric range definitions
+  const NUMERIC_RANGES: Record<string, { label: string; min: number | null; max: number | null }[]> = {
+    facturacion: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '0 - 1M€', min: 0, max: 1_000_000 },
+      { label: '1M€ - 5M€', min: 1_000_000, max: 5_000_000 },
+      { label: '5M€ - 20M€', min: 5_000_000, max: 20_000_000 },
+      { label: '20M€ - 50M€', min: 20_000_000, max: 50_000_000 },
+      { label: '> 50M€', min: 50_000_000, max: Infinity },
+    ],
+    ebitda: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '< 0 (negativo)', min: -Infinity, max: 0 },
+      { label: '0 - 500K€', min: 0, max: 500_000 },
+      { label: '500K€ - 2M€', min: 500_000, max: 2_000_000 },
+      { label: '2M€ - 5M€', min: 2_000_000, max: 5_000_000 },
+      { label: '> 5M€', min: 5_000_000, max: Infinity },
+    ],
+    num_trabajadores: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '1 - 10', min: 1, max: 11 },
+      { label: '11 - 50', min: 11, max: 51 },
+      { label: '51 - 200', min: 51, max: 201 },
+      { label: '201 - 500', min: 201, max: 501 },
+      { label: '> 500', min: 501, max: Infinity },
+    ],
+  };
+
+  // Compute unique values for all text filter columns
+  const uniqueColumnValues = useMemo(() => {
+    const result: Record<string, string[]> = {};
+    for (const col of TEXT_FILTER_COLUMNS) {
+      const set = new Set<string>();
+      companies.forEach(c => {
+        const val = (c as any)[col];
+        if (val) set.add(val);
+      });
+      result[col] = Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+    }
+    return result;
+  }, [companies]);
+
+  // Helpers for column filters
+  const toggleColumnFilter = useCallback((colKey: string, value: string) => {
+    setColumnFilters(prev => {
+      const current = prev[colKey] || [];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+      if (next.length === 0) {
+        const { [colKey]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [colKey]: next };
+    });
+  }, []);
+
+  const clearColumnFilter = useCallback((colKey: string) => {
+    setColumnFilters(prev => {
+      const { [colKey]: _, ...rest } = prev;
+      return rest;
+    });
+  }, []);
+
+  const clearAllColumnFilters = useCallback(() => {
+    setColumnFilters({});
+  }, []);
+
+  const hasAnyColumnFilter = useMemo(() => Object.keys(columnFilters).length > 0, [columnFilters]);
 
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
@@ -428,6 +669,58 @@ export default function ContactListDetailPage() {
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
+    // Generic column filters (text + numeric)
+    for (const [colKey, selectedValues] of Object.entries(columnFilters)) {
+      if (selectedValues.length === 0) continue;
+      const numRanges = NUMERIC_RANGES[colKey];
+      if (numRanges) {
+        // Numeric range filter (predefined + custom)
+        result = result.filter(c => {
+          const raw = Number((c as any)[colKey]) || 0;
+          const val = (colKey === 'facturacion' || colKey === 'ebitda') ? raw * dataScale : raw;
+          const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
+          return selectedValues.some(rangeLabel => {
+            // Custom range: "custom:min-max"
+            if (rangeLabel.startsWith('custom:')) {
+              const parts = rangeLabel.slice(7).split('-');
+              const cMin = parts[0] ? Number(parts[0]) : -Infinity;
+              const cMax = parts[1] ? Number(parts[1]) : Infinity;
+              return hasData && val >= cMin && val <= cMax;
+            }
+            const range = numRanges.find(r => r.label === rangeLabel);
+            if (!range) return false;
+            if (range.min === null) return !hasData; // "Sin dato"
+            return hasData && val >= range.min && val < (range.max ?? Infinity);
+          });
+        });
+      } else if ((KEYWORD_FILTER_COLUMNS as readonly string[]).includes(colKey)) {
+        // Keyword contains filter (for descripcion_actividad)
+        result = result.filter(c => {
+          const val = ((c as any)[colKey] || '').toLowerCase();
+          return selectedValues.some(keyword => val.includes(keyword.toLowerCase()));
+        });
+      } else {
+        // Check for presence filters (__has / __empty) mixed with text exact filters
+        const presenceFilters = selectedValues.filter(v => v === '__has' || v === '__empty');
+        const textFilters = selectedValues.filter(v => v !== '__has' && v !== '__empty');
+        
+        result = result.filter(c => {
+          const val = (c as any)[colKey];
+          const hasValue = val != null && val !== '' && String(val).trim() !== '' && String(val).trim() !== '—';
+          
+          // If both presence and text filters, match either
+          if (presenceFilters.length > 0 && textFilters.length > 0) {
+            const presenceMatch = presenceFilters.some(pf => pf === '__has' ? hasValue : !hasValue);
+            const textMatch = hasValue && textFilters.includes(val);
+            return presenceMatch || textMatch;
+          }
+          if (presenceFilters.length > 0) {
+            return presenceFilters.some(pf => pf === '__has' ? hasValue : !hasValue);
+          }
+          return val && textFilters.includes(val);
+        });
+      }
+    }
     // Sort
     if (sortField) {
       result.sort((a, b) => {
@@ -440,6 +733,7 @@ export default function ContactListDetailPage() {
         }
         va = Number(va) || 0;
         vb = Number(vb) || 0;
+        if (sortField === 'facturacion' || sortField === 'ebitda') { va *= dataScale; vb *= dataScale; }
         return sortDir === 'asc' ? va - vb : vb - va;
       });
     }
@@ -452,7 +746,19 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, columnFilters, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+
+  // Reset page when filters/sort change
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, columnFilters, sortField, sortDir, groupBlocked]);
+
+  // Pagination derived values
+  const totalPages = Math.ceil(filteredCompanies.length / pageSize);
+  const paginatedCompanies = useMemo(() => {
+    const start = currentPage * pageSize;
+    return filteredCompanies.slice(start, start + pageSize);
+  }, [filteredCompanies, currentPage, pageSize]);
 
   // Config tab state
   const [configName, setConfigName] = useState('');
@@ -489,12 +795,19 @@ export default function ContactListDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('outbound_lists' as any)
-        .select('id, name')
+        .select('id, name, sector, lista_madre_id')
         .order('name');
       if (error) throw error;
       return (data as any[]).filter((l: any) => l.id !== listId);
     },
   });
+  const uniqueMadres = React.useMemo(() => {
+    const madreIds = [...new Set(allLists.map((l: any) => l.lista_madre_id).filter(Boolean))];
+    return madreIds.map(id => {
+      const madre = allLists.find((l: any) => l.id === id);
+      return { id, name: madre?.name || 'Lista desconocida' };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  }, [allLists]);
 
   // Query: parent list name for breadcrumb
   const { data: parentList } = useQuery({
@@ -525,7 +838,7 @@ export default function ContactListDetailPage() {
   const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
   const [isReadingFile, setIsReadingFile] = useState(false);
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
-  const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
+  const { validate, isValidating, validationResult, validationProgress, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
     imported: number; linked: number; linkedRelated: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
   } | null>(null);
@@ -550,22 +863,80 @@ export default function ContactListDetailPage() {
 
   // ===== HANDLERS =====
   const handleSelectAll = () => {
-    const visible = filteredCompanies.map(c => c.id);
-    setSelectedIds(selectedIds.length === visible.length ? [] : visible);
+    const pageIds = paginatedCompanies.map(c => c.id);
+    const allPageSelected = pageIds.every(id => selectedIds.includes(id));
+    if (allPageSelected) {
+      setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)));
+    } else {
+      setSelectedIds(prev => [...new Set([...prev, ...pageIds])]);
+    }
   };
+
+  const handleSelectAllFiltered = () => {
+    setSelectedIds(filteredCompanies.map(c => c.id));
+  };
+
+  const allPageSelected = paginatedCompanies.length > 0 && paginatedCompanies.every(c => selectedIds.includes(c.id));
+  const allFilteredSelected = filteredCompanies.length > 0 && selectedIds.length === filteredCompanies.length && filteredCompanies.every(c => selectedIds.includes(c.id));
+  const showSelectAllBanner = allPageSelected && filteredCompanies.length > paginatedCompanies.length;
 
   const handleToggleSelect = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const handleDeleteSelected = async () => {
-    if (!confirm(`¿Eliminar ${selectedIds.length} empresas de esta lista?`)) return;
-    await deleteCompanies.mutateAsync(selectedIds);
-    setSelectedIds([]);
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    setDeleteTargetIds(selectedIds);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteCompanies.mutateAsync(deleteTargetIds);
+      setSelectedIds(prev => prev.filter(id => !deleteTargetIds.includes(id)));
+    } finally {
+      setIsDeleting(false);
+      setDeleteTargetIds([]);
+    }
   };
 
   const handleAddManual = async () => {
     if (!addForm.empresa.trim() || !listId) return;
+
+    // Validate sibling sublist conflict by CIF
+    const cifToCheck = addForm.cif.trim().toUpperCase();
+    if (cifToCheck && list?.lista_madre_id) {
+      try {
+        // Get sibling sublists
+        const { data: siblingLists } = await supabase
+          .from('outbound_lists' as any)
+          .select('id, name')
+          .eq('lista_madre_id', list.lista_madre_id)
+          .neq('id', listId);
+
+        if (siblingLists && siblingLists.length > 0) {
+          const siblingIds = (siblingLists as any[]).map(s => s.id);
+          const nameMap = Object.fromEntries((siblingLists as any[]).map(s => [s.id, s.name]));
+
+          const { data: existing } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('list_id')
+            .in('list_id', siblingIds)
+            .eq('cif', cifToCheck)
+            .limit(1);
+
+          if (existing && existing.length > 0) {
+            const conflictName = nameMap[(existing as any)[0].list_id] || 'otra sublista';
+            toast.error(`Esta empresa (CIF: ${cifToCheck}) ya está en el sublistado "${conflictName}" derivado de la misma Lista Madre.`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('[AddManual] Error checking sibling conflict:', err);
+      }
+    }
+
     await addCompany.mutateAsync({
       list_id: listId,
       empresa: addForm.empresa.trim(),
@@ -586,6 +957,7 @@ export default function ContactListDetailPage() {
       num_trabajadores: addForm.num_trabajadores ? parseInt(addForm.num_trabajadores) || null : null,
       director_ejecutivo: addForm.director_ejecutivo.trim() || null,
       linkedin: addForm.linkedin.trim() || null,
+      consolidador: false,
     });
     setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '', posicion_contacto: '', cnae: '', descripcion_actividad: '' });
     setIsAddModalOpen(false);
@@ -597,28 +969,38 @@ export default function ContactListDetailPage() {
     const file = acceptedFiles[0];
     if (!file) return;
     setIsReadingFile(true);
-    toast.info(`Procesando "${file.name}"...`, { duration: 3000 });
+    toast.info(`Procesando "${file.name}"...`, { duration: 5000 });
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const wb = XLSX.read(data, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      setIsReadingFile(false);
-      if (json.length === 0) {
-        toast.error('El archivo está vacío');
-        return;
-      }
-      const headers = Object.keys(json[0] as any);
-      const mapping: Record<string, string> = {};
-      headers.forEach(h => {
-        const norm = normalizeColumnName(h);
-        const field = mapColumn(norm);
-        if (field) mapping[h] = field;
-      });
-      setImportMapping(mapping);
-      setImportData(json);
-      toast.success(`${json.length} filas encontradas · ${Object.keys(mapping).length} columnas mapeadas`);
+      // Defer heavy parsing so the UI can render the loading spinner first
+      setTimeout(() => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const wb = XLSX.read(data, { type: 'array' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+          if (json.length === 0) {
+            setIsReadingFile(false);
+            toast.error('El archivo está vacío');
+            return;
+          }
+          const headers = Object.keys(json[0] as any);
+          const mapping: Record<string, string> = {};
+          headers.forEach(h => {
+            const norm = normalizeColumnName(h);
+            const field = mapColumn(norm);
+            if (field) mapping[h] = field;
+          });
+          setImportMapping(mapping);
+          setImportData(json);
+          setIsReadingFile(false);
+          toast.success(`${json.length} filas encontradas · ${Object.keys(mapping).length} columnas mapeadas`);
+        } catch (err) {
+          setIsReadingFile(false);
+          toast.error('Error al procesar el archivo Excel');
+          console.error('Excel parse error:', err);
+        }
+      }, 50);
     };
     reader.onerror = () => {
       setIsReadingFile(false);
@@ -656,38 +1038,99 @@ export default function ContactListDetailPage() {
   const handleStartValidation = async () => {
     if (!listId || importData.length === 0) return;
     const rows = getMappedRows();
-    setImportStep('preview');
-    await validate(rows, listId, list?.lista_madre_id || null);
+
+    try {
+      await validate(rows, listId, list?.lista_madre_id || null);
+      setImportStep('preview');
+    } catch (err) {
+      console.error('[Import validation] Error validating Excel:', err);
+      toast.error('No se ha podido validar el Excel. Revisa el archivo o inténtalo de nuevo.');
+    }
   };
 
-  // Step 3: Confirm import (only nuevas + vinculadas)
-  const handleConfirmImport = async () => {
+  // Step 3: Confirm import (nuevas + vinculadas + enOtraLista, excludes conflictoSublistado)
+  const handleConfirmImport = async (updateDuplicates = false) => {
     if (!listId || !validationResult) return;
     setImportStep('importing');
     const rowsToInsert = [
       ...validationResult.nuevas.map(r => r.data),
       ...validationResult.vinculadas.map(r => r.data),
       ...validationResult.enOtraLista.map(r => r.data),
+      // conflictoSublistado is intentionally EXCLUDED
     ] as any[];
 
-    setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
+    const totalOperations = rowsToInsert.length + (updateDuplicates ? validationResult.duplicadas.length : 0);
+    setImportProgress(totalOperations > 0 ? { done: 0, total: totalOperations } : null);
 
     let importedCount = 0;
+    let updatedCount = 0;
     let failedCount = 0;
 
     try {
+      // 1. Insert new rows
       if (rowsToInsert.length > 0) {
         const result = await addCompanies.mutateAsync({
           rows: rowsToInsert as any,
-          onProgress: (done, total) => setImportProgress({ done, total }),
+          onProgress: (done, total) => setImportProgress({ done, total: totalOperations }),
         });
         importedCount = result.inserted;
         failedCount = result.failed;
+      }
 
-        if (importedCount > 0) {
-          await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
-          queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+      // 2. Update duplicates if user opted in
+      if (updateDuplicates && validationResult.duplicadas.length > 0) {
+        const UPDATABLE_FIELDS = ['tipo_accionista', 'nombre_accionista', 'notas', 'contacto', 'email', 'linkedin', 'director_ejecutivo', 'telefono', 'web', 'posicion_contacto', 'consolidador', 'cnae', 'descripcion_actividad', 'facturacion', 'ebitda', 'num_trabajadores', 'provincia', 'comunidad_autonoma'];
+        
+        for (let i = 0; i < validationResult.duplicadas.length; i++) {
+          const row = validationResult.duplicadas[i];
+          const cif = row.cif;
+          if (!cif) continue;
+
+          // Build update payload with only non-null fields from Excel
+          const updates: Record<string, any> = {};
+          for (const field of UPDATABLE_FIELDS) {
+            const val = row.data[field];
+            if (val != null && val !== '' && val !== undefined) {
+              updates[field] = val;
+            }
+          }
+
+          if (Object.keys(updates).length === 0) continue;
+
+          try {
+            const { error } = await supabase
+              .from('outbound_list_companies' as any)
+              .update(updates)
+              .eq('list_id', listId)
+              .eq('cif', cif);
+            
+            if (error) {
+              console.error(`[Import] Failed to update CIF ${cif}:`, error);
+              failedCount++;
+            } else {
+              updatedCount++;
+            }
+          } catch (err) {
+            console.error(`[Import] Error updating CIF ${cif}:`, err);
+            failedCount++;
+          }
+
+          setImportProgress({ done: rowsToInsert.length + i + 1, total: totalOperations });
         }
+      }
+
+      if (importedCount > 0 || updatedCount > 0) {
+        await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+        queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+        if (list?.lista_madre_id) {
+          queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
+          queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+        }
+      }
+
+      if (updatedCount > 0) {
+        toast.success(`${updatedCount} empresas actualizadas con los nuevos datos`);
       }
     } catch (err: any) {
       console.error('[Import] Unexpected error:', err);
@@ -698,8 +1141,8 @@ export default function ContactListDetailPage() {
         imported: importedCount || validationResult.nuevas.length,
         linked: validationResult.vinculadas.length,
         linkedRelated: validationResult.enOtraLista.length,
-        skippedDuplicates: validationResult.duplicadas.length,
-        skippedErrors: validationResult.errores.length + failedCount,
+        skippedDuplicates: updateDuplicates ? 0 : validationResult.duplicadas.length,
+        skippedErrors: validationResult.errores.length + validationResult.conflictoSublistado.length + failedCount,
         errors: validationResult.errores,
       });
       setImportStep('result');
@@ -789,8 +1232,14 @@ export default function ContactListDetailPage() {
   // ===== MOVE / COPY COMPANY =====
   const executeMoveCopy = async (targetId: string) => {
     if (!moveCopyCompany || !listId) return;
+    // Guard: en lista madre, forzar modo copy silenciosamente (nunca eliminar del origen)
+    let effectiveMode = moveCopyMode;
+    const sourceSublistId = moveCopyFromSublistId || (moveCopyMode === 'move' && list?.lista_madre_id ? listId : null);
+    if (isMadreList && moveCopyMode === 'move' && !(moveCopyCompany as any).sublist_id) {
+      effectiveMode = 'copy';
+    }
     try {
-      if (moveCopyMode === 'copy') {
+      if (effectiveMode === 'copy') {
         // Check if CIF already exists in target list
         if (moveCopyCompany.cif) {
           const { data: existing } = await supabase
@@ -807,41 +1256,101 @@ export default function ContactListDetailPage() {
         }
         // Insert copy without notas and id
         const { id, notas, created_at, ...rest } = moveCopyCompany as any;
-        await supabase.from('outbound_list_companies' as any).insert({
+        const { error: insertErr } = await supabase.from('outbound_list_companies' as any).insert({
           ...rest,
           list_id: targetId,
           notas: null,
         } as any);
-        toast.success('Empresa copiada a la otra lista');
-      } else if (moveCopyFromSublistId) {
-        // Move from sublist: update the record in the source sublist
-        await supabase.from('outbound_list_companies' as any)
-          .update({ list_id: targetId } as any)
-          .eq('list_id', moveCopyFromSublistId)
-          .eq('cif', moveCopyCompany.cif);
+        if (insertErr) throw insertErr;
+        toast.success(isMadreList ? 'Empresa añadida a la lista' : 'Empresa copiada a la otra lista');
+      } else if (sourceSublistId) {
+        // Move from sublist: resolve the actual row in the source sublist, then reassign it
+        let sourceRowId: string | null = sourceSublistId === listId ? moveCopyCompany.id : null;
+
+        if (!sourceRowId && moveCopyCompany.cif) {
+          const { data: sourceByCif, error: sourceByCifErr } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id')
+            .eq('list_id', sourceSublistId)
+            .eq('cif', moveCopyCompany.cif)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (sourceByCifErr) throw sourceByCifErr;
+          sourceRowId = (sourceByCif as any)?.id ?? null;
+        }
+
+        if (!sourceRowId) {
+          const { data: sourceByName, error: sourceByNameErr } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id')
+            .eq('list_id', sourceSublistId)
+            .eq('empresa', moveCopyCompany.empresa)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (sourceByNameErr) throw sourceByNameErr;
+          sourceRowId = (sourceByName as any)?.id ?? null;
+        }
+
+        if (!sourceRowId) {
+          throw new Error('No se encontró la empresa en la sublista origen');
+        }
+
+        const { error: moveSubErr } = await supabase.from('outbound_list_companies' as any)
+          .update({ list_id: targetId, notas: null } as any)
+          .eq('id', sourceRowId);
+
+        if (moveSubErr) throw moveSubErr;
         toast.success('Empresa reasignada a otra sublista');
       } else {
         // Move: update list_id, clear notas
-        await supabase.from('outbound_list_companies' as any)
+        const { error: moveErr } = await supabase.from('outbound_list_companies' as any)
           .update({ list_id: targetId, notas: null } as any)
           .eq('id', moveCopyCompany.id);
+        if (moveErr) throw moveErr;
         toast.success('Empresa movida a la otra lista');
       }
+      // Auto-link target as sublista if source is lista madre
+      if (isMadreList && targetId !== listId) {
+        const { data: targetList } = await supabase
+          .from('outbound_lists' as any)
+          .select('lista_madre_id')
+          .eq('id', targetId)
+          .single();
+        if (targetList && !(targetList as any).lista_madre_id) {
+          await supabase.from('outbound_lists' as any)
+            .update({ lista_madre_id: listId } as any)
+            .eq('id', targetId);
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
-      if (moveCopyFromSublistId) {
-        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyFromSublistId] });
+      if (sourceSublistId && sourceSublistId !== listId) {
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', sourceSublistId] });
       }
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
       queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
+      // Si estamos en sublista, invalidar cache de la madre
+      if (list?.lista_madre_id) {
+        queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+      }
       setMoveCopyCompany(null);
       setMoveCopyTargetId('');
       setIsCreatingNewList(false);
       setNewListName('');
       setMoveCopyFromSublistId(null);
     } catch (err) {
-      toast.error('Error al procesar la operación');
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('[executeMoveCopy] Error:', err);
+      toast.error('Error al procesar la operación', { description: message });
     } finally {
       setIsMoveCopyLoading(false);
     }
@@ -851,18 +1360,21 @@ export default function ContactListDetailPage() {
 
   const handleMoveCopy = async () => {
     if (!moveCopyCompany || !listId) return;
+    const sourceSublistId = moveCopyFromSublistId || (moveCopyMode === 'move' && list?.lista_madre_id ? listId : null);
     // Determine target list id
     let targetId = moveCopyTargetId;
     if (isCreatingNewList) {
       if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
       setIsMoveCopyLoading(true);
       try {
+        const insertData: any = { name: newListName.trim() };
+        if (isMadreList) insertData.lista_madre_id = listId;
         const { data: newList, error: createErr } = await supabase
           .from('outbound_lists' as any)
-          .insert({ name: newListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .insert(insertData)
           .select('id')
           .single();
-        if (createErr || !newList) { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+        if (createErr || !newList) { console.error('Error creating list:', createErr); toast.error('Error al crear la lista: ' + (createErr?.message || 'desconocido')); setIsMoveCopyLoading(false); return; }
         targetId = (newList as any).id;
       } catch { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
     } else {
@@ -890,23 +1402,28 @@ export default function ContactListDetailPage() {
             .neq('id', targetId);
 
           if (sisterSublists && sisterSublists.length > 0) {
-            const sisterIds = (sisterSublists as any[]).map((s: any) => s.id);
+            const sisterIds = (sisterSublists as any[])
+              .map((s: any) => s.id)
+              .filter((id: string) => id !== sourceSublistId);
             const sisterNameMap = Object.fromEntries((sisterSublists as any[]).map((s: any) => [s.id, s.name]));
 
-            const { data: existingInSisters } = await supabase
-              .from('outbound_list_companies' as any)
-              .select('list_id')
-              .in('list_id', sisterIds)
-              .eq('cif', moveCopyCompany.cif)
-              .limit(1);
+            if (sisterIds.length > 0) {
+              const { data: existingInSisters } = await supabase
+                .from('outbound_list_companies' as any)
+                .select('list_id')
+                .in('list_id', sisterIds)
+                .eq('cif', moveCopyCompany.cif)
+                .is('deleted_at', null)
+                .limit(1);
 
-            if (existingInSisters && existingInSisters.length > 0) {
-              const conflictListId = (existingInSisters as any[])[0].list_id;
-              const conflictName = sisterNameMap[conflictListId] || 'otra sublista';
-              setPendingMoveCopyTargetId(targetId);
-              setSublistConflict({ sublistName: conflictName });
-              setIsMoveCopyLoading(false);
-              return;
+              if (existingInSisters && existingInSisters.length > 0) {
+                const conflictListId = (existingInSisters as any[])[0].list_id;
+                const conflictName = sisterNameMap[conflictListId] || 'otra sublista';
+                setPendingMoveCopyTargetId(targetId);
+                setSublistConflict({ sublistName: conflictName });
+                setIsMoveCopyLoading(false);
+                return;
+              }
             }
           }
         }
@@ -917,6 +1434,123 @@ export default function ContactListDetailPage() {
     }
 
     await executeMoveCopy(targetId);
+  };
+
+  // ===== BULK MOVE / COPY =====
+  const handleBulkMoveCopy = async () => {
+    if (!listId || selectedIds.length === 0) return;
+    // En lista madre, forzar modo copy silenciosamente
+    let effectiveBulkMode = bulkMoveCopyMode;
+    if (isMadreList && bulkMoveCopyMode === 'move') {
+      effectiveBulkMode = 'copy';
+    }
+    let targetId = bulkMoveCopyTargetId;
+    
+    if (bulkIsCreatingNewList) {
+      if (!bulkNewListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
+      setBulkMoveCopyLoading(true);
+      try {
+        const insertData: any = { name: bulkNewListName.trim() };
+        if (isMadreList) insertData.lista_madre_id = listId;
+        const { data: newList, error: createErr } = await supabase
+          .from('outbound_lists' as any)
+          .insert(insertData)
+          .select('id')
+          .single();
+        if (createErr || !newList) { console.error('Error creating list:', createErr); toast.error('Error al crear la lista: ' + (createErr?.message || 'desconocido')); setBulkMoveCopyLoading(false); return; }
+        targetId = (newList as any).id;
+      } catch { toast.error('Error al crear la lista'); setBulkMoveCopyLoading(false); return; }
+    } else {
+      if (!targetId) return;
+      setBulkMoveCopyLoading(true);
+    }
+
+    const selectedCompanies = companies.filter(c => selectedIds.includes(c.id));
+
+    try {
+      if (effectiveBulkMode === 'copy') {
+        // Get existing CIFs in target to deduplicate
+        const selectedCifs = selectedCompanies.map(c => (c as any).cif).filter(Boolean);
+        let existingCifs = new Set<string>();
+        if (selectedCifs.length > 0) {
+          // Query in batches of 50
+          for (let i = 0; i < selectedCifs.length; i += 50) {
+            const batch = selectedCifs.slice(i, i + 50);
+            const { data: existing } = await supabase
+              .from('outbound_list_companies' as any)
+              .select('cif')
+              .eq('list_id', targetId)
+              .in('cif', batch);
+            if (existing) {
+              (existing as any[]).forEach((e: any) => existingCifs.add(e.cif));
+            }
+          }
+        }
+
+        // Filter out duplicates
+        const toInsert = selectedCompanies.filter(c => {
+          const cif = (c as any).cif;
+          return !cif || !existingCifs.has(cif);
+        });
+        const skipped = selectedCompanies.length - toInsert.length;
+
+        // Insert in batches of 50
+        for (let i = 0; i < toInsert.length; i += 50) {
+          const batch = toInsert.slice(i, i + 50).map(c => {
+            const { id, notas, created_at, ...rest } = c as any;
+            return { ...rest, list_id: targetId, notas: null };
+          });
+          await supabase.from('outbound_list_companies' as any).insert(batch as any);
+        }
+
+        const actionWord = isMadreList ? 'añadidas' : 'copiadas';
+        const msg = `${toInsert.length} empresas ${actionWord}` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
+        toast.success(msg);
+      } else {
+        // Move: update list_id in batches
+        for (let i = 0; i < selectedIds.length; i += 50) {
+          const batch = selectedIds.slice(i, i + 50);
+          await supabase.from('outbound_list_companies' as any)
+            .update({ list_id: targetId, notas: null } as any)
+            .in('id', batch);
+        }
+        toast.success(`${selectedIds.length} empresas movidas`);
+      }
+
+      // Auto-link target as sublista if source is lista madre
+      if (isMadreList && targetId !== listId) {
+        const { data: targetList } = await supabase
+          .from('outbound_lists' as any)
+          .select('lista_madre_id')
+          .eq('id', targetId)
+          .single();
+        if (targetList && !(targetList as any).lista_madre_id) {
+          await supabase.from('outbound_lists' as any)
+            .update({ lista_madre_id: listId } as any)
+            .eq('id', targetId);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+      queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
+      // Si estamos en sublista, invalidar cache de la madre
+      if (list?.lista_madre_id) {
+        queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+      }
+      setSelectedIds([]);
+      setBulkMoveCopyOpen(false);
+      setBulkMoveCopyTargetId('');
+      setBulkIsCreatingNewList(false);
+      setBulkNewListName('');
+    } catch (err) {
+      toast.error('Error al procesar la operación masiva');
+    } finally {
+      setBulkMoveCopyLoading(false);
+    }
   };
 
   const handleNoteSaved = useCallback((companyId: string, note: string) => {
@@ -932,6 +1566,496 @@ export default function ContactListDetailPage() {
       return old.map((c: any) => c.id === companyId ? { ...c, [field]: value || null } : c);
     });
   }, [queryClient, listId]);
+
+  // Dynamic column cell renderer
+  const renderColumnCell = useCallback((colKey: string, company: ContactListCompany, isAssignedToSublist: boolean) => {
+    switch (colKey) {
+      case 'empresa':
+        return (
+          <button className="text-sm font-medium hover:underline text-left flex items-center gap-1.5" onClick={() => setDrawerCompany(company)}>
+            {isAssignedToSublist && <Lock className="h-3 w-3 text-amber-500 flex-shrink-0" />}
+            {company.empresa}
+          </button>
+        );
+      case 'sublistas':
+        return company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim()) ? (
+          <div className="flex flex-wrap gap-1">
+            {sublistCompanyMap.map.get(company.cif.toUpperCase().trim())!.map(name => (
+              <Badge key={name} variant="outline" size="sm" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[11px] gap-1">
+                <ArrowRight className="h-3 w-3" />
+                {name}
+              </Badge>
+            ))}
+          </div>
+        ) : <span className="text-muted-foreground text-xs">—</span>;
+      case 'lista_madre':
+        return parentList ? (
+          <Link to={`/admin/contact-lists/${parentList.id}`} onClick={e => e.stopPropagation()}>
+            <Badge variant="outline" size="sm" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-[11px] gap-1 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+              <ArrowLeft className="h-3 w-3" />
+              {parentList.name}
+            </Badge>
+          </Link>
+        ) : <span className="text-muted-foreground text-xs">—</span>;
+      case 'cif':
+        return <span className="text-sm text-muted-foreground">{company.cif || '—'}</span>;
+      case 'contacto':
+        return <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />;
+      case 'email':
+        return <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} linkType="email" />;
+      case 'linkedin':
+        return <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} linkType="url" />;
+      case 'director_ejecutivo':
+        return <InlineTextCell companyId={company.id} field="director_ejecutivo" initialValue={company.director_ejecutivo} placeholder="Añadir director..." onSaved={handleFieldSaved} />;
+      case 'web':
+        return company.web ? (
+          <a href={company.web.startsWith('http') ? company.web : `https://${company.web}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="hover:text-primary flex items-center gap-1 transition-colors text-sm text-muted-foreground">
+            <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate max-w-[150px]">{company.web.replace(/^https?:\/\/(www\.)?/, '')}</span>
+          </a>
+        ) : <span className="text-sm text-muted-foreground">—</span>;
+      case 'provincia':
+      case 'comunidad_autonoma':
+      case 'cnae':
+      case 'posicion_contacto':
+      case 'director_ejecutivo': {
+        const cellVal = (company as any)[colKey];
+        if (!cellVal) return <span className="text-sm text-muted-foreground">—</span>;
+        const isActive = (columnFilters[colKey] || []).includes(cellVal);
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleColumnFilter(colKey, cellVal);
+            }}
+            className={cn(
+              "text-xs px-2 py-0.5 rounded-full transition-colors cursor-pointer",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            {cellVal}
+          </button>
+        );
+      }
+      case 'descripcion_actividad': {
+        const cellVal = (company as any)[colKey];
+        if (!cellVal) return <span className="text-sm text-muted-foreground">—</span>;
+        const activeKeywords = columnFilters['descripcion_actividad'] || [];
+        const isHighlighted = activeKeywords.length > 0 && activeKeywords.some(kw => cellVal.toLowerCase().includes(kw.toLowerCase()));
+        return (
+          <ExpandableDescription
+            text={cellVal}
+            maxLength={80}
+            highlighted={isHighlighted}
+          />
+        );
+      }
+      case 'facturacion':
+        return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Math.round(Number(company.facturacion) * dataScale).toLocaleString('es-ES')}` : '—'}</span>;
+      case 'ebitda':
+        return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Math.round(Number(company.ebitda) * dataScale).toLocaleString('es-ES')}` : '—'}</span>;
+      case 'num_trabajadores':
+        return <span className="text-right text-sm tabular-nums">{company.num_trabajadores ?? '—'}</span>;
+      case 'consolidador':
+        return (
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+              checked={!!(company as any).consolidador}
+              onCheckedChange={async (checked) => {
+                try {
+                  const updateData: any = { consolidador: !!checked };
+                  if (!checked) updateData.consolidador_nombre = null;
+                  await supabase
+                    .from('outbound_list_companies' as any)
+                    .update(updateData)
+                    .eq('id', company.id);
+                  queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+                } catch {
+                  toast.error('Error al actualizar consolidador');
+                }
+              }}
+            />
+            {!!(company as any).consolidador && (
+              <InlineTextCell
+                companyId={company.id}
+                field="consolidador_nombre"
+                initialValue={(company as any).consolidador_nombre}
+                placeholder="Nombre..."
+                onSaved={handleFieldSaved}
+              />
+            )}
+          </div>
+        );
+      case 'tipo_accionista':
+        return (
+          <EditableSelect
+            value={(company as any).tipo_accionista}
+            options={TIPO_ACCIONISTA_OPTIONS}
+            onSave={async (newValue) => {
+              const { error } = await supabase
+                .from('outbound_list_companies' as any)
+                .update({ tipo_accionista: newValue } as any)
+                .eq('id', company.id);
+              if (error) throw error;
+              queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+            }}
+            allowClear
+            placeholder="Seleccionar tipo..."
+          />
+        );
+      case 'nombre_accionista':
+        return (
+          <InlineTextCell
+            companyId={company.id}
+            field="nombre_accionista"
+            initialValue={(company as any).nombre_accionista}
+            placeholder="Nombre accionista..."
+            onSaved={handleFieldSaved}
+          />
+        );
+      case 'notas':
+        return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
+      default:
+        return null;
+    }
+  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved, columnFilters, toggleColumnFilter, queryClient, listId]);
+
+  // Column label map for filter badges
+  const COLUMN_LABELS: Record<string, string> = {
+    provincia: 'Provincia', comunidad_autonoma: 'C.A.', cnae: 'CNAE',
+    descripcion_actividad: 'Actividad', posicion_contacto: 'Posición', director_ejecutivo: 'Director',
+    facturacion: 'Facturación', ebitda: 'EBITDA', num_trabajadores: 'Empleados',
+    email: 'Email', linkedin: 'LinkedIn', web: 'Web', cif: 'CIF', contacto: 'Contacto',
+    telefono: 'Teléfono', nombre_accionista: 'Accionista', notas: 'Notas',
+  };
+
+  // Dynamic column header renderer
+  const renderColumnHeader = useCallback((colKey: string) => {
+    const sortableMap: Record<string, 'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores'> = {
+      empresa: 'empresa',
+      facturacion: 'facturacion',
+      ebitda: 'ebitda',
+      num_trabajadores: 'num_trabajadores',
+    };
+    const sortKey = sortableMap[colKey];
+    const col = allColumns.find(c => c.key === colKey);
+    const label = col?.label || colKey;
+    const isRight = col?.align === 'right';
+
+    const isTextFilterCol = (TEXT_FILTER_COLUMNS as readonly string[]).includes(colKey);
+    const isKeywordFilterCol = (KEYWORD_FILTER_COLUMNS as readonly string[]).includes(colKey);
+    const isNumericFilterCol = !!NUMERIC_RANGES[colKey];
+    const activeFilters = columnFilters[colKey] || [];
+    const searchVal = headerSearches[colKey] || '';
+
+    if (isKeywordFilterCol) {
+      const matchCount = searchVal.trim()
+        ? companies.filter(c => ((c as any)[colKey] || '').toLowerCase().includes(searchVal.toLowerCase())).length
+        : 0;
+      return (
+        <Popover onOpenChange={(open) => { if (!open && !activeFilters.length) setHeaderSearches(prev => ({ ...prev, [colKey]: '' })); }}>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-1 hover:text-foreground">
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-0" align="start">
+            <div className="p-3 space-y-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por palabra clave..."
+                  value={searchVal}
+                  onChange={(e) => setHeaderSearches(prev => ({ ...prev, [colKey]: e.target.value }))}
+                  className="h-8 pl-7 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchVal.trim()) {
+                      const keyword = searchVal.trim();
+                      if (!activeFilters.includes(keyword)) {
+                        setColumnFilters(prev => ({
+                          ...prev,
+                          [colKey]: [...(prev[colKey] || []), keyword]
+                        }));
+                      }
+                      setHeaderSearches(prev => ({ ...prev, [colKey]: '' }));
+                    }
+                  }}
+                />
+              </div>
+              {searchVal.trim() && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{matchCount} empresas coinciden</span>
+                  <Button
+                    size="sm"
+                    className="h-6 text-xs px-2"
+                    onClick={() => {
+                      const keyword = searchVal.trim();
+                      if (keyword && !activeFilters.includes(keyword)) {
+                        setColumnFilters(prev => ({
+                          ...prev,
+                          [colKey]: [...(prev[colKey] || []), keyword]
+                        }));
+                      }
+                      setHeaderSearches(prev => ({ ...prev, [colKey]: '' }));
+                    }}
+                  >
+                    Añadir filtro
+                  </Button>
+                </div>
+              )}
+              {activeFilters.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1 border-t">
+                  {activeFilters.map(kw => (
+                    <Badge key={kw} variant="secondary" className="text-xs flex items-center gap-1">
+                      {kw}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => toggleColumnFilter(colKey, kw)}
+                      />
+                    </Badge>
+                  ))}
+                  <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1" onClick={() => clearColumnFilter(colKey)}>
+                    Limpiar todo
+                  </Button>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    if (isTextFilterCol) {
+      const values = uniqueColumnValues[colKey] || [];
+      const filtered = values.filter(v => v.toLowerCase().includes(searchVal.toLowerCase()));
+      return (
+        <Popover onOpenChange={(open) => { if (!open) setHeaderSearches(prev => ({ ...prev, [colKey]: '' })); }}>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-1 hover:text-foreground">
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="p-2 border-b">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder={`Buscar ${label.toLowerCase()}...`}
+                  value={searchVal}
+                  onChange={(e) => setHeaderSearches(prev => ({ ...prev, [colKey]: e.target.value }))}
+                  className="h-8 pl-7 text-sm"
+                />
+              </div>
+            </div>
+            <ScrollArea className="h-[220px]">
+              <div className="p-1">
+                {/* Presence filters */}
+                {(PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && (
+                  <>
+                    <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-muted-foreground">
+                      <Checkbox checked={activeFilters.includes('__has')} onCheckedChange={() => toggleColumnFilter(colKey, '__has')} />
+                      <span>Con dato</span>
+                    </label>
+                    <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-muted-foreground">
+                      <Checkbox checked={activeFilters.includes('__empty')} onCheckedChange={() => toggleColumnFilter(colKey, '__empty')} />
+                      <span>Sin dato</span>
+                    </label>
+                    {values.length > 0 && <div className="border-t my-1" />}
+                  </>
+                )}
+                {filtered.map((val) => (
+                  <label key={val} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                    <Checkbox
+                      checked={activeFilters.includes(val)}
+                      onCheckedChange={() => toggleColumnFilter(colKey, val)}
+                    />
+                    <span className="truncate">{val}</span>
+                  </label>
+                ))}
+                {filtered.length === 0 && !(PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && (
+                  <p className="text-xs text-muted-foreground text-center py-3">Sin resultados</p>
+                )}
+              </div>
+            </ScrollArea>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    if (isNumericFilterCol) {
+      const ranges = NUMERIC_RANGES[colKey];
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-1 hover:text-foreground", isRight && "ml-auto")}>
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              {sortKey && <SortIcon field={sortKey} />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-52 p-0" align="start">
+            {sortKey && (
+              <div className="p-2 border-b flex gap-1">
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('asc'); }}>
+                  <ArrowUp className="h-3 w-3 mr-1" /> Asc
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('desc'); }}>
+                  <ArrowDown className="h-3 w-3 mr-1" /> Desc
+                </Button>
+              </div>
+            )}
+            <div className="p-1">
+              {ranges.map((range) => (
+                <label key={range.label} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                  <Checkbox
+                    checked={activeFilters.includes(range.label)}
+                    onCheckedChange={() => toggleColumnFilter(colKey, range.label)}
+                  />
+                  {range.label}
+                </label>
+              ))}
+            </div>
+            {/* Custom range inputs */}
+            <div className="px-3 py-2 border-t">
+              <p className="text-[10px] text-muted-foreground mb-1.5 font-medium">Rango personalizado</p>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Mín"
+                  value={customRanges[colKey]?.min || ''}
+                  onChange={e => setCustomRanges(prev => ({ ...prev, [colKey]: { ...prev[colKey], min: e.target.value.replace(/[^\d.-]/g, ''), max: prev[colKey]?.max || '' } }))}
+                  className="h-7 text-xs flex-1"
+                />
+                <span className="text-muted-foreground text-xs">—</span>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Máx"
+                  value={customRanges[colKey]?.max || ''}
+                  onChange={e => setCustomRanges(prev => ({ ...prev, [colKey]: { min: prev[colKey]?.min || '', max: e.target.value.replace(/[^\d.-]/g, '') } }))}
+                  className="h-7 text-xs flex-1"
+                />
+                <Button
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => {
+                    const min = customRanges[colKey]?.min || '';
+                    const max = customRanges[colKey]?.max || '';
+                    if (!min && !max) return;
+                    const customLabel = `custom:${min || ''}-${max || ''}`;
+                    // Remove any existing custom range for this column
+                    setColumnFilters(prev => {
+                      const current = (prev[colKey] || []).filter(v => !v.startsWith('custom:'));
+                      return { ...prev, [colKey]: [...current, customLabel] };
+                    });
+                  }}
+                >
+                  Aplicar
+                </Button>
+              </div>
+            </div>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => { clearColumnFilter(colKey); setCustomRanges(prev => { const { [colKey]: _, ...rest } = prev; return rest; }); }}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    // Presence-only filter (for columns like email, linkedin, web that have no other filter type)
+    const isPresenceFilterCol = (PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && !isTextFilterCol && !isNumericFilterCol && !isKeywordFilterCol;
+    if (isPresenceFilterCol) {
+      const hasCount = companies.filter(c => { const v = (c as any)[colKey]; return v != null && v !== '' && String(v).trim() !== '' && String(v).trim() !== '—'; }).length;
+      const emptyCount = companies.length - hasCount;
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-1 hover:text-foreground", isRight && "ml-auto")}>
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              {sortKey && <SortIcon field={sortKey} />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-0" align="start">
+            {sortKey && (
+              <div className="p-2 border-b flex gap-1">
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('asc'); }}>
+                  <ArrowUp className="h-3 w-3 mr-1" /> Asc
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('desc'); }}>
+                  <ArrowDown className="h-3 w-3 mr-1" /> Desc
+                </Button>
+              </div>
+            )}
+            <div className="p-1">
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                <Checkbox checked={activeFilters.includes('__has')} onCheckedChange={() => toggleColumnFilter(colKey, '__has')} />
+                <span>Con dato</span>
+                <span className="ml-auto text-xs text-muted-foreground">{hasCount}</span>
+              </label>
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                <Checkbox checked={activeFilters.includes('__empty')} onCheckedChange={() => toggleColumnFilter(colKey, '__empty')} />
+                <span>Sin dato</span>
+                <span className="ml-auto text-xs text-muted-foreground">{emptyCount}</span>
+              </label>
+            </div>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    if (sortKey) {
+      return (
+        <button className={cn("flex items-center hover:text-foreground", isRight && "ml-auto")} onClick={() => toggleSort(sortKey)}>
+          {label} <SortIcon field={sortKey} />
+        </button>
+      );
+    }
+    return label;
+  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter, companies]);
 
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
@@ -1019,7 +2143,7 @@ export default function ContactListDetailPage() {
   const duplicateGroups = useMemo(() => {
     const groups: Record<string, ContactListCompany[]> = {};
     companies.forEach(c => {
-      const key = (c.empresa || '').trim().toLowerCase();
+      const key = (c.cif || '').trim().toLowerCase();
       if (!key) return;
       if (!groups[key]) groups[key] = [];
       groups[key].push(c);
@@ -1030,18 +2154,37 @@ export default function ContactListDetailPage() {
   const handleDedup = async () => {
     if (duplicateGroups.length === 0) return;
     const idsToDelete: string[] = [];
+    const getCompletenessScore = (c: ContactListCompany) =>
+      Object.values(c).filter(v => v !== null && v !== undefined && v !== '').length;
     for (const [, group] of duplicateGroups) {
-      const sorted = [...group].sort((a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
-      const toRemove = dedupKeep === 'newest' ? sorted.slice(0, -1) : sorted.slice(1);
+      // Deduplicate by actual id first (safety net for pagination ghosts)
+      const uniqueById = [...new Map(group.map(c => [c.id, c])).values()];
+      if (uniqueById.length <= 1) continue;
+      // Keep the most complete record; tie-break by newest
+      const sorted = [...uniqueById].sort((a, b) => {
+        const scoreDiff = getCompletenessScore(b) - getCompletenessScore(a);
+        if (scoreDiff !== 0) return scoreDiff;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      const [, ...toRemove] = sorted;
       toRemove.forEach(c => idsToDelete.push(c.id));
     }
-    if (idsToDelete.length === 0) return;
-    await deleteCompanies.mutateAsync(idsToDelete);
-    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
-    setIsDedupModalOpen(false);
-    toast.success(`${idsToDelete.length} duplicados eliminados`);
+    if (idsToDelete.length === 0) {
+      toast.info('No hay duplicados reales que eliminar.');
+      return;
+    }
+    setIsDedupLoading(true);
+    try {
+      await deleteCompanies.mutateAsync(idsToDelete);
+      await queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+      setIsDedupModalOpen(false);
+      toast.success(`${idsToDelete.length} duplicados eliminados`);
+    } catch (err) {
+      console.error('Error eliminando duplicados:', err);
+      toast.error('Error al eliminar duplicados. Inténtalo de nuevo.');
+    } finally {
+      setIsDedupLoading(false);
+    }
   };
 
   const handleEstadoChange = async (newEstado: string) => {
@@ -1071,10 +2214,14 @@ export default function ContactListDetailPage() {
           </Button>
           <div>
             {parentList && (
-              <div className="mb-1">
-                <Link to={`/admin/listas-contacto/${parentList.id}`} className="text-xs text-primary hover:underline flex items-center gap-1">
-                  <Link2 className="h-3 w-3" />
-                  Sublista de: {parentList.name}
+              <div className="mb-2 flex items-center gap-3">
+                <Link 
+                  to={`/admin/listas-contacto/${parentList.id}`} 
+                  className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <Layers className="h-4 w-4" />
+                  <span className="text-muted-foreground font-normal">Sublista de:</span>
+                  <span className="font-semibold">{parentList.name}</span>
                 </Link>
               </div>
             )}
@@ -1172,12 +2319,41 @@ export default function ContactListDetailPage() {
 
            {/* Bulk actions */}
           {selectedIds.length > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <span className="text-sm font-medium">{selectedIds.length} seleccionadas</span>
-              <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
-                <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
+            <div className="space-y-2">
+              {showSelectAllBanner && (
+                <div className="text-center py-2.5 px-4 bg-blue-50 border border-blue-300 rounded-lg text-sm text-blue-900">
+                  {allFilteredSelected ? (
+                    <>
+                      ✅ Las <strong>{filteredCompanies.length.toLocaleString('es-ES')}</strong> empresas del filtro actual están seleccionadas.{' '}
+                      <button className="text-blue-700 underline underline-offset-2 font-semibold hover:text-blue-900" onClick={() => setSelectedIds([])}>
+                        Borrar selección
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Has seleccionado <strong>{selectedIds.length}</strong> de <strong>{filteredCompanies.length.toLocaleString('es-ES')}</strong> empresas filtradas.{' '}
+                      <button className="text-blue-700 underline underline-offset-2 font-semibold hover:text-blue-900" onClick={handleSelectAllFiltered}>
+                        Seleccionar las {filteredCompanies.length.toLocaleString('es-ES')} empresas
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg flex-wrap">
+                <span className="text-sm font-medium">{selectedIds.length.toLocaleString('es-ES')} seleccionadas</span>
+                {!isMadreList && (
+                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
+                    <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
+                  <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
+              </div>
             </div>
           )}
 
@@ -1225,6 +2401,58 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
+            {hasAnyColumnFilter && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {Object.entries(columnFilters).map(([colKey, values]) =>
+                  values.map(val => {
+                    let displayVal = val;
+                    if (val === '__has') displayVal = 'Con dato';
+                    else if (val === '__empty') displayVal = 'Sin dato';
+                    else if (val.startsWith('custom:')) {
+                      const parts = val.slice(7).split('-');
+                      const fmtNum = (n: string) => {
+                        if (!n) return '';
+                        const num = Number(n);
+                        if (isNaN(num)) return n;
+                        if (Math.abs(num) >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+                        if (Math.abs(num) >= 1_000) return `${(num / 1_000).toFixed(0)}K`;
+                        return n;
+                      };
+                      const suffix = colKey === 'num_trabajadores' ? '' : '€';
+                      const minStr = parts[0] ? `${fmtNum(parts[0])}${suffix}` : '';
+                      const maxStr = parts[1] ? `${fmtNum(parts[1])}${suffix}` : '';
+                      if (minStr && maxStr) displayVal = `${minStr} - ${maxStr}`;
+                      else if (minStr) displayVal = `≥ ${minStr}`;
+                      else if (maxStr) displayVal = `≤ ${maxStr}`;
+                    }
+                    return (
+                      <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
+                        <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {displayVal}
+                        <button
+                          onClick={() => {
+                            toggleColumnFilter(colKey, val);
+                            if (val.startsWith('custom:')) {
+                              setCustomRanges(prev => { const { [colKey]: _, ...rest } = prev; return rest; });
+                            }
+                          }}
+                          className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={clearAllColumnFilters}
+                >
+                  Limpiar todo
+                </Button>
+              </div>
+            )}
             {isMadreList && (
               <Button
                 variant={groupBlocked ? 'default' : 'outline'}
@@ -1236,7 +2464,7 @@ export default function ContactListDetailPage() {
                 {groupBlocked ? 'Agrupada' : 'Unificada'}
               </Button>
             )}
-            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || hasAnyColumnFilter) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
@@ -1255,6 +2483,13 @@ export default function ContactListDetailPage() {
                 )}
               </Button>
             )}
+            <ListColumnConfigurator
+              columns={allColumns}
+              onToggle={toggleColumn}
+              onMove={moveColumn}
+              onReset={resetToDefault}
+              isMadreList={isMadreList}
+            />
           </div>
           {/* Companies table */}
           <Card>
@@ -1273,137 +2508,71 @@ export default function ContactListDetailPage() {
                   <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
               ) : (
+                <>
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10">
-                          <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
-                        </TableHead>
-                        <TableHead>
-                          <button className="flex items-center hover:text-foreground" onClick={() => toggleSort('empresa')}>
-                            Empresa <SortIcon field="empresa" />
-                          </button>
-                        </TableHead>
-                        {isMadreList && <TableHead>Sublistas</TableHead>}
-                        <TableHead>CIF</TableHead>
-                        <TableHead>Contacto</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>LinkedIn</TableHead>
-                        <TableHead>Director Ejecutivo</TableHead>
-                        <TableHead>Web</TableHead>
-                        <TableHead>Provincia</TableHead>
-                        <TableHead className="text-right">
-                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('facturacion')}>
-                            Facturación <SortIcon field="facturacion" />
-                          </button>
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('ebitda')}>
-                            EBITDA <SortIcon field="ebitda" />
-                          </button>
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('num_trabajadores')}>
-                            Empleados <SortIcon field="num_trabajadores" />
-                          </button>
-                        </TableHead>
-                        <TableHead className="min-w-[160px]">Notas</TableHead>
-                        <TableHead className="w-12" />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(() => {
-                        let separatorRendered = false;
-                        return filteredCompanies.map(company => {
-                          const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
-                          // Render separator row before first assigned company
-                          let separatorRow = null;
-                          if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
-                            separatorRendered = true;
-                            const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
-                            separatorRow = (
-                              <TableRow key="__separator__" className="hover:bg-transparent border-b-0">
-                                <TableCell colSpan={100} className="py-2 px-3">
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <Lock className="h-3 w-3" />
-                                    <span className="font-medium">Asignadas a sublistas ({assignedCount})</span>
-                                    <div className="flex-1 h-px bg-border" />
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          }
-                          return (
-                            <React.Fragment key={company.id}>
-                              {separatorRow}
-                              <TableRow className={cn(
-                                "group/row",
-                                isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
-                              )}>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
-                          </TableCell>
-                          <TableCell>
-                            <button className="text-sm font-medium hover:underline text-left flex items-center gap-1.5" onClick={() => setDrawerCompany(company)}>
-                              {isAssignedToSublist && <Lock className="h-3 w-3 text-amber-500 flex-shrink-0" />}
-                              {company.empresa}
-                            </button>
-                          </TableCell>
-                          {isMadreList && (
-                            <TableCell>
-                              {company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim()) ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {sublistCompanyMap.map.get(company.cif.toUpperCase().trim())!.map(name => (
-                                    <Badge key={name} variant="outline" size="sm" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[11px] gap-1">
-                                      <ArrowRight className="h-3 w-3" />
-                                      {name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-xs">—</span>
-                              )}
-                            </TableCell>
-                          )}
-                          <TableCell className="text-sm text-muted-foreground">{company.cif || '—'}</TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} linkType="email" />
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} linkType="url" />
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {company.web ? (
-                              <a
-                                href={company.web.startsWith('http') ? company.web : `https://${company.web}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={e => e.stopPropagation()}
-                                className="hover:text-primary flex items-center gap-1 transition-colors"
-                              >
-                                <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
-                                <span className="truncate max-w-[150px]">{company.web.replace(/^https?:\/\/(www\.)?/, '')}</span>
-                              </a>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{company.provincia || '—'}</TableCell>
-                          <TableCell className="text-right text-sm tabular-nums">
-                            {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
-                          </TableCell>
-                          <TableCell className="text-right text-sm tabular-nums">
-                            {company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}
-                          </TableCell>
-                          <TableCell className="text-right text-sm tabular-nums">
-                            {company.num_trabajadores ?? '—'}
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />
-                          </TableCell>
+                     <TableHeader>
+                       <TableRow>
+                         <TableHead className="w-10">
+                           <Checkbox checked={paginatedCompanies.length > 0 && paginatedCompanies.every(c => selectedIds.includes(c.id))} onCheckedChange={handleSelectAll} />
+                         </TableHead>
+                         {visibleCols.map(col => (
+                           <TableHead
+                             key={col.key}
+                             className={cn(
+                               col.align === 'right' && 'text-right',
+                               col.minWidth && `min-w-[${col.minWidth}]`
+                             )}
+                           >
+                             {renderColumnHeader(col.key)}
+                           </TableHead>
+                         ))}
+                         <TableHead className="w-12" />
+                       </TableRow>
+                     </TableHeader>
+                     <TableBody>
+                       {(() => {
+                         let separatorRendered = false;
+                         return paginatedCompanies.map(company => {
+                           const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
+                           let separatorRow = null;
+                           if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
+                             separatorRendered = true;
+                             const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
+                             separatorRow = (
+                               <TableRow key="__separator__" className="hover:bg-transparent border-b-0">
+                                 <TableCell colSpan={100} className="py-2 px-3">
+                                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                     <Lock className="h-3 w-3" />
+                                     <span className="font-medium">Asignadas a sublistas ({assignedCount})</span>
+                                     <div className="flex-1 h-px bg-border" />
+                                   </div>
+                                 </TableCell>
+                               </TableRow>
+                             );
+                           }
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador', 'tipo_accionista', 'nombre_accionista']);
+                           return (
+                             <React.Fragment key={company.id}>
+                               {separatorRow}
+                                <TableRow className={cn(
+                                  "group/row",
+                                  (company as any).consolidador
+                                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-l-2 border-l-emerald-500"
+                                    : isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
+                                )}>
+                           <TableCell onClick={e => e.stopPropagation()}>
+                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
+                           </TableCell>
+                           {visibleCols.map(col => (
+                             <TableCell
+                               key={col.key}
+                               className={cn(col.align === 'right' && 'text-right')}
+                               onClick={needsStopPropagation.has(col.key) ? (e) => e.stopPropagation() : undefined}
+                             >
+                               {renderColumnCell(col.key, company, !!isAssignedToSublist)}
+                             </TableCell>
+                           ))}
                           <TableCell onClick={e => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -1428,6 +2597,7 @@ export default function ContactListDetailPage() {
                                             setMoveCopyMode('move');
                                             setMoveCopyTargetId('');
                                             setMoveCopyFromSublistId(currentSublistId || null);
+                                            setMoveCopySectorFilter(list?.lista_madre_id || '');
                                           }}>
                                             <ArrowUpDown className="h-4 w-4 mr-2" /> Cambiar de sublista
                                           </DropdownMenuItem>
@@ -1440,12 +2610,14 @@ export default function ContactListDetailPage() {
                                     <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                                       <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
-                                      <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
-                                    </DropdownMenuItem>
+                                    {!isMadreList && (
+                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
+                                        <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
+                                      </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
                                       {aiGenLoading === company.id ? (
                                         <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
@@ -1455,7 +2627,7 @@ export default function ContactListDetailPage() {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       className="text-destructive focus:text-destructive"
-                                      onClick={() => deleteCompany.mutate(company.id)}
+                                      onClick={() => { setDeleteTargetIds([company.id]); setDeleteDialogOpen(true); }}
                                     >
                                       <Trash2 className="h-4 w-4 mr-2" /> Eliminar
                                     </DropdownMenuItem>
@@ -1472,6 +2644,37 @@ export default function ContactListDetailPage() {
                     </TableBody>
                   </Table>
                 </div>
+                {filteredCompanies.length > pageSize && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>Mostrando {(currentPage * pageSize + 1).toLocaleString('es-ES')}–{Math.min((currentPage + 1) * pageSize, filteredCompanies.length).toLocaleString('es-ES')} de {filteredCompanies.length.toLocaleString('es-ES')}</span>
+                      <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(0); }}>
+                        <SelectTrigger className="h-8 w-[80px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="250">250</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span>por página</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)}>
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Página {currentPage + 1} de {totalPages}
+                      </span>
+                      <Button variant="outline" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(p => p + 1)}>
+                        Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -1614,32 +2817,62 @@ export default function ContactListDetailPage() {
               </div>
               <div>
                 <Label>Lista madre</Label>
-                <Select value={configListaMadreId || '__none__'} onValueChange={(v) => setConfigListaMadreId(v === '__none__' ? '' : v)}>
-                  <SelectTrigger><SelectValue placeholder="Sin lista madre" /></SelectTrigger>
-                  <SelectContent className="bg-background">
-                    <SelectItem value="__none__">Ninguna</SelectItem>
-                    {allLists.map((l: any) => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {configListaMadreId
+                        ? allLists.find((l: any) => l.id === configListaMadreId)?.name || 'Lista seleccionada'
+                        : 'Ninguna'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar lista..." />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="__none__"
+                            onSelect={() => setConfigListaMadreId('')}
+                          >
+                            <Check className={`mr-2 h-4 w-4 ${!configListaMadreId ? 'opacity-100' : 'opacity-0'}`} />
+                            Ninguna
+                          </CommandItem>
+                          {allLists.map((l: any) => (
+                            <CommandItem
+                              key={l.id}
+                              value={l.name}
+                              onSelect={() => setConfigListaMadreId(l.id)}
+                            >
+                              <Check className={`mr-2 h-4 w-4 ${configListaMadreId === l.id ? 'opacity-100' : 'opacity-0'}`} />
+                              {l.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <Button onClick={handleSaveConfig}>Guardar cambios</Button>
             </CardContent>
           </Card>
 
-          <Card className="border-destructive/50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <h3 className="font-medium text-destructive">Zona peligrosa</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">Eliminar esta lista y todas las empresas asociadas. Esta acción no se puede deshacer.</p>
-              <Button variant="destructive" onClick={handleDeleteList}>
-                <Trash2 className="h-4 w-4 mr-2" /> Eliminar lista
-              </Button>
-            </CardContent>
-          </Card>
+          {role === 'super_admin' && (
+            <Card className="border-destructive/50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <h3 className="font-medium text-destructive">Zona peligrosa</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Eliminar esta lista y todas las empresas asociadas. Esta acción no se puede deshacer.</p>
+                <Button variant="destructive" onClick={handleDeleteList}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar lista
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -1729,12 +2962,29 @@ export default function ContactListDetailPage() {
               {importData.length > 5 && <p className="text-xs text-muted-foreground">...y {importData.length - 5} filas más</p>}
             </div>
           )}
+          {/* Validation progress */}
+          {isValidating && validationProgress && (
+            <div className="space-y-2 px-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{validationProgress.step}</span>
+                <span>{validationProgress.percent}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${validationProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
+            <Button variant="outline" onClick={handleCloseImport} disabled={isValidating}>Cancelar</Button>
             {importData.length > 0 && (
               <Button onClick={handleStartValidation} disabled={isValidating}>
                 {isValidating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {isValidating ? 'Validando empresas...' : `Validar ${importData.length} empresas`}
+                {isValidating
+                  ? (validationProgress?.step || 'Validando empresas...')
+                  : `Validar ${importData.length.toLocaleString()} empresas`}
               </Button>
             )}
           </DialogFooter>
@@ -1813,7 +3063,7 @@ export default function ContactListDetailPage() {
       )}
 
       {/* Company Drawer */}
-      <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} />
+      <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} dataScale={dataScale} />
 
       {/* Dedup Modal */}
       <Dialog open={isDedupModalOpen} onOpenChange={setIsDedupModalOpen}>
@@ -1823,8 +3073,8 @@ export default function ContactListDetailPage() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Se han encontrado <strong>{duplicateGroups.length}</strong> empresas duplicadas (por nombre).
-              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros.
+              Se han encontrado <strong>{duplicateGroups.length}</strong> CIFs duplicados.
+              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros redundantes.
             </p>
             <div>
               <Label className="mb-2 block">¿Qué registro conservar?</Label>
@@ -1839,25 +3089,28 @@ export default function ContactListDetailPage() {
               </Select>
             </div>
             <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
-              {duplicateGroups.map(([name, group]) => (
-                <div key={name} className="flex justify-between text-sm">
-                  <span className="truncate font-medium">{group[0].empresa}</span>
+              {duplicateGroups.map(([cif, group]) => (
+                <div key={cif} className="flex justify-between text-sm">
+                  <span className="truncate">
+                    <span className="font-medium">{group[0].empresa}</span>
+                    <span className="text-muted-foreground ml-1">({group[0].cif})</span>
+                  </span>
                   <Badge variant="secondary" className="ml-2 flex-shrink-0">{group.length}x</Badge>
                 </div>
               ))}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleDedup}>
-              Eliminar duplicados
+            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)} disabled={isDedupLoading}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDedup} disabled={isDedupLoading}>
+              {isDedupLoading ? 'Eliminando...' : 'Eliminar duplicados'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); } }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); setMoveCopySectorFilter(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -1870,23 +3123,82 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
-                <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {moveCopyFromSublistId && sublistCompanyMap?.sublists
-                      ? sublistCompanyMap.sublists
-                          .filter(s => s.id !== moveCopyFromSublistId)
-                          .map(s => (
-                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                          ))
-                      : allLists.map((l: any) => (
-                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                        ))
-                    }
-                  </SelectContent>
-                </Select>
+                {!moveCopyFromSublistId && uniqueMadres.length > 0 && (
+                    <Popover open={moveCopySectorPopoverOpen} onOpenChange={setMoveCopySectorPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between">
+                          {moveCopySectorFilter ? uniqueMadres.find(m => m.id === moveCopySectorFilter)?.name || 'Lista Madre' : 'Todas las listas madre'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Buscar lista madre..." value={moveCopySectorSearch} onValueChange={setMoveCopySectorSearch} />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron listas madre</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem value="all" onSelect={() => { setMoveCopySectorFilter(''); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                <Check className={cn("mr-2 h-4 w-4", !moveCopySectorFilter ? "opacity-100" : "opacity-0")} />
+                                Todas las listas madre
+                              </CommandItem>
+                              {uniqueMadres.filter(m => m.name.toLowerCase().includes(moveCopySectorSearch.toLowerCase())).map(m => (
+                                <CommandItem key={m.id} value={m.id} onSelect={() => { setMoveCopySectorFilter(m.id); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", moveCopySectorFilter === m.id ? "opacity-100" : "opacity-0")} />
+                                  {m.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                )}
+                <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between">
+                      {moveCopyTargetId
+                        ? (() => {
+                            if (moveCopyFromSublistId && sublistCompanyMap?.sublists) {
+                              return sublistCompanyMap.sublists.find(s => s.id === moveCopyTargetId)?.name;
+                            }
+                            return allLists.find((l: any) => l.id === moveCopyTargetId)?.name;
+                          })() || 'Seleccionar...'
+                        : (moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino...")}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput placeholder="Buscar lista..." value={moveCopySearchTerm} onValueChange={setMoveCopySearchTerm} />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          {(moveCopyFromSublistId && sublistCompanyMap?.sublists
+                            ? sublistCompanyMap.sublists
+                                .filter(s => s.id !== moveCopyFromSublistId)
+                                .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                            : allLists
+                                .filter((l: any) => !moveCopySectorFilter || l.lista_madre_id === moveCopySectorFilter)
+                                .filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                          ).map((item: any) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.id}
+                              onSelect={() => { setMoveCopyTargetId(item.id); setMoveCopyPopoverOpen(false); setMoveCopySearchTerm(''); }}
+                              className="cursor-pointer"
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", moveCopyTargetId === item.id ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col">
+                                <span>{item.name}</span>
+                                {item.sector && <span className="text-xs text-muted-foreground">{item.sector}</span>}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 {!moveCopyFromSublistId && (
                   <button
                     type="button"
@@ -1916,7 +3228,7 @@ export default function ContactListDetailPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); }}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); setMoveCopySectorFilter(''); }}>Cancelar</Button>
             <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
               {isMoveCopyLoading ? 'Procesando...' : moveCopyFromSublistId ? 'Reasignar' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
@@ -1924,7 +3236,122 @@ export default function ContactListDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Sublist Conflict AlertDialog */}
+      {/* Bulk Move/Copy Modal */}
+      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'} {selectedIds.length.toLocaleString('es-ES')} empresas a otra lista
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{selectedIds.length.toLocaleString('es-ES')}</strong> empresas seleccionadas a:
+            </p>
+            {!bulkIsCreatingNewList ? (
+              <>
+                {uniqueMadres.length > 0 && (
+                    <Popover open={bulkMoveCopySectorPopoverOpen} onOpenChange={setBulkMoveCopySectorPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between">
+                          {bulkMoveCopySectorFilter ? uniqueMadres.find(m => m.id === bulkMoveCopySectorFilter)?.name || 'Lista Madre' : 'Todas las listas madre'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Buscar lista madre..." value={bulkMoveCopySectorSearch} onValueChange={setBulkMoveCopySectorSearch} />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron listas madre</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem value="all" onSelect={() => { setBulkMoveCopySectorFilter(''); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                <Check className={cn("mr-2 h-4 w-4", !bulkMoveCopySectorFilter ? "opacity-100" : "opacity-0")} />
+                                Todas las listas madre
+                              </CommandItem>
+                              {uniqueMadres.filter(m => m.name.toLowerCase().includes(bulkMoveCopySectorSearch.toLowerCase())).map(m => (
+                                <CommandItem key={m.id} value={m.id} onSelect={() => { setBulkMoveCopySectorFilter(m.id); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", bulkMoveCopySectorFilter === m.id ? "opacity-100" : "opacity-0")} />
+                                  {m.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                )}
+                <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between">
+                      {bulkMoveCopyTargetId
+                        ? allLists.find((l: any) => l.id === bulkMoveCopyTargetId)?.name || 'Seleccionar...'
+                        : "Seleccionar lista destino..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput placeholder="Buscar lista..." value={bulkMoveCopySearchTerm} onValueChange={setBulkMoveCopySearchTerm} />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          {allLists
+                            .filter((l: any) => !bulkMoveCopySectorFilter || l.lista_madre_id === bulkMoveCopySectorFilter)
+                            .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
+                            .map((l: any) => (
+                              <CommandItem
+                                key={l.id}
+                                value={l.id}
+                                onSelect={() => { setBulkMoveCopyTargetId(l.id); setBulkMoveCopyPopoverOpen(false); setBulkMoveCopySearchTerm(''); }}
+                                className="cursor-pointer"
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", bulkMoveCopyTargetId === l.id ? "opacity-100" : "opacity-0")} />
+                                <div className="flex flex-col">
+                                  <span>{l.name}</span>
+                                  {l.sector && <span className="text-xs text-muted-foreground">{l.sector}</span>}
+                                </div>
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setBulkIsCreatingNewList(true); setBulkMoveCopyTargetId(''); }}
+                >
+                  + Crear nueva lista
+                </button>
+              </>
+            ) : (
+              <>
+                <Input
+                  placeholder="Nombre de la nueva lista..."
+                  value={bulkNewListName}
+                  onChange={(e) => setBulkNewListName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setBulkIsCreatingNewList(false); setBulkNewListName(''); }}
+                >
+                  ← Seleccionar lista existente
+                </button>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>Cancelar</Button>
+            <Button onClick={handleBulkMoveCopy} disabled={(!bulkIsCreatingNewList && !bulkMoveCopyTargetId) || (bulkIsCreatingNewList && !bulkNewListName.trim()) || bulkMoveCopyLoading}>
+              {bulkMoveCopyLoading ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Procesando...</> : bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!sublistConflict} onOpenChange={(open) => { if (!open) { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1949,6 +3376,15 @@ export default function ContactListDetailPage() {
         companies={selectedIds.length > 0 ? companies.filter(c => selectedIds.includes(c.id)) : companies}
         listId={listId!}
         listName={list?.name || ''}
+      />
+
+      {/* Delete Companies Dialog */}
+      <DeleteCompaniesDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        count={deleteTargetIds.length}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
       />
     </div>
   );
@@ -2119,8 +3555,8 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
 }
 
 // ===== COMPANY DRAWER =====
-function CompanyDrawer({ company, onClose, onEdit }: {
-  company: ContactListCompany | null; onClose: () => void; onEdit: () => void;
+function CompanyDrawer({ company, onClose, onEdit, dataScale = 1000 }: {
+  company: ContactListCompany | null; onClose: () => void; onEdit: () => void; dataScale?: number;
 }) {
   const { data: history = [], isLoading } = useCompanyListHistory(company?.empresa);
 
@@ -2136,8 +3572,8 @@ function CompanyDrawer({ company, onClose, onEdit }: {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground">CIF:</span> <span className="ml-1">{company.cif || '—'}</span></div>
                 <div><span className="text-muted-foreground">Año datos:</span> <span className="ml-1">{company.anios_datos || '—'}</span></div>
-                <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span></div>
-                <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Math.round(Number(company.facturacion) * dataScale).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Math.round(Number(company.ebitda) * dataScale).toLocaleString('es-ES')}` : '—'}</span></div>
                 <div><span className="text-muted-foreground">Empleados:</span> <span className="ml-1">{company.num_trabajadores ?? '—'}</span></div>
                 <div><span className="text-muted-foreground">Director Ejecutivo:</span> <span className="ml-1">{company.director_ejecutivo || '—'}</span></div>
                 <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>

@@ -14,7 +14,7 @@ import { VirtualizedTable } from '@/components/shared/VirtualizedTable';
 import type { Column } from '@/components/shared/VirtualizedTable';
 import { formatCurrency } from '@/shared/utils/format';
 import { formatDate } from '@/shared/utils/date';
-import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3, Kanban, User, X } from 'lucide-react';
+import { Loader2, Plus, Pencil, Download, Search, Filter, Eye, Calendar, Hash, ChevronDown, Building2, MoreVertical, Copy, Archive, FileText, Trash2, BarChart3, User, X } from 'lucide-react';
 import { OperationsStatsCards } from '@/components/operations/OperationsStatsCards';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OperationFilters, OperationFiltersType } from '@/components/operations/OperationFilters';
@@ -45,9 +45,11 @@ import { AdvancedSearchPanel } from '@/features/operations-management/components
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import * as XLSX from 'xlsx';
 
+import { GenerateDealhubModal } from '@/features/operations-management/components/GenerateDealhubModal';
+
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
   sector: string;
   subsector?: string;
   description: string;
@@ -71,6 +73,7 @@ interface Operation {
   assigned_at?: string | null;
   project_status?: string;
   expected_market_text?: string;
+  is_marketplace_visible?: boolean;
 }
 
 const AdminOperations = () => {
@@ -89,6 +92,7 @@ const AdminOperations = () => {
   const [selectedOperations, setSelectedOperations] = useState<Set<string>>(new Set());
   const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
   const [showSellerGuide, setShowSellerGuide] = useState(false);
+  const [showDealhubModal, setShowDealhubModal] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showProjectStatusModal, setShowProjectStatusModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -1005,9 +1009,23 @@ const AdminOperations = () => {
       },
     },
     {
+      key: 'marketplace',
+      title: '🏪 MARKETPLACE',
+      width: 100,
+      render: (operation: Operation) => (
+        <div className="flex items-center justify-center">
+          <Switch
+            checked={operation.is_marketplace_visible ?? false}
+            onCheckedChange={(checked) => handleQuickUpdate(operation.id, 'is_marketplace_visible', checked)}
+            aria-label="Visible en marketplace"
+          />
+        </div>
+      ),
+    },
+    {
       key: 'actions',
       title: 'ACCIONES',
-      width: 120,  
+      width: 120,
       render: (operation: Operation) => (
         <div className="flex items-center gap-1">
           <Button
@@ -1093,14 +1111,6 @@ const AdminOperations = () => {
             Dashboard
           </Button>
           <Button
-            onClick={() => navigate('/admin/operations/kanban')}
-            variant="outline"
-            className="border-purple-200 hover:bg-purple-50 text-purple-600"
-          >
-            <Kanban className="h-4 w-4 mr-2" />
-            Vista Kanban
-          </Button>
-          <Button
             onClick={() => setShowAdvancedSearch(true)}
             variant="outline"
             className="border-blue-200 hover:bg-blue-50 text-blue-600"
@@ -1115,6 +1125,14 @@ const AdminOperations = () => {
           >
             <FileText className="h-4 w-4 mr-2" />
             Guía de Publicación
+          </Button>
+          <Button
+            onClick={() => setShowDealhubModal(true)}
+            variant="outline"
+            className="border-primary/20 hover:bg-primary/5 text-primary"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generar Catálogo ROD
           </Button>
           <Button
             onClick={extractFinancialData}
@@ -1774,6 +1792,17 @@ const AdminOperations = () => {
                     />
                     <Label htmlFor="is_featured" className="text-xs text-gray-700 font-medium">Operación Destacada</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_marketplace_visible"
+                      checked={editingOperation.is_marketplace_visible ?? false}
+                      onCheckedChange={(checked) => setEditingOperation({
+                        ...editingOperation,
+                        is_marketplace_visible: checked
+                      })}
+                    />
+                    <Label htmlFor="is_marketplace_visible" className="text-xs text-gray-700 font-medium">🏪 Visible en Marketplace</Label>
+                  </div>
                 </div>
               </div>
 
@@ -1844,6 +1873,13 @@ const AdminOperations = () => {
         users={adminUsers}
         onConfirm={handleBulkAssign}
         isLoading={isBulkUpdating}
+      />
+
+
+      <GenerateDealhubModal
+        open={showDealhubModal}
+        onOpenChange={setShowDealhubModal}
+        operations={operations}
       />
     </div>
   );

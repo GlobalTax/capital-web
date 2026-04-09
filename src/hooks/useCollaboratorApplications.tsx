@@ -27,7 +27,7 @@ export const useCollaboratorApplications = () => {
       const trackingData = await getTrackingData();
 
       // Insertar en Supabase principal
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('collaborator_applications')
         .insert({
           full_name: applicationData.fullName.trim(),
@@ -37,15 +37,8 @@ export const useCollaboratorApplications = () => {
           profession: applicationData.profession.trim(),
           experience: applicationData.experience?.trim() || null,
           motivation: applicationData.motivation?.trim() || null,
-          ip_address: trackingData.ip_address,
           user_agent: trackingData.user_agent,
-          utm_source: trackingData.utm_source,
-          utm_medium: trackingData.utm_medium,
-          utm_campaign: trackingData.utm_campaign,
-          referrer: trackingData.referrer,
-        })
-        .select()
-        .single();
+        });
 
       if (error) {
         throw error;
@@ -58,7 +51,6 @@ export const useCollaboratorApplications = () => {
       try {
         await supabase.functions.invoke('send-form-notifications', {
           body: {
-            submissionId: data.id,
             formType: 'collaborator',
             email: applicationData.email,
             fullName: applicationData.fullName,
@@ -79,7 +71,7 @@ export const useCollaboratorApplications = () => {
           body: {
             type: 'collaborator',
             data: {
-              ...data,
+              ...applicationData,
               ...trackingData,
               source: 'web-collaborators'
             }
@@ -100,7 +92,7 @@ export const useCollaboratorApplications = () => {
         description: "Hemos recibido tu solicitud para el programa de colaboradores. Te contactaremos pronto.",
       });
 
-      return data;
+      return { success: true };
     } catch (error) {
       console.error('Error enviando solicitud de colaborador:', error);
       toast({

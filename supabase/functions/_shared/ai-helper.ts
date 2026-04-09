@@ -1,10 +1,10 @@
 /**
- * AI Helper - Hybrid AI System v2
- * Supports OpenAI + Lovable AI with:
+ * AI Helper - Hybrid AI System v3
+ * Supports Anthropic Claude + Lovable AI + OpenAI with:
  * - Tool calling (tools/tool_choice)
  * - Vision (image_url content)
  * - Auto-logging to ai_usage_logs
- * - Automatic fallback between services
+ * - Automatic fallback: Claude → Lovable AI → OpenAI
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -33,6 +33,7 @@ export interface AITool {
 
 export interface AIConfig {
   preferOpenAI?: boolean;
+  preferAnthropic?: boolean;
   model?: string;
   temperature?: number;
   maxTokens?: number;
@@ -48,7 +49,7 @@ export interface AIResponse {
   tokensUsed: number;
   tokensInput?: number;
   tokensOutput?: number;
-  provider: 'openai' | 'lovable';
+  provider: 'openai' | 'lovable' | 'anthropic';
   model: string;
   durationMs: number;
 }
@@ -64,9 +65,11 @@ export interface AIToolCall {
 
 // ─── Constants ───────────────────────────────────────────────────────
 
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const LOVABLE_AI_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
+const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 const DEFAULT_LOVABLE_MODEL = 'google/gemini-2.5-flash';
 const DEFAULT_OPENAI_MODEL = 'gpt-4o-mini';
 
@@ -110,6 +113,136 @@ function extractResponse(data: Record<string, unknown>, provider: 'lovable' | 'o
   return response;
 }
 
+// ─── Anthropic (Claude) ─────────────────────────────────────────────
+
+async function callAnthropic(messages: AIMessage[], config?: AIConfig): Promise<AIResponse> {
+  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+  if (!anthropicKey) throw new Error('ANTHROPIC_API_KEY not configured');
+
+  const startTime = Date.now();
+  const model = config?.model && !config.model.startsWith('google/') && !config.model.startsWith('gpt')
+    ? config.model
+    : DEFAULT_ANTHROPIC_MODEL;
+
+  // Separate system prompt from user/assistant messages (Anthropic API format)
+  let systemPrompt: string | undefined;
+  const anthropicMessages: Array<{ role: string; content: string | any[] }> = [];
+
+  for (const msg of messages) {
+    if (msg.role === 'system') {
+      systemPrompt = typeof msg.content === 'string' ? msg.content : msg.content.map(p => p.text || '').join('\n');
+    } else {
+      let content: string | any[];
+      if (typeof msg.content === 'string') {
+        content = msg.content;
+      } else {
+        // Convert content parts to Anthropic format
+        content = msg.content.map(part => {
+          if (part.type === 'text') {
+            return { type: 'text', text: part.text || '' };
+          }
+          if (part.type === 'image_url' && part.image_url?.url) {
+            // Anthropic uses base64 images differently
+            const url = part.image_url.url;
+            if (url.startsWith('data:')) {
+              const match = url.match(/^data:(.*?);base64,(.*)$/);
+              if (match) {
+                return {
+                  type: 'image',
+                  source: { type: 'base64', media_type: match[1], data: match[2] }
+                };
+              }
+            }
+            return { type: 'image', source: { type: 'url', url } };
+          }
+          return { type: 'text', text: '' };
+        });
+      }
+      anthropicMessages.push({ role: msg.role, content });
+    }
+  }
+
+  const body: Record<string, unknown> = {
+    model,
+    messages: anthropicMessages,
+    max_tokens: config?.maxTokens || 4096,
+    temperature: config?.temperature ?? 0.3,
+  };
+
+  if (systemPrompt) body.system = systemPrompt;
+
+  // Map tools to Anthropic format
+  if (config?.tools) {
+    body.tools = config.tools.map(t => ({
+      name: t.function.name,
+      description: t.function.description,
+      input_schema: t.function.parameters,
+    }));
+  }
+  if (config?.tool_choice && typeof config.tool_choice === 'object' && 'function' in config.tool_choice) {
+    body.tool_choice = { type: 'tool', name: config.tool_choice.function.name };
+  }
+
+  const response = await fetch(ANTHROPIC_URL, {
+    method: 'POST',
+    headers: {
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[AI Helper] Anthropic error:', response.status, errorText);
+    if (response.status === 429) throw new Error('RATE_LIMITED');
+    throw new Error(`Anthropic error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  const durationMs = Date.now() - startTime;
+
+  // Extract content from Anthropic response format
+  let textContent = '';
+  const toolCalls: AIToolCall[] = [];
+
+  if (data.content) {
+    for (const block of data.content) {
+      if (block.type === 'text') {
+        textContent += block.text;
+      } else if (block.type === 'tool_use') {
+        toolCalls.push({
+          id: block.id,
+          type: 'function',
+          function: {
+            name: block.name,
+            arguments: JSON.stringify(block.input),
+          },
+        });
+      }
+    }
+  }
+
+  const result: AIResponse = {
+    content: textContent,
+    tokensUsed: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
+    tokensInput: data.usage?.input_tokens || 0,
+    tokensOutput: data.usage?.output_tokens || 0,
+    provider: 'anthropic',
+    model,
+    durationMs,
+  };
+
+  if (toolCalls.length > 0) {
+    result.toolCalls = toolCalls;
+  }
+
+  return result;
+}
+
+// ─── Lovable AI ─────────────────────────────────────────────────────
+
 async function callLovableAI(messages: AIMessage[], config?: AIConfig): Promise<AIResponse> {
   const lovableKey = Deno.env.get('LOVABLE_API_KEY');
   if (!lovableKey) throw new Error('LOVABLE_API_KEY not configured');
@@ -118,7 +251,7 @@ async function callLovableAI(messages: AIMessage[], config?: AIConfig): Promise<
   const model = config?.model || DEFAULT_LOVABLE_MODEL;
   const body = buildRequestBody(messages, config, 'lovable');
   // Override model for lovable
-  body.model = model.startsWith('gpt') ? DEFAULT_LOVABLE_MODEL : model;
+  body.model = model.startsWith('gpt') || model.startsWith('claude') ? DEFAULT_LOVABLE_MODEL : model;
 
   const response = await fetch(LOVABLE_AI_URL, {
     method: 'POST',
@@ -141,6 +274,8 @@ async function callLovableAI(messages: AIMessage[], config?: AIConfig): Promise<
   return extractResponse(data, 'lovable', body.model as string, Date.now() - startTime);
 }
 
+// ─── OpenAI ─────────────────────────────────────────────────────────
+
 async function callOpenAI(messages: AIMessage[], config?: AIConfig): Promise<AIResponse> {
   const openaiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiKey) throw new Error('OPENAI_API_KEY not configured');
@@ -149,7 +284,7 @@ async function callOpenAI(messages: AIMessage[], config?: AIConfig): Promise<AIR
   const model = config?.model || DEFAULT_OPENAI_MODEL;
   const body = buildRequestBody(messages, config, 'openai');
   // Override model for openai
-  body.model = model.startsWith('google/') ? DEFAULT_OPENAI_MODEL : model;
+  body.model = model.startsWith('google/') || model.startsWith('claude') ? DEFAULT_OPENAI_MODEL : model;
 
   const response = await fetch(OPENAI_URL, {
     method: 'POST',
@@ -182,7 +317,10 @@ async function logUsage(response: AIResponse, config?: AIConfig, status: string 
 
     // Estimate cost (rough approximation)
     let estimatedCost = 0;
-    if (response.provider === 'openai') {
+    if (response.provider === 'anthropic') {
+      // Claude Sonnet 4: ~$3/1M input, ~$15/1M output
+      estimatedCost = ((response.tokensInput || 0) * 0.000003) + ((response.tokensOutput || 0) * 0.000015);
+    } else if (response.provider === 'openai') {
       // GPT-4o-mini: ~$0.15/1M input, ~$0.60/1M output
       estimatedCost = ((response.tokensInput || 0) * 0.00000015) + ((response.tokensOutput || 0) * 0.0000006);
     } else {
@@ -211,65 +349,60 @@ async function logUsage(response: AIResponse, config?: AIConfig, status: string 
 // ─── Main entry point ────────────────────────────────────────────────
 
 export async function callAI(messages: AIMessage[], config?: AIConfig): Promise<AIResponse> {
-  const openaiKey = Deno.env.get('OPENAI_API_KEY');
+  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
   const lovableKey = Deno.env.get('LOVABLE_API_KEY');
+  const openaiKey = Deno.env.get('OPENAI_API_KEY');
 
   let response: AIResponse;
 
-  // Strategy: preferOpenAI for precision JSON tasks
-  if (config?.preferOpenAI && openaiKey) {
+  // Default strategy: Claude → Lovable AI → OpenAI (preferOpenAI is now ignored, Claude always first)
+  // Step 1: Try Anthropic Claude (primary)
+  if (anthropicKey) {
     try {
-      console.log('[AI Helper] Using OpenAI (precision mode)');
-      response = await callOpenAI(messages, config);
-      logUsage(response, config); // fire-and-forget
+      console.log('[AI Helper] Using Anthropic Claude (primary)');
+      response = await callAnthropic(messages, config);
+      logUsage(response, config);
       return response;
     } catch (error) {
-      console.warn('[AI Helper] OpenAI failed, falling back to Lovable AI:', error);
-      await logUsage({ content: '', tokensUsed: 0, provider: 'openai', model: config?.model || DEFAULT_OPENAI_MODEL, durationMs: 0 }, config, 'error', String(error));
-      if (lovableKey) {
-        response = await callLovableAI(messages, config);
-        logUsage(response, config);
-        return response;
+      const errorMsg = String(error);
+      await logUsage({ content: '', tokensUsed: 0, provider: 'anthropic', model: DEFAULT_ANTHROPIC_MODEL, durationMs: 0 }, config, errorMsg.includes('RATE_LIMITED') ? 'rate_limited' : 'error', errorMsg);
+      
+      if (errorMsg.includes('RATE_LIMITED')) {
+        // For rate limits, try fallback instead of throwing
+        console.warn('[AI Helper] Anthropic rate limited, trying fallback...');
+      } else {
+        console.warn('[AI Helper] Anthropic failed, trying fallback:', error);
       }
-      throw error;
     }
   }
 
-  // Default: Use Lovable AI (free/cost-saving)
+  // Step 2: Try Lovable AI (fallback)
   if (lovableKey) {
     try {
-      console.log('[AI Helper] Using Lovable AI (default mode)');
+      console.log('[AI Helper] Using Lovable AI (fallback)');
       response = await callLovableAI(messages, config);
       logUsage(response, config);
       return response;
     } catch (error) {
       const errorMsg = String(error);
-      await logUsage({ content: '', tokensUsed: 0, provider: 'lovable', model: config?.model || DEFAULT_LOVABLE_MODEL, durationMs: 0 }, config, errorMsg.includes('RATE_LIMITED') ? 'rate_limited' : 'error', errorMsg);
+      await logUsage({ content: '', tokensUsed: 0, provider: 'lovable', model: DEFAULT_LOVABLE_MODEL, durationMs: 0 }, config, errorMsg.includes('RATE_LIMITED') ? 'rate_limited' : 'error', errorMsg);
 
-      // Re-throw rate limit / payment errors without fallback
       if (errorMsg.includes('RATE_LIMITED') || errorMsg.includes('PAYMENT_REQUIRED')) {
         throw error;
       }
-
-      console.warn('[AI Helper] Lovable AI failed, falling back to OpenAI:', error);
-      if (openaiKey) {
-        response = await callOpenAI(messages, config);
-        logUsage(response, config);
-        return response;
-      }
-      throw error;
+      console.warn('[AI Helper] Lovable AI failed, trying OpenAI:', error);
     }
   }
 
-  // Fallback to OpenAI if no Lovable key
+  // Step 3: Try OpenAI (last resort)
   if (openaiKey) {
-    console.log('[AI Helper] Using OpenAI (no Lovable key)');
+    console.log('[AI Helper] Using OpenAI (last resort)');
     response = await callOpenAI(messages, config);
     logUsage(response, config);
     return response;
   }
 
-  throw new Error('No AI API keys configured (neither LOVABLE_API_KEY nor OPENAI_API_KEY)');
+  throw new Error('No AI API keys configured (neither ANTHROPIC_API_KEY, LOVABLE_API_KEY, nor OPENAI_API_KEY)');
 }
 
 // ─── Utilities ───────────────────────────────────────────────────────
@@ -298,7 +431,7 @@ export function extractToolCallArgs<T>(response: AIResponse): T | null {
  * Check if we have any AI service available
  */
 export function hasAIService(): boolean {
-  return !!(Deno.env.get('LOVABLE_API_KEY') || Deno.env.get('OPENAI_API_KEY'));
+  return !!(Deno.env.get('ANTHROPIC_API_KEY') || Deno.env.get('LOVABLE_API_KEY') || Deno.env.get('OPENAI_API_KEY'));
 }
 
 /**

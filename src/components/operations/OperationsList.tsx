@@ -4,26 +4,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List } from 'lucide-react';
+import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from '@/hooks/useDebounce';
 import { EnhancedOperationsTable } from './enhanced/EnhancedOperationsTable';
 import OperationCard from './OperationCard';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { useQueryClient } from '@tanstack/react-query';
 
-// Constantes para límites
 const MAX_ITEMS_ALL = 500;
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
+  project_name?: string;
+  project_number?: string;
   sector: string;
-  valuation_amount: number;
-  valuation_currency: string;
+  valuation_amount?: number;
+  valuation_currency?: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  year: number;
+  ebitda_margin?: number;
+  year?: number;
   description: string;
   short_description?: string;
   is_featured: boolean;
@@ -33,11 +36,12 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
-  display_locations: string[];
+  geographic_location?: string;
+  display_locations?: string[];
   created_at?: string;
   project_status?: string;
+  project_status_label?: string;
   expected_market_text?: string;
-  // i18n resolved fields
   resolved_description?: string;
   resolved_short_description?: string;
   resolved_sector?: string;
@@ -59,35 +63,24 @@ const OperationsList: React.FC<OperationsListProps> = ({
   limit = 20 
 }) => {
   const { lang, t } = useI18n();
+  const queryClient = useQueryClient();
   const [operations, setOperations] = useState<Operation[]>([]);
   const [sectors, setSectors] = useState<SectorOption[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
-  const [companySizes, setCompanySizes] = useState<string[]>([]);
+  
   const [dealTypes, setDealTypes] = useState<string[]>([]);
-  const [projectStatuses, setProjectStatuses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('');
-  const [selectedCompanySize, setSelectedCompanySize] = useState('');
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
+  
   const [selectedDealType, setSelectedDealType] = useState('');
-  const [selectedProjectStatus, setSelectedProjectStatus] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [offset, setOffset] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  
-  // Filtros de valoración
-  const [valuationMin, setValuationMin] = useState<number | undefined>();
-  const [valuationMax, setValuationMax] = useState<number | undefined>();
-  
-  // Filtro de fecha de publicación
   const [dateFilter, setDateFilter] = useState<string>('');
-  
-  // Nuevo: Estados para modo "Ver todas"
   const [viewMode, setViewMode] = useState<'paginated' | 'all'>('paginated');
   const [isLoadingAll, setIsLoadingAll] = useState(false);
-  
-  // Estado para toggle Grid/Lista con persistencia en localStorage (default: grid/tarjetas)
+  const [fetchKey, setFetchKey] = useState(0); // Used for realtime refetch
+
   const [displayType, setDisplayType] = useState<'grid' | 'list'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('operations-display-type') as 'grid' | 'list') || 'grid';
@@ -101,15 +94,30 @@ const OperationsList: React.FC<OperationsListProps> = ({
   
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
+  // ── Supabase Realtime subscription ──
+  useEffect(() => {
+    const channel = supabase
+      .channel('marketplace-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'datos_proyecto' }, () => {
+        setFetchKey(prev => prev + 1);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mandatos' }, () => {
+        setFetchKey(prev => prev + 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const fetchOperations = async () => {
     try {
       setIsLoading(true);
       
-      // Determinar límite según modo de visualización
       const fetchLimit = viewMode === 'all' ? MAX_ITEMS_ALL : limit;
       const fetchOffset = viewMode === 'all' ? 0 : offset;
       
-      // Calculate createdAfter date based on dateFilter
       let createdAfter: string | undefined;
       if (dateFilter) {
         const now = new Date();
@@ -126,22 +134,15 @@ const OperationsList: React.FC<OperationsListProps> = ({
         }
       }
 
-      // Use the new list-operations Edge Function
       const { data, error } = await supabase.functions.invoke('list-operations', {
         body: {
-          locale: lang, // Send current language for translated content
+          locale: lang,
           searchTerm: debouncedSearchTerm || undefined,
-          sector: selectedSector || undefined,
-          location: selectedLocation || undefined,
-          companySize: selectedCompanySize || undefined,
+          sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
           dealType: selectedDealType || undefined,
-          projectStatus: selectedProjectStatus || undefined,
           sortBy,
           limit: fetchLimit,
           offset: fetchOffset,
-          displayLocation,
-          valuationMin: valuationMin ? valuationMin * 1000 : undefined, // Convert from k to actual
-          valuationMax: valuationMax ? valuationMax * 1000 : undefined, // Convert from k to actual
           createdAfter
         }
       });
@@ -154,44 +155,11 @@ const OperationsList: React.FC<OperationsListProps> = ({
         return;
       }
 
-      // Fallback: if no results with custom location, try 'operaciones'
-      if (data && (data.count || 0) === 0 && displayLocation && displayLocation !== 'operaciones') {
-        console.info(`ℹ️ No results with location '${displayLocation}', falling back to 'operaciones'`);
-        
-        const fallbackResponse = await supabase.functions.invoke('list-operations', {
-          body: {
-            locale: lang,
-            searchTerm: debouncedSearchTerm || undefined,
-            sector: selectedSector || undefined,
-            location: selectedLocation || undefined,
-            companySize: selectedCompanySize || undefined,
-            dealType: selectedDealType || undefined,
-            sortBy,
-            limit,
-            offset,
-            displayLocation: 'operaciones'
-          }
-        });
-        
-        if (fallbackResponse.data) {
-          setOperations(fallbackResponse.data.data || []);
-          setTotalCount(fallbackResponse.data.count || 0);
-          setSectors(fallbackResponse.data.sectors || []);
-          setLocations(fallbackResponse.data.locations || []);
-          setCompanySizes(fallbackResponse.data.companySizes || []);
-          setDealTypes(fallbackResponse.data.dealTypes || []);
-          setProjectStatuses(fallbackResponse.data.projectStatuses || []);
-          return;
-        }
-      }
-
       setOperations(data.data || []);
       setTotalCount(data.count || 0);
       setSectors(data.sectors || []);
-      setLocations(data.locations || []);
-      setCompanySizes(data.companySizes || []);
+      
       setDealTypes(data.dealTypes || []);
-      setProjectStatuses(data.projectStatuses || []);
 
     } catch (error) {
       console.error('Error calling list-operations Edge Function:', error);
@@ -206,57 +174,46 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedCompanySize, selectedDealType, selectedProjectStatus, sortBy, offset, displayLocation, viewMode, valuationMin, valuationMax, dateFilter, lang]);
+  }, [debouncedSearchTerm, selectedSectors, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setOffset(0); // Reset pagination
+    setOffset(0);
   };
 
-  const handleSectorChange = (value: string) => {
-    setSelectedSector(value === 'all' ? '' : value);
-    setOffset(0); // Reset pagination
+  const handleSectorToggle = (sectorKey: string) => {
+    setSelectedSectors(prev => 
+      prev.includes(sectorKey) 
+        ? prev.filter(s => s !== sectorKey)
+        : [...prev, sectorKey]
+    );
+    setOffset(0);
+  };
+
+  const handleRemoveSector = (sectorKey: string) => {
+    setSelectedSectors(prev => prev.filter(s => s !== sectorKey));
+    setOffset(0);
   };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
-    setOffset(0); // Reset pagination
-  };
-
-  const handleLocationChange = (value: string) => {
-    setSelectedLocation(value === 'all' ? '' : value);
     setOffset(0);
   };
 
-  const handleCompanySizeChange = (value: string) => {
-    setSelectedCompanySize(value === 'all' ? '' : value);
-    setOffset(0);
-  };
 
   const handleDealTypeChange = (value: string) => {
     setSelectedDealType(value === 'all' ? '' : value);
     setOffset(0);
   };
 
-  const handleProjectStatusChange = (value: string) => {
-    setSelectedProjectStatus(value === 'all' ? '' : value);
-    setOffset(0);
-  };
-
   const clearAllFilters = () => {
     setSearchTerm('');
-    setSelectedSector('');
-    setSelectedLocation('');
-    setSelectedCompanySize('');
+    setSelectedSectors([]);
     setSelectedDealType('');
-    setSelectedProjectStatus('');
-    setValuationMin(undefined);
-    setValuationMax(undefined);
     setDateFilter('');
     setOffset(0);
   };
 
-  // Handlers para "Ver todas"
   const handleViewAll = () => {
     setIsLoadingAll(true);
     setViewMode('all');
@@ -268,8 +225,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const hasActiveFilters = searchTerm || selectedSector || selectedLocation || selectedCompanySize || selectedDealType || selectedProjectStatus || valuationMin || valuationMax || dateFilter;
-
+  const hasActiveFilters = searchTerm || selectedSectors.length > 0 || selectedDealType || dateFilter;
 
   return (
     <div className="space-y-6">
@@ -283,9 +239,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Primera fila: Búsqueda, Sector, Ubicación */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Search */}
+            {/* Row 1: Search, Sector */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -308,7 +263,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   </div>
                 )}
                 
-                {/* Sector Suggestions */}
                 {searchTerm.length >= 2 && sectors.filter(s => 
                   s.label.toLowerCase().includes(searchTerm.toLowerCase())
                 ).length > 0 && (
@@ -320,9 +274,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
                         <button
                           key={sector.key}
                           onClick={() => {
-                            setSelectedSector(sector.key);
+                            handleSectorToggle(sector.key);
                             setSearchTerm('');
-                            setOffset(0);
                           }}
                           className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
                         >
@@ -334,55 +287,61 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 )}
               </div>
               
-              {/* Sector Filter */}
-              <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allSectors')} />
+              <Select value="__placeholder__" onValueChange={(value) => { if (value !== '__placeholder__') handleSectorToggle(value); }}>
+                <SelectTrigger className="h-10">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    {selectedSectors.length === 0 ? (
+                      <span className="text-muted-foreground">{t('operations.filters.allSectors')}</span>
+                    ) : (
+                      <div className="flex items-center gap-1 overflow-hidden">
+                        {selectedSectors.slice(0, 2).map(sectorKey => {
+                          const sectorObj = sectors.find(s => s.key === sectorKey);
+                          return (
+                            <Badge key={sectorKey} variant="secondary" className="gap-1 shrink-0 text-xs" onClick={(e) => { e.stopPropagation(); handleRemoveSector(sectorKey); }}>
+                              {sectorObj?.label || sectorKey}
+                              <X className="h-3 w-3" />
+                            </Badge>
+                          );
+                        })}
+                        {selectedSectors.length > 2 && (
+                          <Badge variant="outline" className="shrink-0 text-xs">+{selectedSectors.length - 2}</Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allSectors')}</SelectItem>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector.key} value={sector.key}>
-                      {sector.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Location Filter */}
-              <Select value={selectedLocation || 'all'} onValueChange={handleLocationChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allLocations')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allLocations')}</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
+                  {selectedSectors.length > 0 && (
+                    <button
+                      onClick={() => selectedSectors.forEach(s => handleRemoveSector(s))}
+                      className="w-full text-left px-2 py-1.5 text-sm text-destructive hover:bg-accent transition-colors"
+                    >
+                      Limpiar selección
+                    </button>
+                  )}
+                  {sectors.map((sector) => {
+                    const isSelected = selectedSectors.includes(sector.key);
+                    return (
+                      <SelectItem 
+                        key={sector.key} 
+                        value={sector.key}
+                        className={isSelected ? 'bg-accent font-medium' : ''}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`h-3.5 w-3.5 rounded border shrink-0 flex items-center justify-center ${isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/30'}`}>
+                            {isSelected && <span className="text-[10px]">✓</span>}
+                          </div>
+                          {sector.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Segunda fila: Tamaño, Tipo Deal, Ordenar */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Company Size Filter */}
-              <Select value={selectedCompanySize || 'all'} onValueChange={handleCompanySizeChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allSizes')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allSizes')}</SelectItem>
-                  {companySizes.map((size) => (
-                    <SelectItem key={size} value={size}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Deal Type Filter */}
+            {/* Row 2: Deal Type, Date, Sort, Clear */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select value={selectedDealType || 'all'} onValueChange={handleDealTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('operations.filters.allTypes')} />
@@ -391,59 +350,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   <SelectItem value="all">{t('operations.filters.allTypes')}</SelectItem>
                   {dealTypes.map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type}
+                      {type === 'venta' ? 'Venta (Sell-Side)' : type === 'compra' ? 'Adquisición (Buy-Side)' : type}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {/* Sort */}
-              <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.sortBy') || 'Ordenar por'} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_at">{t('operations.filters.mostRecent') || 'Más recientes'}</SelectItem>
-                  <SelectItem value="year">{t('operations.filters.year') || 'Año'}</SelectItem>
-                  <SelectItem value="valuation_amount">{t('operations.filters.valuation') || 'Valoración'}</SelectItem>
-                  <SelectItem value="company_name">{t('operations.filters.name') || 'Nombre'}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Tercera fila: Valoración, Fecha, Estado Proyecto y Limpiar */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {/* Valuation Min */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.valuationMin')}</label>
-                <Input
-                  type="number"
-                  placeholder="Ej: 500"
-                  value={valuationMin || ''}
-                  onChange={(e) => {
-                    setValuationMin(e.target.value ? parseInt(e.target.value) : undefined);
-                    setOffset(0);
-                  }}
-                />
-              </div>
-              
-              {/* Valuation Max */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.valuationMax')}</label>
-                <Input
-                  type="number"
-                  placeholder="Ej: 5000"
-                  value={valuationMax || ''}
-                  onChange={(e) => {
-                    setValuationMax(e.target.value ? parseInt(e.target.value) : undefined);
-                    setOffset(0);
-                  }}
-                />
-              </div>
-
-              {/* Date Filter */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.datePublished')}</label>
                 <Select value={dateFilter || 'all'} onValueChange={(value) => {
                   setDateFilter(value === 'all' ? '' : value);
                   setOffset(0);
@@ -460,54 +373,38 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 </Select>
               </div>
 
-              {/* Project Status Filter */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.status')}</label>
-                <Select value={selectedProjectStatus || 'all'} onValueChange={handleProjectStatusChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('operations.filters.allStatuses')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('operations.filters.allStatuses')}</SelectItem>
-                    <SelectItem value="active">✓ {t('operations.status.active')}</SelectItem>
-                    <SelectItem value="upcoming">⏳ {t('operations.status.upcoming')}</SelectItem>
-                    <SelectItem value="exclusive">⭐ {t('operations.status.exclusive')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               
-              {/* Clear filters button */}
-              <div className="flex items-end">
-                <Button
-                  variant="outline"
-                  onClick={clearAllFilters}
-                  disabled={!hasActiveFilters}
-                  className="w-full"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  {t('operations.filters.clearFilters')}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={clearAllFilters}
+                disabled={!hasActiveFilters}
+                className="w-full"
+              >
+                <X className="h-4 w-4 mr-2" />
+                {t('operations.filters.clearFilters')}
+              </Button>
             </div>
 
-            {/* Active Filters Indicator */}
+            {/* Active Filters */}
             {hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                 <span className="text-sm text-muted-foreground">{t('operations.filters.activeFilters')}</span>
                 {searchTerm && <Badge variant="secondary">{searchTerm}</Badge>}
-                {selectedSector && <Badge variant="secondary">{selectedSector}</Badge>}
-                {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
-                {selectedCompanySize && <Badge variant="secondary">{selectedCompanySize}</Badge>}
-                {selectedDealType && <Badge variant="secondary">{selectedDealType}</Badge>}
-                {selectedProjectStatus && (
+                {selectedSectors.map(sectorKey => {
+                  const sectorObj = sectors.find(s => s.key === sectorKey);
+                  return (
+                    <Badge key={sectorKey} variant="secondary" className="gap-1 cursor-pointer" onClick={() => handleRemoveSector(sectorKey)}>
+                      {sectorObj?.label || sectorKey}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  );
+                })}
+                
+                {selectedDealType && (
                   <Badge variant="secondary">
-                    {selectedProjectStatus === 'active' ? `✓ ${t('operations.status.active')}` : 
-                     selectedProjectStatus === 'upcoming' ? `⏳ ${t('operations.status.upcoming')}` : 
-                     `⭐ ${t('operations.status.exclusive')}`}
+                    {selectedDealType === 'venta' ? 'Venta' : selectedDealType === 'compra' ? 'Adquisición' : selectedDealType}
                   </Badge>
                 )}
-                {valuationMin && <Badge variant="secondary">Min: €{valuationMin}k</Badge>}
-                {valuationMax && <Badge variant="secondary">Max: €{valuationMax}k</Badge>}
                 {dateFilter && (
                   <Badge variant="secondary">
                     {dateFilter === 'week' ? t('operations.filters.lastWeek') : dateFilter === 'month' ? t('operations.filters.lastMonth') : t('operations.filters.last3Months')}
@@ -534,7 +431,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
               <span className="text-sm text-muted-foreground">{t('operations.pagination.loading')}</span>
             </div>
           )}
-          {/* Grid/List Toggle */}
           <div className="flex items-center border rounded-lg p-1">
             <Button
               variant={displayType === 'grid' ? 'secondary' : 'ghost'}
@@ -558,7 +454,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
         </div>
       </div>
 
-      {/* Operations View - Grid or List */}
+      {/* Operations View */}
       {displayType === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {operations.map(op => (
@@ -575,12 +471,11 @@ const OperationsList: React.FC<OperationsListProps> = ({
           isLoading={isLoading}
           onBulkAction={(action, ids) => {
             console.log('Bulk action:', action, 'IDs:', ids);
-            // TODO: Implementar acciones masivas
           }}
         />
       )}
 
-      {/* Aviso si hay más de MAX_ITEMS_ALL */}
+      {/* Limit warning */}
       {viewMode === 'all' && totalCount > MAX_ITEMS_ALL && (
         <Alert className="border-amber-200 bg-amber-50">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -594,7 +489,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
       <div className="flex items-center justify-center gap-2 flex-wrap">
         {viewMode === 'paginated' ? (
           <>
-            {/* Modo paginado normal */}
             <Button
               variant="outline"
               size="sm"
@@ -617,7 +511,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
               {t('operations.pagination.next')}
             </Button>
             
-            {/* Separador y botón Ver todas */}
             {totalCount > limit && (
               <>
                 <span className="text-muted-foreground mx-2">|</span>
@@ -645,7 +538,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
           </>
         ) : (
           <>
-            {/* Modo "Ver todas" */}
             <Badge variant="secondary" className="px-3 py-1">
               {t('operations.results.showing').replace('{count}', String(operations.length)).replace('{total}', String(totalCount))}
             </Badge>

@@ -4,7 +4,7 @@
  * This hook is now a wrapper that maps contact_statuses to the old API.
  */
 
-import { useContactStatuses, type ContactStatus } from '@/hooks/useContactStatuses';
+import { useContactStatuses, type ContactStatus, type PipelineType } from '@/hooks/useContactStatuses';
 
 // Legacy type - now maps from ContactStatus
 export interface LeadPipelineColumn {
@@ -47,7 +47,7 @@ const mapStatusToColumn = (status: ContactStatus): LeadPipelineColumn => ({
  * @deprecated Use useContactStatuses directly. This wrapper maintains backward compatibility
  * while the codebase migrates to the unified status system.
  */
-export const useLeadPipelineColumns = () => {
+export const useLeadPipelineColumns = (pipelineType?: PipelineType) => {
   const {
     statuses,
     visibleStatuses,
@@ -63,7 +63,7 @@ export const useLeadPipelineColumns = () => {
     isReordering,
     toggleVisibility,
     isTogglingVisibility,
-  } = useContactStatuses();
+  } = useContactStatuses(pipelineType);
 
   // Map statuses to columns format
   const columns = statuses.map(mapStatusToColumn);

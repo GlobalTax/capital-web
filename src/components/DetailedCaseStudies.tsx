@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Target, TrendingUp, Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 interface CaseStudyDetailProps {
   title: string;
@@ -10,6 +11,7 @@ interface CaseStudyDetailProps {
   description: string;
   highlights: string[];
   logoUrl?: string;
+  counterpartLogoUrl?: string;
   valueAmount?: number;
   valueCurrency?: string;
   isValueConfidential: boolean;
@@ -22,6 +24,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
   description,
   highlights,
   logoUrl,
+  counterpartLogoUrl,
   valueAmount,
   valueCurrency,
   isValueConfidential
@@ -43,19 +46,30 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
             <h3 className="text-2xl font-normal text-black mb-2">{title}</h3>
             <p className="text-gray-600 leading-relaxed">{description}</p>
           </div>
-          {logoUrl && (
-            <div className="ml-6 flex-shrink-0">
-              <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                <img 
-                  src={logoUrl} 
-                  alt={`Logo de ${title}`}
-                  className="max-w-full max-h-full object-contain"
-                  width={80}
-                  height={80}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
+          {(logoUrl || counterpartLogoUrl) && (
+            <div className="ml-6 flex-shrink-0 flex items-center gap-3">
+              {logoUrl && (
+                <div className="w-24 h-24 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden p-2.5">
+                  <img 
+                    src={logoUrl} 
+                    alt={`Logo de ${title}`}
+                    className="max-w-full max-h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
+              {counterpartLogoUrl && (
+                <div className="w-24 h-24 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden p-2.5">
+                  <img 
+                    src={counterpartLogoUrl} 
+                    alt={`Contraparte de ${title}`}
+                    className="max-w-full max-h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -102,50 +116,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
 
 const DetailedCaseStudies = () => {
   const navigate = useNavigate();
-
-  const featuredCases = [
-    {
-      title: "Jamboree se integra en Ceranium",
-      sector: "Salud y Biotecnología", 
-      year: 2025,
-      description: "El Laboratorio dental Jamboree se integra en Ceranium, compañía participada por ABE Capital. Una operación que demuestra nuestra capacidad para identificar sinergias estratégicas en el sector sanitario y facilitar integraciones exitosas en tiempo récord.",
-      highlights: [
-        "Sector en consolidación",
-        "Venta en menos de 8 meses", 
-        "Laboratorio líder en Barcelona"
-      ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756723321543_ka4ryq.png",
-      isValueConfidential: true
-    },
-    {
-      title: "Mitie España Adquiere Grupo Visegurity",
-      sector: "Seguridad",
-      year: 2024,
-      description: "La multinacional británica MITIE adquiere Grupo Visegurity por 12M€. Capittal asesoró a la parte vendedora en esta operación internacional, demostrando nuestra capacidad para conectar empresas españolas con compradores globales.",
-      highlights: [
-        "Proceso de Venta",
-        "Comprador Internacional", 
-        "Asesoramiento 360º"
-      ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756722616293_r2k55.png",
-      valueAmount: 12,
-      valueCurrency: "€",
-      isValueConfidential: false
-    },
-    {
-      title: "Grupo Scutum adquiere Grupo SEA",
-      sector: "Seguridad",
-      year: 2024, 
-      description: "Grupo Scutum, multinacional líder en seguridad electrónica, adquiere Grupo SEA. En esta ocasión, Capittal asesoró a la parte compradora en el desarrollo de su estrategia de crecimiento mediante adquisiciones.",
-      highlights: [
-        "Asesoramiento al comprador",
-        "Desarrollo de proyecto Build-Up",
-        "Intermediación y Due Diligence"
-      ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756723130999_g0395m.png", 
-      isValueConfidential: true
-    }
-  ];
+  const { caseStudies, isLoading } = useCaseStudies();
 
   const handleContactClick = () => {
     navigate('/contacto');
@@ -186,15 +157,35 @@ const DetailedCaseStudies = () => {
       {/* Featured Case Studies */}
       <section className="pt-8 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="space-y-12">
-            {featuredCases.map((caseStudy, index) => (
-              <CaseStudyDetail
-                key={index}
-                {...caseStudy}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="space-y-12">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-100 h-64 rounded-lg animate-pulse"></div>
+              ))}
+            </div>
+          ) : caseStudies.length > 0 ? (
+            <div className="space-y-12">
+              {caseStudies.map((caseStudy) => (
+                <CaseStudyDetail
+                  key={caseStudy.id}
+                  title={caseStudy.title}
+                  sector={caseStudy.sector}
+                  year={caseStudy.year || 0}
+                  description={caseStudy.description}
+                  highlights={caseStudy.highlights || []}
+                  logoUrl={caseStudy.logo_url}
+                  counterpartLogoUrl={caseStudy.counterpart_logo_url}
+                  valueAmount={caseStudy.value_amount}
+                  valueCurrency={caseStudy.value_currency}
+                  isValueConfidential={caseStudy.is_value_confidential || false}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              No hay casos de éxito disponibles en este momento.
+            </div>
+          )}
         </div>
       </section>
 

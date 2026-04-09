@@ -13,6 +13,7 @@ import {
   LazyCaseStudiesManager,
   LazyTestimonialsManager,
   LazyCarouselTestimonialsManager,
+  LazyCollaboratorTestimonialsManager,
   LazyCarouselLogosManager,
   LazyVentaEmpresasContentManager,
   LazyTeamMembersManagerAdvanced,
@@ -36,7 +37,7 @@ import {
   LazyAdminOperations,
   LazyOperationDetails,
   LazyOperationsDashboard,
-  LazyOperationsKanban,
+  
   LazyJobPostsManager,
   LazyJobPostEditor,
   LazyJobApplicationsManager,
@@ -58,6 +59,7 @@ import {
   LazyBuySideMandatesPage,
   LazyBuySideMandateDetailPage,
   LazyLeadsPipelinePage,
+  LazyBuyPipelinePage,
   LazyWorkflowTemplatesPage,
   LazyBookingsPage,
   LazyNotificationsPage,
@@ -107,6 +109,7 @@ const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news
 const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectoryPage'));
 const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
 const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApolloImportPage'));
+const LazyAIAgentsPage = React.lazy(() => import('@/pages/admin/AIAgentsPage'));
 
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
@@ -118,6 +121,8 @@ const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisi
 const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
 const LazySectorIntelligencePage = React.lazy(() => import('@/pages/admin/SectorIntelligencePage'));
+const LazyOportunidadesPage = React.lazy(() => import('@/pages/admin/OportunidadesPage'));
+const LazyContactoProfilePage = React.lazy(() => import('@/pages/admin/ContactoProfilePage'));
 
 // Presentation Engine
 const LazyPresentationsListPage = React.lazy(() => import('@/features/presentations/pages/PresentationsListPage'));
@@ -153,6 +158,7 @@ const AdminRouter = () => {
           
           {/* Lead Management */}
           <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
+          <Route path="/buy-pipeline" element={<LazyBuyPipelinePage />} />
           <Route path="/bookings" element={<LazyBookingsPage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
           <Route path="/documentos-fase0" element={<Navigate to="/admin/ndas" replace />} />
@@ -162,9 +168,10 @@ const AdminRouter = () => {
           <Route path="/buyer-contacts" element={<LazyBuyerContactsManager />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/empresas" element={<LazyEmpresasPage />} />
+          <Route path="/contactos/:id" element={<LazyContactoProfilePage />} />
           <Route path="/empresas/:id" element={<LazyEmpresaDetailPage />} />
           <Route path="/prospectos" element={<LazyProspectsPage />} />
-          <Route path="/investor-leads" element={<LazyInvestorLeadsManager />} />
+          <Route path="/investor-leads" element={<Navigate to="/admin/oportunidades" replace />} />
           <Route path="/calculadora-manual" element={<LazyManualLeadEntryPage />} />
           
           
@@ -172,6 +179,7 @@ const AdminRouter = () => {
           <Route path="/content-calendar" element={<LazyContentCalendarPage />} />
           <Route path="/content-performance" element={<LazyContentPerformancePage />} />
           <Route path="/content-studio" element={<LazyContentStudioPage />} />
+          <Route path="/ai-agents" element={<LazyAIAgentsPage />} />
           <Route path="/lead-magnets" element={<LazyLeadMagnetsPage />} />
           <Route path="/blog-v2" element={<LazyModernBlogManager />} />
           <Route path="/blog/new" element={<LazyBlogEditorPage />} />
@@ -204,9 +212,10 @@ const AdminRouter = () => {
           <Route path="/valoraciones-pro/nueva" element={<LazyValoracionProForm />} />
           <Route path="/valoraciones-pro/:id" element={<LazyValoracionProForm />} />
           <Route path="/operations/dashboard" element={<LazyOperationsDashboard />} />
-          <Route path="/operations/kanban" element={<LazyOperationsKanban />} />
+          
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
+          <Route path="/oportunidades" element={<LazyOportunidadesPage />} />
           <Route path="/mandatos/workload" element={<LazyMandatoWorkloadPage />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
           <Route path="/advisor-multiples" element={<LazyAdvisorMultiplesManager />} />
@@ -218,6 +227,7 @@ const AdminRouter = () => {
           <Route path="/team" element={<LazyTeamMembersManagerAdvanced />} />
           <Route path="/testimonials" element={<LazyTestimonialsManager />} />
           <Route path="/carousel-testimonials" element={<LazyCarouselTestimonialsManager />} />
+          <Route path="/collaborator-testimonials" element={<LazyCollaboratorTestimonialsManager />} />
           <Route path="/carousel-logos" element={<LazyCarouselLogosManager />} />
           <Route path="/venta-empresas-content" element={<LazyVentaEmpresasContentManager />} />
           

@@ -12,7 +12,8 @@ import { OperationHistoryTimeline } from '@/features/operations-management/compo
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
+  project_name?: string;
   sector: string;
   subsector?: string;
   valuation_amount: number;
@@ -50,11 +51,13 @@ const OperationDetailsModalEnhanced: React.FC<OperationDetailsModalEnhancedProps
 }) => {
   const navigate = useNavigate();
 
+  const displayName = operation.project_name || operation.company_name || 'Operación confidencial';
+
   const handleRequestInfo = () => {
     const params = new URLSearchParams({
       ref: 'marketplace',
       operation: operation.id,
-      company: operation.company_name,
+      company: displayName,
     });
     navigate(`/contacto?${params.toString()}`);
   };
@@ -99,19 +102,19 @@ const OperationDetailsModalEnhanced: React.FC<OperationDetailsModalEnhancedProps
               {operation.logo_url ? (
                 <img 
                   src={operation.logo_url} 
-                  alt={`${operation.company_name} logo`}
+                  alt={`${displayName} logo`}
                   className="w-16 h-16 rounded-lg object-contain bg-muted p-2"
                 />
               ) : (
                 <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
                   <span className="text-primary font-bold text-2xl">
-                    {operation.company_name.split(' ').map(word => word[0]).join('').substring(0, 2)}
+                    {displayName.split(' ').map(word => word[0]).join('').substring(0, 2)}
                   </span>
                 </div>
               )}
               
               <div className="flex-1">
-                <DialogTitle className="text-2xl mb-2">{operation.company_name}</DialogTitle>
+                <DialogTitle className="text-2xl mb-2">{displayName}</DialogTitle>
                 <div className="flex items-center gap-2 flex-wrap">
                   {operation.is_featured && (
                     <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Destacado</Badge>

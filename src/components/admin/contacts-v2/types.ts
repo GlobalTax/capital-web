@@ -1,7 +1,7 @@
 // ============= CONTACTS V2 TYPES =============
 // Simplified type definitions for the new contacts system
 
-export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
+export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'sell' | 'buyer_alert' | 'rod_download';
 
 export interface Contact {
   id: string;
@@ -60,6 +60,9 @@ export interface Contact {
   
   // Pro detection
   is_from_pro_valuation?: boolean;
+  
+  // Duplicate detection
+  is_possible_duplicate?: boolean;
   
   // Channel & Form
   acquisition_channel_id?: string;

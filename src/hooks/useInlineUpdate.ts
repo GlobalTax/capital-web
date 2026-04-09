@@ -207,6 +207,14 @@ const tableCapabilities: Record<string, {
     hasLocation: false,
     hasLeadForm: true,
   },
+  'sell_leads': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true,
+    hasAcquisitionChannel: true,
+    hasLocation: false,
+    hasLeadForm: true,
+  },
   'company_acquisition_inquiries': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
@@ -255,6 +263,7 @@ export const useContactInlineUpdate = () => {
       'accountex': 'accountex_leads',
       'advisor': 'advisor_valuations',
       'general': 'general_contact_leads',
+      'sell': 'sell_leads',
       'company_acquisition': 'company_acquisition_inquiries',
       'buyer': 'buyer_contacts',
     };
@@ -349,6 +358,11 @@ export const useContactInlineUpdate = () => {
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
         'lead_form': 'lead_form',
+        'revenue': 'annual_revenue',
+      },
+      'sell_leads': {
+        'name': 'full_name',
+        'lead_status_crm': 'lead_status_crm',
       },
       'company_acquisition_inquiries': {
         'name': 'full_name',

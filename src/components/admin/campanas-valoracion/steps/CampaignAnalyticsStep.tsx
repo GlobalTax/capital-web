@@ -37,6 +37,7 @@ interface StageMetrics {
 }
 
 export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
+  const isDocument = campaign.campaign_type === 'document';
   const { companies } = useCampaignCompanies(campaignId);
   const { emails } = useCampaignEmails(campaignId);
   const { sequences, allSends } = useFollowupSequences(campaignId);
@@ -362,7 +363,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                 <TableRow>
                   <TableHead>Empresa</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead className="text-right">Valoración</TableHead>
+                  {!isDocument && <TableHead className="text-right">Valoración</TableHead>}
                   <TableHead className="text-center">1r Envío</TableHead>
                   {sequences.sort((a, b) => a.sequence_number - b.sequence_number).map(seq => (
                     <TableHead key={seq.id} className="text-center text-xs">
@@ -379,7 +380,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                     <TableRow key={ct.company.id}>
                       <TableCell className="font-medium text-sm max-w-[180px] truncate">{ct.company.client_company}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{ct.company.client_email || '—'}</TableCell>
-                      <TableCell className="text-right text-sm">{ct.company.valuation_central ? formatCurrencyEUR(ct.company.valuation_central) : '—'}</TableCell>
+                      {!isDocument && <TableCell className="text-right text-sm">{ct.company.valuation_central ? formatCurrencyEUR(ct.company.valuation_central) : '—'}</TableCell>}
                       <TableCell className="text-center">
                         {ct.emailSent ? (
                           <CheckCircle2 className="h-4 w-4 mx-auto text-emerald-500" />

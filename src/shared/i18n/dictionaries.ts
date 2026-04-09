@@ -419,7 +419,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Operations/Oportunidades Page
     'operations.title': 'Operaciones de compraventa',
     'operations.filters.all': 'Todas',
-    'operations.filters.search': 'Buscar empresas...',
+    'operations.filters.search': 'Buscar oportunidades o sectores...',
     'operations.filters.title': 'Filtros y Búsqueda',
     'operations.filters.sector': 'Sector',
     'operations.filters.allSectors': 'Todos los sectores',
@@ -1460,7 +1460,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Operations/Oportunidades Page
     'operations.title': 'Operacions de compravenda',
     'operations.filters.all': 'Totes',
-    'operations.filters.search': 'Cercar empreses...',
+    'operations.filters.search': 'Cercar oportunitats o sectors...',
     'operations.filters.sector': 'Sector',
     'operations.filters.allSectors': 'Tots els sectors',
     'operations.filters.location': 'Ubicació',
@@ -2402,7 +2402,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Operations/Oportunidades Page
     'operations.title': 'M&A Operations',
     'operations.filters.all': 'All',
-    'operations.filters.search': 'Search companies...',
+    'operations.filters.search': 'Search opportunities or sectors...',
     'operations.filters.sector': 'Sector',
     'operations.filters.allSectors': 'All sectors',
     'operations.filters.location': 'Location',

@@ -1,0 +1,1 @@
+ALTER TABLE public.outbound_list_companies ADD COLUMN nombre_accionista text;

@@ -22,7 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock, Users, CalendarCheck } from 'lucide-react';
+import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock, Users, CalendarCheck, MessageCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
@@ -31,27 +33,21 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
+import { useOutboundQueue } from '@/hooks/useOutboundQueue';
 import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/components/admin/campanas-valoracion/shared/DateRangeFilter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-// Seguimiento states config
-const SEGUIMIENTO_OPTIONS = [
-  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
-  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
-  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
-] as const;
-
-function getSeguimientoOption(value: string | null) {
-  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
-}
+// Seguimiento states loaded from DB
+import { useSeguimientoOptions, getSeguimientoOption } from '@/hooks/useSeguimientoOptions';
 
 // ─── Inline Seguimiento Badge Select ────────────────────────────────────
 function SeguimientoBadge({ company, campaignId }: { company: any; campaignId: string }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const current = getSeguimientoOption(company.seguimiento_estado);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, company.seguimiento_estado);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
@@ -103,6 +99,65 @@ function SeguimientoBadge({ company, campaignId }: { company: any; campaignId: s
   );
 }
 
+// ─── Notes Popover ──────────────────────────────────────────────────────
+function NotasPopover({ company, campaignId }: { company: any; campaignId: string }) {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState(company.seguimiento_notas || '');
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const hasNotes = !!(company.seguimiento_notas && company.seguimiento_notas.trim());
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_notas: notes })
+        .eq('id', company.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      toast.success('Notas guardadas');
+      setOpen(false);
+    } catch (e: any) {
+      toast.error('Error al guardar notas: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [notes, company.id, campaignId, queryClient]);
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) setNotes(company.seguimiento_notas || ''); }}>
+      <PopoverTrigger asChild>
+        <button
+          onClick={e => e.stopPropagation()}
+          className="relative p-1 rounded hover:bg-muted/50 transition-colors"
+          title={hasNotes ? 'Ver/editar notas' : 'Añadir nota'}
+        >
+          <MessageCircle className={cn("h-4 w-4", hasNotes ? 'text-primary' : 'text-muted-foreground')} />
+          {hasNotes && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end" onClick={e => e.stopPropagation()}>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Notas — {company.client_company}</p>
+        <Textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Escribe notas sobre esta empresa..."
+          className="text-sm min-h-[80px] resize-none"
+        />
+        <div className="flex justify-end mt-2">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="text-xs h-7">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+            Guardar notas
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 interface Props {
   campaignId: string;
   campaign: ValuationCampaign;
@@ -114,13 +169,15 @@ type ResendConfirm =
   | null;
 
 export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
   const { companies } = useCampaignCompanies(campaignId);
   const { emails, sendEmail, sendAllPending, isSendingAll, isLoading } = useCampaignEmails(campaignId);
+  const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [resendConfirm, setResendConfirm] = useState<ResendConfirm>(null);
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false, includeValuationPdf: true, includeStudyPdf: true });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
@@ -228,6 +285,21 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
       return;
     }
 
+    // SERVER-SIDE MODE
+    if (sendConfig.serverSide) {
+      const emailIds = pendingEmails.map(e => e.id);
+      await createJob.mutateAsync({
+        campaignId,
+        sendType: 'document',
+        emailIds,
+        intervalMs: sendConfig.intervalMs,
+        maxPerHour: sendConfig.maxPerHour,
+        scheduledAt: sendConfig.scheduledAt || new Date(),
+      });
+      return;
+    }
+
+    // CLIENT-SIDE
     if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
       const updateCountdown = () => {
         const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
@@ -282,6 +354,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
 
   return (
     <div className="space-y-6">
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
         <Card>
@@ -463,6 +538,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                    <TableHead className="text-center">Fecha envío</TableHead>
                    <TableHead className="text-center">Entrega</TableHead>
                    <TableHead className="text-center">Seguimiento</TableHead>
+                   <TableHead className="text-center w-[40px]">Notas</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -502,6 +578,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                       </TableCell>
                       <TableCell className="text-center">
                         <SeguimientoBadge company={c} campaignId={campaignId} />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <NotasPopover company={c} campaignId={campaignId} />
                       </TableCell>
                       <TableCell className="text-right">
                         {email && (

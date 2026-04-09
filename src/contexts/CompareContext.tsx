@@ -2,13 +2,14 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
+  project_name?: string;
   sector: string;
-  valuation_amount: number;
+  valuation_amount?: number;
   valuation_currency?: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  year: number;
+  year?: number;
   description: string;
   short_description?: string;
   is_featured: boolean;

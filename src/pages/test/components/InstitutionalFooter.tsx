@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Linkedin, Twitter, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Linkedin, Instagram, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 
 interface NewsItem {
   date: string;
@@ -23,7 +23,7 @@ const latestNews: NewsItem[] = [
 
 const serviceLinks = [
   { label: 'Venta de empresas', href: '/servicios/venta-empresas' },
-  { label: 'Valoración', href: '/servicios/valoracion' },
+  { label: 'Valoración', href: '/servicios/valoraciones' },
   { label: 'Due Diligence', href: '/servicios/due-diligence' },
   { label: 'Planificación fiscal', href: '/servicios/planificacion-fiscal' },
 ];
@@ -82,7 +82,7 @@ const InstitutionalFooter: React.FC = () => {
             {/* Social Links */}
             <div className="flex items-center gap-4">
               <a
-                href="https://linkedin.com/company/capittal"
+                href="https://www.linkedin.com/company/capittal-ma-consulting/posts/?feedView=all"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
@@ -91,13 +91,13 @@ const InstitutionalFooter: React.FC = () => {
                 <Linkedin className="w-4 h-4" />
               </a>
               <a
-                href="https://twitter.com/capittal"
+                href="https://www.instagram.com/capittal.es/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
-                aria-label="Twitter"
+                aria-label="Instagram"
               >
-                <Twitter className="w-4 h-4" />
+                <Instagram className="w-4 h-4" />
               </a>
             </div>
           </div>

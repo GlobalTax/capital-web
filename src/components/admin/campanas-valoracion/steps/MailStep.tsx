@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Send, Loader2, Eye, Mail, MoreVertical, FileText, CheckCircle2, Clock, AlertCircle,
-  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users,
+  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users, MailCheck, Search,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { RegisterManualSendDialog } from '../RegisterManualSendDialog';
 
 interface Props {
   campaignId: string;
@@ -429,6 +431,7 @@ function MailListSection({
   onSendEmail,
   onSendAll,
   isSendingAll,
+  onRefresh,
 }: {
   companies: CampaignCompany[];
   emails: CampaignEmail[];
@@ -438,10 +441,23 @@ function MailListSection({
   onSendEmail: (id: string) => Promise<void>;
   onSendAll: () => Promise<void>;
   isSendingAll: boolean;
+  onRefresh: () => void;
 }) {
   const [showSendAllConfirm, setShowSendAllConfirm] = useState(false);
+  const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const emailMap = new Map(emails.map(e => [e.company_id, e]));
   const presMap = new Map(presentations.map((p: any) => [p.company_id, p]));
+
+  const filteredCompanies = useMemo(() => {
+    if (!searchQuery.trim()) return companies;
+    const q = searchQuery.toLowerCase();
+    return companies.filter(c =>
+      c.client_company?.toLowerCase().includes(q) ||
+      c.client_name?.toLowerCase().includes(q) ||
+      c.client_email?.toLowerCase().includes(q)
+    );
+  }, [companies, searchQuery]);
 
   const totalEmails = emails.length;
   const sentCount = emails.filter(e => e.status === 'sent').length;
@@ -482,8 +498,23 @@ function MailListSection({
         </Button>
       )}
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-auto max-h-[55vh]">
+      {/* Search + Table */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="p-2 border-b bg-muted/30">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar empresa, contacto o email..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-muted-foreground mt-1.5">{filteredCompanies.length} de {companies.length} empresas</p>
+          )}
+        </div>
+        <div className="overflow-auto max-h-[50vh]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -498,16 +529,29 @@ function MailListSection({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies.map((c, i) => {
+            {filteredCompanies.map((c, i) => {
               const email = emailMap.get(c.id);
               const pres = presMap.get(c.id);
               const hasValuation = ['calculated', 'sent'].includes(c.status);
               const hasStudy = !!pres;
 
               return (
-                <TableRow key={c.id}>
+                <TableRow
+                  key={c.id}
+                  className={cn("cursor-pointer hover:bg-muted/50", email?.is_manually_edited && "bg-amber-50/50")}
+                  onClick={() => {
+                    if (email) {
+                      onEditEmail(email, c);
+                    } else {
+                      toast.info('Este email aún no ha sido generado. Genera los emails desde la pestaña "Template".');
+                    }
+                  }}
+                >
                   <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
-                  <TableCell className="font-medium text-sm max-w-[200px] truncate">{c.client_company}</TableCell>
+                  <TableCell className="font-medium text-sm max-w-[200px] truncate">
+                    {c.client_company}
+                    {email?.is_manually_edited && <span className="ml-1.5 text-amber-500" title="Editado manualmente">✏️</span>}
+                  </TableCell>
                   <TableCell className="text-sm">{c.client_name || '—'}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
                   <TableCell className="text-center">
@@ -533,40 +577,60 @@ function MailListSection({
                       <Badge variant="secondary" className="text-xs">Sin email</Badge>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreVertical className="h-3.5 w-3.5" />
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-0.5">
+                      {email && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Editar email"
+                          onClick={() => onEditEmail(email, c)}
+                        >
+                          <Edit3 className="h-3.5 w-3.5" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {email && (
-                          <>
-                            <DropdownMenuItem onClick={() => onEditEmail(email, c)}>
-                              <Edit3 className="h-3.5 w-3.5 mr-2" />Editar email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => onSendEmail(email.id)}
-                              disabled={email.status === 'sent'}
-                            >
-                              <Send className="h-3.5 w-3.5 mr-2" />Enviar
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        {!email && (
-                          <DropdownMenuItem disabled>
-                            <Mail className="h-3.5 w-3.5 mr-2" />Sin email generado
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {email && (
+                            <>
+                              <DropdownMenuItem onClick={() => onEditEmail(email, c)}>
+                                <Edit3 className="h-3.5 w-3.5 mr-2" />Editar email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => onSendEmail(email.id)}
+                                disabled={email.status === 'sent'}
+                              >
+                                <Send className="h-3.5 w-3.5 mr-2" />Enviar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem onClick={() => setManualSendTargets([{
+                            companyId: c.id, companyName: c.client_company, campaignId: campaign.id,
+                          }])}>
+                            <MailCheck className="h-3.5 w-3.5 mr-2" />Registrar envío manual
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          {!email && (
+                            <DropdownMenuItem disabled>
+                              <Mail className="h-3.5 w-3.5 mr-2" />Sin email generado
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Send all confirm */}
@@ -589,6 +653,14 @@ function MailListSection({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manual send dialog */}
+      <RegisterManualSendDialog
+        open={manualSendTargets.length > 0}
+        onOpenChange={(o) => { if (!o) setManualSendTargets([]); }}
+        targets={manualSendTargets}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
@@ -829,6 +901,7 @@ function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; cam
 
 // ─── Main MailStep ──────────────────────────────────────────────────────
 export function MailStep({ campaignId, campaign }: Props) {
+  const queryClient = useQueryClient();
   const { companies } = useCampaignCompanies(campaignId);
   const { presentations } = useCampaignPresentations(campaignId);
   const {
@@ -926,6 +999,10 @@ export function MailStep({ campaignId, campaign }: Props) {
           onSendEmail={sendEmail}
           onSendAll={async () => { await sendAllPending(); }}
           isSendingAll={isSendingAll}
+          onRefresh={() => {
+            queryClient.invalidateQueries({ queryKey: ['campaign-emails', campaignId] });
+            queryClient.invalidateQueries({ queryKey: ['campaign-companies', campaignId] });
+          }}
         />
       </TabsContent>
 

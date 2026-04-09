@@ -1,0 +1,1 @@
+ALTER TABLE outbound_list_companies ADD COLUMN consolidador boolean DEFAULT false;

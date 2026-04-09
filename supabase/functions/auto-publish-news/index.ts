@@ -24,41 +24,25 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth verification - skip for scheduled/cron calls
-  let body: any = {};
-  try {
-    body = await req.clone().json();
-  } catch {}
+  // Authentication: CRON_SECRET header, scheduled body flag, or JWT + admin check
+  const cronSecret = req.headers.get('X-Cron-Secret');
+  const expectedCronSecret = Deno.env.get('CRON_SECRET');
+  const isScheduledViaCronSecret = cronSecret && expectedCronSecret && cronSecret === expectedCronSecret;
 
-  const isScheduledCall = body?.scheduled === true;
+  const clonedReq = req.clone();
+  let isScheduledViaBody = false;
+  try {
+    const body = await clonedReq.json();
+    isScheduledViaBody = body?.scheduled === true;
+  } catch { /* no body */ }
+
+  const isScheduledCall = isScheduledViaCronSecret || isScheduledViaBody;
 
   if (!isScheduledCall) {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    try {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-      const supabaseAuth = createClient(supabaseUrl, supabaseKey);
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
-      if (authError || !user) {
-        return new Response(
-          JSON.stringify({ error: 'Token inválido o expirado' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    } catch (e) {
-      return new Response(
-        JSON.stringify({ error: 'Auth error' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[auto-publish-news] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
   }
 
   try {

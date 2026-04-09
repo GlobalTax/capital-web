@@ -3,10 +3,13 @@
 
 import React, { memo, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Trash2 } from 'lucide-react';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
 import { EditableDateCell } from '../shared/EditableDateCell';
+import { EditableCurrencyCell } from '../shared/EditableCurrencyCell';
 import { EditableSelect, SelectOption } from '../shared/EditableSelect';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
@@ -20,6 +23,7 @@ interface ContactRowProps {
   onSelect: () => void;
   onViewDetails: () => void;
   onPatchContact?: (id: string, updates: Partial<Contact>) => void;
+  onDelete?: (id: string) => void;
   style: React.CSSProperties;
 }
 
@@ -74,6 +78,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
   onSelect,
   onViewDetails,
   onPatchContact,
+  onDelete,
   style,
 }) => {
   const { update: updateField } = useContactInlineUpdate();
@@ -92,7 +97,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
     return activeStatuses.map(s => ({
       value: s.status_key,
       label: s.label,
-      icon: <span className="text-xs">{s.icon}</span>,
+      
       color: colorToCss[s.color] || '#6b7280',
     }));
   }, [activeStatuses]);
@@ -147,6 +152,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
     await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
   }, [contact.id, contact.origin, updateField, onPatchContact]);
 
+  const handleRevenueChange = useCallback(async (newValue: number | null) => {
+    onPatchContact?.(contact.id, { revenue: newValue ?? undefined });
+    await updateField(contact.id, contact.origin, 'revenue', newValue ?? 0);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
+
+  const handleEbitdaChange = useCallback(async (newValue: number | null) => {
+    onPatchContact?.(contact.id, { ebitda: newValue ?? undefined });
+    await updateField(contact.id, contact.origin, 'ebitda', newValue ?? 0);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
+
   return (
     <div
       style={style}
@@ -174,7 +189,12 @@ const ContactRow: React.FC<ContactRowProps> = ({
             <LeadFavoriteButton leadId={contact.id} size="sm" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-medium truncate text-foreground">{contact.name || 'Sin nombre'}</p>
+            <div className="flex items-center gap-1">
+              <p className="font-medium truncate text-foreground">{contact.name || 'Sin nombre'}</p>
+              {contact.is_possible_duplicate && (
+                <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-orange-400 text-orange-500 shrink-0">Dup</Badge>
+              )}
+            </div>
             <p className="text-muted-foreground truncate text-[10px]">{contact.email}</p>
           </div>
         </div>
@@ -224,13 +244,23 @@ const ContactRow: React.FC<ContactRowProps> = ({
         </div>
 
         {/* 6. Revenue */}
-        <div className="text-right text-muted-foreground">
-          {formatCurrency(contact.revenue || contact.empresa_facturacion)}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableCurrencyCell
+            value={contact.revenue || contact.empresa_facturacion}
+            onSave={handleRevenueChange}
+            emptyText="—"
+            displayClassName="text-muted-foreground"
+          />
         </div>
 
         {/* 7. EBITDA */}
-        <div className="text-right text-muted-foreground">
-          {formatCurrency(contact.ebitda)}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableCurrencyCell
+            value={contact.ebitda}
+            onSave={handleEbitdaChange}
+            emptyText="—"
+            displayClassName="text-muted-foreground"
+          />
         </div>
 
         {/* 8. Valuation */}
@@ -259,6 +289,19 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.phone || '-'}
         </div>
       </div>
+
+      {/* Delete button */}
+      {onDelete && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onDelete(contact.id)}
+            className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            title="Eliminar lead"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

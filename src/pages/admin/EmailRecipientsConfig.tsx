@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Plus, Trash2, Edit, Users, CheckCircle2, XCircle, Phone } from 'lucide-react';
+import { Mail, Plus, Trash2, Edit, Users, CheckCircle2, XCircle, Phone, EyeOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ROLES = [
@@ -30,13 +30,13 @@ const getRoleBadgeVariant = (role: string) => {
 };
 
 const EmailRecipientsConfig: React.FC = () => {
-  const { recipients, isLoading, createRecipient, updateRecipient, deleteRecipient, toggleDefaultCopy, toggleActive } = useEmailRecipientsConfig();
+  const { recipients, isLoading, createRecipient, updateRecipient, deleteRecipient, toggleDefaultCopy, toggleActive, toggleBcc } = useEmailRecipientsConfig();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingRecipient, setEditingRecipient] = useState<EmailRecipient | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_bcc: false, is_active: true });
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
+    setFormData({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_bcc: false, is_active: true });
     setEditingRecipient(null);
   };
 
@@ -59,13 +59,14 @@ const EmailRecipientsConfig: React.FC = () => {
       phone: recipient.phone || '',
       role: recipient.role,
       is_default_copy: recipient.is_default_copy,
+      is_bcc: recipient.is_bcc,
       is_active: recipient.is_active
     });
     setIsAddDialogOpen(true);
   };
 
   const activeCount = recipients?.filter(r => r.is_active).length || 0;
-  const defaultCount = recipients?.filter(r => r.is_default_copy && r.is_active).length || 0;
+  const bccCount = recipients?.filter(r => r.is_bcc && r.is_default_copy && r.is_active).length || 0;
 
   return (
     <div className="space-y-6">
@@ -148,6 +149,14 @@ const EmailRecipientsConfig: React.FC = () => {
                 />
               </div>
               <div className="flex items-center justify-between">
+                <Label htmlFor="is_bcc">Copia oculta (BCC)</Label>
+                <Switch
+                  id="is_bcc"
+                  checked={formData.is_bcc}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_bcc: checked })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
                 <Label htmlFor="is_active">Activo</Label>
                 <Switch
                   id="is_active"
@@ -194,12 +203,12 @@ const EmailRecipientsConfig: React.FC = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Con Copia por Defecto</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Copia Oculta (BCC)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-blue-500" />
-              <span className="text-2xl font-bold">{defaultCount}</span>
+              <EyeOff className="h-5 w-5 text-muted-foreground" />
+              <span className="text-2xl font-bold">{bccCount}</span>
             </div>
           </CardContent>
         </Card>
@@ -229,6 +238,7 @@ const EmailRecipientsConfig: React.FC = () => {
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead className="text-center">Copia por Defecto</TableHead>
+                  <TableHead className="text-center">BCC</TableHead>
                   <TableHead className="text-center">Activo</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -236,7 +246,14 @@ const EmailRecipientsConfig: React.FC = () => {
               <TableBody>
                 {recipients?.map((recipient) => (
                   <TableRow key={recipient.id} className={!recipient.is_active ? 'opacity-50' : ''}>
-                    <TableCell className="font-medium">{recipient.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {recipient.name}
+                        {recipient.is_bcc && recipient.is_default_copy && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">BCC</Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{recipient.email}</TableCell>
                     <TableCell>
                       {recipient.phone ? (
@@ -258,6 +275,13 @@ const EmailRecipientsConfig: React.FC = () => {
                         checked={recipient.is_default_copy}
                         onCheckedChange={(checked) => toggleDefaultCopy.mutate({ id: recipient.id, is_default_copy: checked })}
                         disabled={!recipient.is_active}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Switch
+                        checked={recipient.is_bcc}
+                        onCheckedChange={(checked) => toggleBcc.mutate({ id: recipient.id, is_bcc: checked })}
+                        disabled={!recipient.is_active || !recipient.is_default_copy}
                       />
                     </TableCell>
                     <TableCell className="text-center">
@@ -301,7 +325,7 @@ const EmailRecipientsConfig: React.FC = () => {
                 ))}
                 {recipients?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       No hay destinatarios configurados
                     </TableCell>
                   </TableRow>

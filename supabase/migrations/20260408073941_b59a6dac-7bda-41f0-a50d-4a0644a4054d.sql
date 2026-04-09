@@ -1,0 +1,1 @@
+ALTER TABLE public.valuation_campaigns ADD COLUMN followup_reminder_days integer DEFAULT NULL;

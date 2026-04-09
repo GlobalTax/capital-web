@@ -27,13 +27,18 @@ import { toast } from 'sonner';
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
   sector: string;
-  valuation_amount: number;
+  valuation_amount?: number;
   valuation_currency?: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  year: number;
+  ebitda_margin?: number;
+  rango_facturacion_min?: number | null;
+  rango_facturacion_max?: number | null;
+  rango_ebitda_min?: number | null;
+  rango_ebitda_max?: number | null;
+  year?: number;
   description: string;
   short_description?: string;
   is_featured: boolean;
@@ -50,7 +55,10 @@ interface Operation {
   urgency_level?: 'high' | 'medium' | 'low';
   interested_parties_count?: number;
   project_status?: string;
+  project_status_label?: string;
   expected_market_text?: string;
+  project_name?: string;
+  project_number?: string;
   // Resolved i18n fields
   resolved_description?: string;
   resolved_short_description?: string;
@@ -66,6 +74,7 @@ interface OperationCardProps {
 
 const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '', searchTerm }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const displayName = operation.project_name || operation.company_name || 'Operación confidencial';
   const { t } = useI18n();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCompare, removeFromCompare, isInCompare, canAddMore } = useCompare();
@@ -73,37 +82,24 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
   const isInWishlistNow = isInWishlist(operation.id);
   const inCompare = isInCompare(operation.id);
 
-  // Project status badge helper
-  const getProjectStatusBadge = (status?: string, releaseText?: string) => {
+  // Phase badge helper (from datos_proyecto.estado)
+  const getPhaseBadge = (status?: string, label?: string) => {
     switch (status) {
-      case 'active':
-        return { 
-          className: 'border-emerald-500/50 text-emerald-700 bg-emerald-50', 
-          text: t('operations.status.active'),
-          icon: '✓'
-        };
-      case 'upcoming':
-        return { 
-          className: 'border-amber-500/50 text-amber-700 bg-amber-50', 
-          text: releaseText ? `${t('operations.status.upcoming')} · ${releaseText}` : t('operations.status.upcoming'),
-          icon: '⏳'
-        };
-      case 'exclusive':
-        return { 
-          className: 'border-purple-500/50 text-purple-700 bg-purple-50', 
-          text: t('operations.status.exclusive'),
-          icon: '⭐'
-        };
+      case 'en_preparacion':
+        return { className: 'border-amber-500/50 text-amber-700 bg-amber-50', text: label || 'En Preparación', icon: '⏳' };
+      case 'go_to_market':
+        return { className: 'border-emerald-500/50 text-emerald-700 bg-emerald-50', text: label || 'Go to Market', icon: '✓' };
+      case 'negociacion_y_cierre':
+        return { className: 'border-purple-500/50 text-purple-700 bg-purple-50', text: label || 'Negociación y Cierre', icon: '⭐' };
       default:
         return null;
     }
   };
 
-  const projectStatusBadge = getProjectStatusBadge(operation.project_status, operation.expected_market_text);
+  const phaseBadge = getPhaseBadge(operation.project_status, operation.project_status_label);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
     if (isInWishlistNow) {
       removeFromWishlist(operation.id);
     } else {
@@ -118,6 +114,31 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
     } else if (canAddMore) {
       addToCompare(operation);
     }
+  };
+
+  // Check if this is a buy-side (acquisition) operation
+  const isBuySide = operation.deal_type === 'acquisition';
+
+  // For buy-side: use ranges; for sell-side: use single values
+  const hasRevenueRange = isBuySide && (operation.rango_facturacion_min || operation.rango_facturacion_max);
+  const hasEbitdaRange = isBuySide && (operation.rango_ebitda_min || operation.rango_ebitda_max);
+
+  // Calculate EBITDA margin dynamically if not provided (only for sell-side)
+  const ebitdaMargin = !isBuySide ? (
+    operation.ebitda_margin 
+    || (operation.revenue_amount && operation.ebitda_amount 
+      ? (operation.ebitda_amount / operation.revenue_amount * 100) 
+      : null)
+  ) : null;
+
+  // Format range helper
+  const formatRange = (min?: number | null, max?: number | null, currency = 'EUR') => {
+    if (min && max) {
+      return `${formatCurrency(normalizeValuationAmount(min), currency)} - ${formatCurrency(normalizeValuationAmount(max), currency)}`;
+    }
+    if (min) return `> ${formatCurrency(normalizeValuationAmount(min), currency)}`;
+    if (max) return `< ${formatCurrency(normalizeValuationAmount(max), currency)}`;
+    return null;
   };
 
   return (
@@ -138,11 +159,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   }`}
                   aria-label={inCompare ? t('operations.tooltip.removeCompare') : t('operations.tooltip.addCompare')}
                 >
-                  <Scale 
-                    className={`h-4 w-4 transition-colors ${
-                      inCompare ? 'text-primary' : 'text-gray-400'
-                    }`}
-                  />
+                  <Scale className={`h-4 w-4 transition-colors ${inCompare ? 'text-primary' : 'text-gray-400'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -162,11 +179,9 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   }`}
                   aria-label={isInWishlistNow ? t('operations.tooltip.removeWishlist') : t('operations.tooltip.addWishlist')}
                 >
-                  <Heart 
-                    className={`h-5 w-5 transition-colors ${
-                      isInWishlistNow ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'
-                    }`}
-                  />
+                  <Heart className={`h-5 w-5 transition-colors ${
+                    isInWishlistNow ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'
+                  }`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -178,37 +193,25 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           {/* Share Dropdown */}
           <ShareDropdown 
             operationId={operation.id} 
-            operationName={operation.company_name}
+            operationName={displayName}
           />
         </div>
 
         <div className="space-y-4">
           {/* Logo/Company Initial */}
           <div className="flex items-center space-x-3">
-            {operation.logo_url ? (
-              <img 
-                src={operation.logo_url} 
-                alt={`${operation.company_name} logo`}
-                className="w-12 h-12 rounded-lg object-contain bg-gray-50 p-2"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            ) : (
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <span className="text-primary font-bold text-lg">
-                  {operation.company_name.split(' ').map(word => word[0]).join('')}
-                </span>
-              </div>
-            )}
+            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+              <span className="text-primary font-bold text-lg">
+                {displayName.split(' ').map(word => word[0]).join('').substring(0, 2)}
+              </span>
+            </div>
             
             <div className="flex-1">
               <h3 className="font-semibold text-lg line-clamp-1">
                 {searchTerm ? (
-                  <span dangerouslySetInnerHTML={{ __html: highlightText(operation.company_name, searchTerm) }} />
+                  <span dangerouslySetInnerHTML={{ __html: highlightText(displayName, searchTerm) }} />
                 ) : (
-                  operation.company_name
+                  displayName
                 )}
               </h3>
               <div className="flex items-center gap-1 mt-1 flex-wrap">
@@ -217,39 +220,31 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                     {t('operations.badges.featured')}
                   </Badge>
                 )}
-                {isRecentOperation(operation.created_at, operation.updated_at, operation.is_new_override) && (
-                  <Badge className="text-xs bg-green-500 hover:bg-green-600">
-                    {t('operations.badges.new')}
-                  </Badge>
-                )}
-                {operation.urgency_level === 'high' && (
-                  <Badge className="text-xs bg-orange-500 hover:bg-orange-600">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    {t('operations.badges.highDemand')}
-                  </Badge>
-                )}
-                {operation.interested_parties_count && operation.interested_parties_count > 5 && (
-                  <Badge className="text-xs bg-purple-500 hover:bg-purple-600">
-                    {t('operations.badges.advancedProcess')}
-                  </Badge>
-                )}
-                {/* Project Status Badge */}
-                {projectStatusBadge && (
-                  <Badge variant="outline" className={`gap-1 text-xs ${projectStatusBadge.className}`}>
-                    <span>{projectStatusBadge.icon}</span>
-                    {projectStatusBadge.text}
+                {/* Phase Badge */}
+                {phaseBadge && (
+                  <Badge variant="outline" className={`gap-1 text-xs ${phaseBadge.className}`}>
+                    <span>{phaseBadge.icon}</span>
+                    {phaseBadge.text}
                   </Badge>
                 )}
               </div>
             </div>
           </div>
           
-          {/* Sector Badge - use translated sector */}
-          <Badge variant="outline" className="text-xs w-fit">
-            {operation.resolved_sector || operation.sector}
-          </Badge>
+          {/* Sector Badge */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="text-xs w-fit">
+              {operation.resolved_sector || operation.sector}
+            </Badge>
+            {operation.geographic_location && (
+              <Badge variant="outline" className="text-xs w-fit">
+                <MapPin className="w-3 h-3 mr-1" />
+                {operation.geographic_location}
+              </Badge>
+            )}
+          </div>
           
-          {/* Description - use translated description with fallback */}
+          {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-3">
             {(() => {
               const displayDescription = operation.resolved_short_description 
@@ -257,14 +252,12 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 || operation.short_description 
                 || operation.description;
               return searchTerm ? (
-                <span dangerouslySetInnerHTML={{ 
-                  __html: highlightText(displayDescription, searchTerm) 
-                }} />
+                <span dangerouslySetInnerHTML={{ __html: highlightText(displayDescription, searchTerm) }} />
               ) : displayDescription;
             })()}
           </p>
           
-          {/* Highlights - use translated highlights with fallback */}
+          {/* Highlights */}
           {((operation.resolved_highlights || operation.highlights) && 
            (operation.resolved_highlights || operation.highlights)!.length > 0) && (
             <div className="flex flex-wrap gap-1">
@@ -279,37 +272,56 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             </div>
           )}
           
-          {/* Details */}
+          {/* Financial Details */}
           <div className="space-y-3 pt-4 border-t">
-            {/* Financial Information */}
             <div className="space-y-2">
+              {/* Revenue / Revenue Range */}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('operations.card.revenue')}:</span>
+                <span className="text-muted-foreground">{isBuySide ? 'Rango Facturación' : t('operations.card.revenue')}:</span>
                 <span className="font-bold text-green-600">
-                  {operation.revenue_amount 
-                    ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
-                    : t('operations.card.inquire')
+                  {hasRevenueRange
+                    ? formatRange(operation.rango_facturacion_min, operation.rango_facturacion_max, operation.valuation_currency || 'EUR')
+                    : isBuySide
+                      ? t('operations.card.inquire')
+                      : operation.revenue_amount 
+                        ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
+                        : t('operations.card.inquire')
                   }
                 </span>
               </div>
+              {/* EBITDA / EBITDA Range */}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('operations.card.ebitda')}:</span>
+                <span className="text-muted-foreground">{isBuySide ? 'Rango EBITDA' : t('operations.card.ebitda')}:</span>
                 <span className="font-medium text-blue-600">
-                  {operation.ebitda_amount 
-                    ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
-                    : t('operations.card.inquire')
+                  {hasEbitdaRange
+                    ? formatRange(operation.rango_ebitda_min, operation.rango_ebitda_max, operation.valuation_currency || 'EUR')
+                    : isBuySide
+                      ? t('operations.card.inquire')
+                      : operation.ebitda_amount 
+                        ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
+                        : t('operations.card.inquire')
                   }
                 </span>
               </div>
+              {ebitdaMargin != null && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Margen EBITDA:</span>
+                  <span className="font-medium text-purple-600">
+                    {ebitdaMargin.toFixed(1)}%
+                  </span>
+                </div>
+              )}
             </div>
             
-            {/* Year and Company Size */}
+            {/* Year and Deal Type */}
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
-                <div>
-                  <span className="text-muted-foreground">{t('operations.card.year')}: </span>
-                  <span className="font-medium">{operation.year}</span>
-                </div>
+                {operation.year && (
+                  <div>
+                    <span className="text-muted-foreground">{t('operations.card.year')}: </span>
+                    <span className="font-medium">{operation.year}</span>
+                  </div>
+                )}
                 {operation.deal_type && (
                   <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                     operation.deal_type === 'sale' 
@@ -320,12 +332,6 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   </div>
                 )}
               </div>
-              {(operation.company_size_employees || operation.company_size) && (
-                <div>
-                  <span className="text-muted-foreground">{t('operations.card.employees')}: </span>
-                  <span className="font-medium">{operation.company_size_employees || operation.company_size}</span>
-                </div>
-              )}
             </div>
           </div>
           

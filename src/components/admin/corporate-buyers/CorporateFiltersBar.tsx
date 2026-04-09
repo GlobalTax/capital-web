@@ -2,9 +2,10 @@
 // CORPORATE BUYERS FILTERS BAR
 // =============================================
 
-import { Search, X } from 'lucide-react';
+import { Search, X, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ interface CorporateFiltersBarProps {
   filters: CorporateBuyersFilters;
   onFiltersChange: (filters: CorporateBuyersFilters) => void;
   countries: string[];
+  sectors?: string[];
 }
 
 const BUYER_TYPES: CorporateBuyerType[] = [
@@ -36,79 +38,115 @@ export const CorporateFiltersBar = ({
   filters,
   onFiltersChange,
   countries,
+  sectors = [],
 }: CorporateFiltersBarProps) => {
-  const hasActiveFilters = !!(filters.search || filters.buyer_type || filters.country);
+  const hasActiveFilters = !!(filters.search || filters.buyer_type || filters.country || filters.sector || filters.hasEmail);
 
   const clearFilters = () => {
     onFiltersChange({});
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/30 rounded-lg border border-border">
-      {/* Search */}
-      <div className="relative flex-1 min-w-[200px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar comprador..."
-          value={filters.search || ''}
-          onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-          className="pl-9"
-        />
+    <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-lg border border-border">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar comprador..."
+            value={filters.search || ''}
+            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
+            className="pl-9"
+          />
+        </div>
+
+        {/* Type filter */}
+        <Select
+          value={filters.buyer_type || 'all'}
+          onValueChange={(value) => 
+            onFiltersChange({ 
+              ...filters, 
+              buyer_type: value === 'all' ? undefined : value as CorporateBuyerType 
+            })
+          }
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los tipos</SelectItem>
+            {BUYER_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>
+                {BUYER_TYPE_LABELS[type]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Country filter */}
+        <Select
+          value={filters.country || 'all'}
+          onValueChange={(value) => 
+            onFiltersChange({ 
+              ...filters, 
+              country: value === 'all' ? undefined : value 
+            })
+          }
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="País" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los países</SelectItem>
+            {countries.map((country) => (
+              <SelectItem key={country} value={country}>
+                {country}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Sector filter */}
+        {sectors.length > 0 && (
+          <Select
+            value={filters.sector || 'all'}
+            onValueChange={(value) => 
+              onFiltersChange({ 
+                ...filters, 
+                sector: value === 'all' ? undefined : value 
+              })
+            }
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Sector" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los sectores</SelectItem>
+              {sectors.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
-      {/* Type filter */}
-      <Select
-        value={filters.buyer_type || 'all'}
-        onValueChange={(value) => 
-          onFiltersChange({ 
-            ...filters, 
-            buyer_type: value === 'all' ? undefined : value as CorporateBuyerType 
-          })
-        }
-      >
-        <SelectTrigger className="w-[160px]">
-          <SelectValue placeholder="Tipo" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todos los tipos</SelectItem>
-          {BUYER_TYPES.map((type) => (
-            <SelectItem key={type} value={type}>
-              {BUYER_TYPE_LABELS[type]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Country filter */}
-      <Select
-        value={filters.country || 'all'}
-        onValueChange={(value) => 
-          onFiltersChange({ 
-            ...filters, 
-            country: value === 'all' ? undefined : value 
-          })
-        }
-      >
-        <SelectTrigger className="w-[140px]">
-          <SelectValue placeholder="País" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todos los países</SelectItem>
-          {countries.map((country) => (
-            <SelectItem key={country} value={country}>
-              {country}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Clear filters */}
-      {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
-          <X className="h-4 w-4" />
-          Limpiar
-        </Button>
-      )}
+      {/* Quick filters */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+        <Badge
+          variant={filters.hasEmail ? 'default' : 'outline'}
+          className="cursor-pointer text-xs"
+          onClick={() => onFiltersChange({ ...filters, hasEmail: !filters.hasEmail || undefined })}
+        >
+          Con website
+        </Badge>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1">
+            <X className="h-3 w-3" />
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

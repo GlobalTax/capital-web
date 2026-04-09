@@ -21,13 +21,14 @@ import { EnhancedOperationsMobileView } from './EnhancedOperationsMobileView';
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
+  project_name?: string;
   sector: string;
-  valuation_amount: number;
-  valuation_currency: string;
+  valuation_amount?: number;
+  valuation_currency?: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  year: number;
+  year?: number;
   description: string;
   short_description?: string;
   is_featured: boolean;
@@ -37,7 +38,7 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
-  display_locations: string[];
+  display_locations?: string[];
   created_at?: string;
 }
 
@@ -136,7 +137,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                   {operation.logo_url && (
                     <img
                       src={operation.logo_url}
-                      alt={operation.company_name}
+                      alt={operation.project_name || operation.company_name || 'Operación'}
                       className="w-10 h-10 rounded-lg object-contain bg-muted p-1"
                     />
                   )}
@@ -146,7 +147,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
             case 'company':
               return (
                 <div key={column.key} style={{ width }} className="px-4 min-w-0">
-                  <div className="font-medium truncate">{operation.company_name}</div>
+                  <div className="font-medium truncate">{operation.project_name || operation.company_name || 'Operación confidencial'}</div>
                   <div className="flex items-center gap-1 flex-wrap mt-1">
                     {operation.is_featured && (
                       <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs gap-1">
@@ -296,7 +297,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                 <div key={column.key} style={{ width }} className="px-4 flex items-center justify-center gap-1">
                   <ShareDropdown 
                     operationId={operation.id}
-                    operationName={operation.company_name}
+                    operationName={operation.project_name || operation.company_name || 'Operación confidencial'}
                     triggerClassName="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     iconClassName="h-4 w-4"
                   />

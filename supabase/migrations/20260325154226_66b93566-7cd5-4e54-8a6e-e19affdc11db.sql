@@ -1,0 +1,1 @@
+ALTER TABLE public.campaign_presentations DROP CONSTRAINT IF EXISTS campaign_presentations_campaign_file_unique;

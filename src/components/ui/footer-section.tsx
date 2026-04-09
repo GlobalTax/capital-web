@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Linkedin, Twitter } from 'lucide-react';
+import { Phone, Mail, MapPin, Linkedin, Instagram } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 
@@ -20,7 +20,7 @@ export function Footerdemo() {
               </Link>
               <p className="text-gray-400 text-xs mt-1">
                 División de M&A de{' '}
-                <a href="https://nrro.es" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
+                <a href="https://nvrro.es/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
                   Navarro Tax &amp; Legal
                 </a>
               </p>
@@ -230,7 +230,7 @@ export function Footerdemo() {
             {/* Social Media Icons */}
             <div className="flex items-center space-x-4">
               <a 
-                href="https://www.linkedin.com/company/capittal" 
+                href="https://www.linkedin.com/company/capittal-ma-consulting/posts/?feedView=all" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
@@ -239,13 +239,13 @@ export function Footerdemo() {
                 <Linkedin className="h-5 w-5" />
               </a>
               <a 
-                href="https://twitter.com/capittal_es" 
+                href="https://www.instagram.com/capittal.es/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Twitter"
+                aria-label="Instagram"
               >
-                <Twitter className="h-5 w-5" />
+                <Instagram className="h-5 w-5" />
               </a>
             </div>
             

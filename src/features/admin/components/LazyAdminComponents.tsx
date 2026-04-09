@@ -18,6 +18,7 @@ export const LazyBlogEditorPage = lazy(() => import('@/pages/admin/BlogEditorPag
 export const LazyCaseStudiesManager = lazy(() => import('@/components/admin/CaseStudiesManager'));
 export const LazyTestimonialsManager = lazy(() => import('@/components/admin/TestimonialsManager'));
 export const LazyCarouselTestimonialsManager = lazy(() => import('@/components/admin/CarouselTestimonialsManager'));
+export const LazyCollaboratorTestimonialsManager = lazy(() => import('@/components/admin/CollaboratorTestimonialsManager'));
 export const LazyVentaEmpresasContentManager = lazy(() => import('@/components/admin/venta-empresas/VentaEmpresasContentManager'));
 export const LazyCarouselLogosManager = lazy(() => import('@/components/admin/CarouselLogosManager'));
 export const LazyTeamMembersManagerAdvanced = lazy(() => import('@/components/admin/TeamMembersManagerAdvanced'));
@@ -48,7 +49,7 @@ export const LazyLeadDetailPage = lazy(() => import('@/pages/admin/LeadDetailPag
 export const LazyAdminOperations = lazy(() => import('@/pages/admin/AdminOperations'));
 export const LazyOperationDetails = lazy(() => import('@/pages/admin/OperationDetails'));
 export const LazyOperationsDashboard = lazy(() => import('@/features/operations-management/components/dashboard').then(m => ({ default: m.OperationsDashboard })));
-export const LazyOperationsKanban = lazy(() => import('@/pages/admin/OperationsKanban'));
+
 
 // === JOBS ===
 export const LazyJobPostsManager = lazy(() => import('@/pages/admin/JobPostsManager').then(m => ({ default: m.JobPostsManager })));
@@ -97,6 +98,7 @@ export const LazyBuySideMandateDetailPage = lazy(() => import('@/pages/admin/Buy
 
 // === LEADS PIPELINE ===
 export const LazyLeadsPipelinePage = lazy(() => import('@/pages/admin/LeadsPipelinePage'));
+export const LazyBuyPipelinePage = lazy(() => import('@/pages/admin/BuyPipelinePage'));
 
 // === BOOKINGS ===
 export const LazyBookingsPage = lazy(() => import('@/components/admin/bookings').then(m => ({ default: m.BookingsManager })));

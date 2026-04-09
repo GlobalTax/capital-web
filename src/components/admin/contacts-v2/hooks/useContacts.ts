@@ -20,6 +20,9 @@ const DEFAULT_STATS: ContactStats = {
     acquisition: 0,
     company_acquisition: 0,
     advisor: 0,
+    sell: 0,
+    buyer_alert: 0,
+    rod_download: 0,
   },
   totalValuation: 0,
 };
@@ -61,26 +64,21 @@ export const useContacts = () => {
         formDisplayMap[f.id] = f.display_name || f.name;
       }
 
-      // Parallel fetch all contact sources (including legacy tables)
-      const [
-        { data: contactLeads },
-        { data: valuationLeads },
-        { data: collaboratorLeads },
-        { data: acquisitionLeads },
-        { data: advisorLeads },
-        { data: sellLeads },
-        { data: generalContactLeads },
-      ] = await Promise.all([
+      // Parallel fetch all contact sources with Promise.allSettled for resilience
+      // Uses .range(0, 4999) on large tables to bypass Supabase's default 1000-row limit
+      const settled = await Promise.allSettled([
         supabase
           .from('contact_leads')
           .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
         supabase
           .from('company_valuations')
           .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
         supabase
           .from('collaborator_applications')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
@@ -90,40 +88,104 @@ export const useContacts = () => {
           .from('acquisition_leads')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
         supabase
           .from('advisor_valuations')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
+        // sell_leads
         supabase
           .from('sell_leads')
-          .select('*')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
+        // general_contact_leads: select simple para evitar joins inexistentes
         supabase
           .from('general_contact_leads')
           .select('*')
           .order('created_at', { ascending: false }),
+        // company_acquisition_inquiries: select simple
+        supabase
+          .from('company_acquisition_inquiries')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('professional_valuations')
+          .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
+          .not('linked_lead_id', 'is', null),
+        // buyer_preferences (alert subscriptions)
+        supabase
+          .from('buyer_preferences')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        // buyer_contacts (ROD downloads)
+        supabase
+          .from('buyer_contacts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
       ]);
 
-      // Collect emails already in contact_leads to avoid duplicating legacy records
-      const contactLeadEmails = new Set(
-        (contactLeads || []).map((l: any) => l.email?.toLowerCase())
-      );
+      // Extract data safely — failed queries return empty arrays
+      const extractData = (r: PromiseSettledResult<any>) =>
+        r.status === 'fulfilled' ? (r.value?.data ?? []) : [];
 
-      // Transform to unified format
+      const contactLeads = extractData(settled[0]);
+      const valuationLeads = extractData(settled[1]);
+      const collaboratorLeads = extractData(settled[2]);
+      const acquisitionLeads = extractData(settled[3]);
+      const advisorLeads = extractData(settled[4]);
+      const sellLeads = extractData(settled[5]);
+      const generalContactLeads = extractData(settled[6]);
+      const companyAcquisitionLeads = extractData(settled[7]);
+      const proValData = extractData(settled[8]);
+      const buyerAlertLeads = extractData(settled[9]);
+      const rodDownloadLeads = extractData(settled[10]);
+
+      // Log any failed queries for debugging
+      settled.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          console.warn(`[useContacts] Query ${i} failed:`, r.reason);
+        } else if (r.value?.error) {
+          console.warn(`[useContacts] Query ${i} returned error:`, r.value.error.message);
+        }
+      });
+
+      // Build professional valuations lookup map (lead_id -> financial data)
+      const proValMap = new Map<string, { revenue?: number; ebitda?: number; valuation?: number }>();
+      for (const pv of (proValData || []) as any[]) {
+        if (pv.linked_lead_id) {
+          // Extract revenue from financial_years (latest year)
+          let revenue: number | undefined;
+          if (Array.isArray(pv.financial_years) && pv.financial_years.length > 0) {
+            const sorted = [...pv.financial_years].sort((a: any, b: any) => (b.year || 0) - (a.year || 0));
+            revenue = sorted[0]?.revenue ? Number(sorted[0].revenue) : undefined;
+          }
+          const ebitda = pv.normalized_ebitda ? Number(pv.normalized_ebitda) : (pv.reported_ebitda ? Number(pv.reported_ebitda) : undefined);
+          proValMap.set(pv.linked_lead_id, {
+            revenue,
+            ebitda,
+            valuation: pv.valuation_central ? Number(pv.valuation_central) : undefined,
+          });
+        }
+      }
+
+      // Transform to unified format (no email deduplication — duplicates are handled by is_possible_duplicate feature)
       const unified: Contact[] = [
-        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap)),
-        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap)),
-        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap)),
-        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap)),
-        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap)),
-        // Legacy tables - only include if not already in contact_leads
-        ...(sellLeads || [])
-          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
-          .map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
-        ...(generalContactLeads || [])
-          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
-          .map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
+        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap, proValMap)),
+        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap, proValMap)),
+        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap, proValMap)),
+        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap, proValMap)),
+        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap, proValMap)),
+        // Legacy tables - always include all records
+        ...(sellLeads || []).map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
+        ...(generalContactLeads || []).map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
+        // Company acquisition inquiries
+        ...(companyAcquisitionLeads || []).map((l: any) => transformLegacyLead(l, 'company_acquisition', formDisplayMap)),
+        // Buyer alert preferences
+        ...(buyerAlertLeads || []).map((l: any) => transformBuyerAlert(l)),
+        // ROD download contacts
+        ...(rodDownloadLeads || []).map((l: any) => transformRodDownload(l)),
       ];
 
       // Store all contacts (prospect filtering moved to filteredContacts memo)
@@ -142,18 +204,19 @@ export const useContacts = () => {
     fetchContacts();
 
     const channelName = `contacts-realtime-${instanceId.replace(/:/g, '-')}`;
+    const refetchAndInvalidate = () => {
+      fetchContacts();
+      queryClient.invalidateQueries({ queryKey: ['prospects'] });
+    };
     channelRef.current = supabase
       .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, () => {
-        fetchContacts();
-        // Cross-invalidation: also update prospects list
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, () => {
-        fetchContacts();
-        // Cross-invalidation: also update prospects list
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sell_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'general_contact_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_acquisition_inquiries' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'buyer_preferences' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'buyer_contacts' }, refetchAndInvalidate)
       .subscribe();
 
     return () => {
@@ -290,7 +353,8 @@ export const useContacts = () => {
 };
 
 // Transform helpers
-function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>): Contact {
+function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin,
@@ -301,14 +365,14 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     created_at: lead.created_at,
     lead_received_at: lead.lead_received_at || lead.created_at,
     status: lead.status || 'new',
-    lead_status_crm: lead.lead_status_crm,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     assigned_to: lead.assigned_to,
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
     empresa_facturacion: lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined,
-    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
-    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : pvFallback?.revenue),
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : pvFallback?.ebitda),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
     cif: lead.cif,
     industry: lead.industry || lead.sectors_of_interest,
     employee_range: lead.employee_range || lead.company_size,
@@ -320,12 +384,14 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,
+    is_from_pro_valuation: lead.referral === 'Valoración Pro' || proValMap?.has(lead.id) || false,
     priority: determinePriority(lead),
     is_hot_lead: determinePriority(lead) === 'hot',
   };
 }
 
-function transformValuation(lead: any, formDisplayMap: Record<string, string>): Contact {
+function transformValuation(lead: any, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin: 'valuation',
@@ -340,14 +406,14 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>): 
     cif: lead.cif,
     industry: lead.industry,
     employee_range: lead.employee_range,
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
-    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : pvFallback?.ebitda),
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : pvFallback?.revenue),
     location: lead.location,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,
-    lead_status_crm: lead.lead_status_crm,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     assigned_to: lead.assigned_to,
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
@@ -365,7 +431,8 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>): 
   };
 }
 
-function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Contact {
+function transformAdvisor(lead: any, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin: 'advisor',
@@ -378,9 +445,9 @@ function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Co
     cif: lead.cif,
     industry: lead.firm_type,
     employee_range: lead.employee_range,
-    revenue: lead.revenue ? Number(lead.revenue) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : pvFallback?.revenue,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : pvFallback?.ebitda,
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     acquisition_channel_id: lead.acquisition_channel_id,
@@ -388,6 +455,7 @@ function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Co
     lead_form: lead.lead_form,
     lead_form_name: lead.lead_form_ref?.name,
     lead_form_display_name: lead.lead_form ? formDisplayMap[lead.lead_form] : undefined,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     priority: lead.ebitda && Number(lead.ebitda) > 50000 ? 'hot' : 'warm',
     is_hot_lead: lead.ebitda && Number(lead.ebitda) > 50000,
   };
@@ -401,11 +469,54 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
   return 'cold';
 }
 
-// Transform legacy sell_leads and general_contact_leads
-function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact', formDisplayMap: Record<string, string>): Contact {
+function transformBuyerAlert(lead: any): Contact {
   return {
     id: lead.id,
-    origin: 'general' as ContactOrigin,
+    origin: 'buyer_alert',
+    name: lead.full_name || '',
+    email: lead.email,
+    phone: lead.phone || undefined,
+    company: lead.company || undefined,
+    created_at: lead.created_at || new Date().toISOString(),
+    lead_received_at: lead.created_at || new Date().toISOString(),
+    status: lead.is_active ? 'active' : 'inactive',
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    industry: lead.preferred_sectors?.join(', ') || undefined,
+    location: lead.preferred_locations?.join(', ') || undefined,
+    priority: 'warm',
+    is_hot_lead: false,
+  };
+}
+
+function transformRodDownload(lead: any): Contact {
+  return {
+    id: lead.id,
+    origin: 'rod_download',
+    name: lead.full_name || `${lead.first_name} ${lead.last_name || ''}`.trim(),
+    email: lead.email,
+    phone: lead.phone || undefined,
+    company: lead.company || undefined,
+    created_at: lead.created_at || new Date().toISOString(),
+    lead_received_at: lead.lead_received_at || lead.created_at || new Date().toISOString(),
+    status: lead.status || 'new',
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    industry: lead.sectors_of_interest || undefined,
+    location: lead.preferred_location || undefined,
+    priority: 'warm',
+    is_hot_lead: false,
+  };
+}
+
+// Transform legacy sell_leads, general_contact_leads, and company_acquisition_inquiries
+function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact' | 'company_acquisition', formDisplayMap: Record<string, string>): Contact {
+  const originMap: Record<string, ContactOrigin> = {
+    sell_lead: 'sell',
+    general_contact: 'general',
+    company_acquisition: 'company_acquisition',
+  };
+  return {
+    id: lead.id,
+    origin: originMap[sourceType] || 'general',
     name: lead.full_name || '',
     email: lead.email,
     phone: lead.phone,
@@ -413,7 +524,16 @@ function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_conta
     created_at: lead.created_at,
     lead_received_at: lead.created_at,
     status: lead.status || 'new',
-    lead_status_crm: lead.lead_status_crm || null,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    acquisition_channel_id: lead.acquisition_channel_id,
+    acquisition_channel_name: lead.acquisition_channel?.name,
+    lead_form: lead.lead_form,
+    lead_form_name: lead.lead_form_ref?.name,
+    lead_form_display_name: lead.lead_form ? (formDisplayMap[lead.lead_form] || lead.lead_form_ref?.name) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.annual_revenue ? Number(lead.annual_revenue) : undefined),
+    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
+    industry: lead.industry || lead.sectors_of_interest,
+    location: lead.location,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,

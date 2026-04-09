@@ -12,16 +12,13 @@ import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 const LandingCalculatorMetaInner = () => {
   const { t } = useI18n();
 
-  // Hreflang management for multilanguage support
+  // Hreflang - single language LP, only es + x-default
   useEffect(() => {
     const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
     existingHreflang.forEach(link => link.remove());
 
     const hreflangUrls = {
       'es': 'https://capittal.es/lp/calculadora-meta',
-      'ca': 'https://capittal.es/lp/calculadora-meta',
-      'val': 'https://capittal.es/lp/calculadora-meta',
-      'gl': 'https://capittal.es/lp/calculadora-meta',
       'x-default': 'https://capittal.es/lp/calculadora-meta'
     };
 

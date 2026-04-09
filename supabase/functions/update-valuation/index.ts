@@ -134,9 +134,18 @@ Deno.serve(async (req) => {
 
     // Map input keys to snake_case and whitelist
     const updateData: Record<string, any> = {};
+
+    // Sensitive fields that require authentication
+    const ADMIN_ONLY_FIELDS = new Set(['user_id', 'source_project', 'lead_source', 'lead_source_detail']);
+
     for (const [k, v] of Object.entries(body.data)) {
       const key = toSnakeCase(k);
       if (ALLOWED_FIELDS.has(key)) {
+        // Block sensitive fields for unauthenticated requests
+        if (ADMIN_ONLY_FIELDS.has(key) && !isAuthenticated) {
+          console.warn(`Blocked unauthenticated attempt to set sensitive field: ${key}`);
+          continue;
+        }
         updateData[key] = v;
       }
     }

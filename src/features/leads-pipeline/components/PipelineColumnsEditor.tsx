@@ -28,8 +28,13 @@ import {
 import { useLeadPipelineColumns, type LeadPipelineColumn } from '../hooks/useLeadPipelineColumns';
 import { ColumnEditModal } from './ColumnEditModal';
 import { ColumnDeleteDialog } from './ColumnDeleteDialog';
+import type { PipelineType } from '@/hooks/useContactStatuses';
 
-export const PipelineColumnsEditor: React.FC = () => {
+interface PipelineColumnsEditorProps {
+  pipelineType?: PipelineType;
+}
+
+export const PipelineColumnsEditor: React.FC<PipelineColumnsEditorProps> = ({ pipelineType }) => {
   const {
     columns,
     isLoading,
@@ -37,7 +42,7 @@ export const PipelineColumnsEditor: React.FC = () => {
     toggleVisibility,
     deleteColumn,
     isDeleting,
-  } = useLeadPipelineColumns();
+  } = useLeadPipelineColumns(pipelineType);
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingColumn, setEditingColumn] = useState<LeadPipelineColumn | null>(null);
@@ -137,7 +142,7 @@ export const PipelineColumnsEditor: React.FC = () => {
 
                             {/* Icon & Label */}
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="text-lg shrink-0">{column.icon}</span>
+                              
                               <span className="font-medium truncate">{column.label}</span>
                             </div>
 
@@ -226,6 +231,7 @@ export const PipelineColumnsEditor: React.FC = () => {
         column={editingColumn}
         isOpen={!!editingColumn}
         onClose={() => setEditingColumn(null)}
+        pipelineType={pipelineType}
       />
 
       {/* Add Column Modal */}
@@ -233,6 +239,7 @@ export const PipelineColumnsEditor: React.FC = () => {
         column={null}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        pipelineType={pipelineType}
       />
 
       {/* Delete Confirmation Dialog */}

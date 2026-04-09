@@ -130,5 +130,17 @@ export const staticLandingPages: StaticLandingPage[] = [
     features: ['Formulario Directo', 'Multidioma ES/EN', 'Sin Marketplace', 'LinkedIn Optimizada'],
     isActive: true,
     lastUpdated: '2025-01-20'
+  },
+  {
+    id: 'lp-consulta-oportunidades',
+    title: 'Consulta Oportunidades',
+    slug: 'consulta-oportunidades',
+    url: '/lp/consulta-oportunidades',
+    type: 'conversion',
+    description: 'Formulario multi-select para consultar sobre múltiples oportunidades de inversión del catálogo ROD',
+    source_project: 'lp-consulta-oportunidades',
+    features: ['Multi-Select Operaciones', 'Pre-selección vía Query Param', 'Honeypot', 'Rate Limiting', 'Lead Capture'],
+    isActive: true,
+    lastUpdated: '2025-03-19'
   }
 ];

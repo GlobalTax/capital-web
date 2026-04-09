@@ -46,6 +46,7 @@ export type ActivityType =
 
 export interface PipelineLead {
   id: string;
+  origin: 'valuation' | 'contact';
   contact_name: string;
   company_name: string;
   email: string;
@@ -55,6 +56,8 @@ export interface PipelineLead {
   final_valuation: number | null;
   revenue: number | null;
   ebitda: number | null;
+  employee_range: string | null;
+  location: string | null;
   created_at: string;
   assigned_to: string | null;
   assigned_at: string | null;
@@ -69,6 +72,9 @@ export interface PipelineLead {
   notes: string | null;
   valuation_range_min: number | null;
   valuation_range_max: number | null;
+  acquisition_channel_id: string | null;
+  lead_form: string | null;
+  empresa_id: string | null;
 }
 
 export interface PipelineColumn {
@@ -79,18 +85,18 @@ export interface PipelineColumn {
 }
 
 export const PIPELINE_COLUMNS: PipelineColumn[] = [
-  { id: 'nuevo', label: 'Nuevos', color: 'bg-blue-500', icon: '📥' },
-  { id: 'contactando', label: 'Contactando', color: 'bg-yellow-500', icon: '📞' },
-  { id: 'calificado', label: 'Calificados', color: 'bg-green-500', icon: '✅' },
-  { id: 'fase0_activo', label: 'Pre-Mandato', color: 'bg-orange-500', icon: '📋' },
-  { id: 'fase0_bloqueado', label: 'Bloqueado (NDA)', color: 'bg-red-400', icon: '🔒' },
-  { id: 'propuesta_enviada', label: 'Propuesta Enviada', color: 'bg-purple-500', icon: '📄' },
-  { id: 'mandato_propuesto', label: 'Mandato Propuesto', color: 'bg-indigo-500', icon: '📝' },
-  { id: 'negociacion', label: 'Negociación', color: 'bg-orange-500', icon: '🤝' },
-  { id: 'mandato_firmado', label: 'Mandato Firmado', color: 'bg-emerald-500', icon: '✍️' },
-  { id: 'en_espera', label: 'En Espera', color: 'bg-gray-500', icon: '⏸️' },
-  { id: 'ganado', label: 'Ganados', color: 'bg-emerald-600', icon: '🏆' },
-  { id: 'perdido', label: 'Perdidos', color: 'bg-red-500', icon: '❌' },
+  { id: 'nuevo', label: 'Nuevos', color: 'bg-blue-500', icon: '' },
+  { id: 'contactando', label: 'Contactando', color: 'bg-yellow-500', icon: '' },
+  { id: 'calificado', label: 'Calificados', color: 'bg-green-500', icon: '' },
+  { id: 'fase0_activo', label: 'Pre-Mandato', color: 'bg-orange-500', icon: '' },
+  { id: 'fase0_bloqueado', label: 'Bloqueado (NDA)', color: 'bg-red-400', icon: '' },
+  { id: 'propuesta_enviada', label: 'Propuesta Enviada', color: 'bg-purple-500', icon: '' },
+  { id: 'mandato_propuesto', label: 'Mandato Propuesto', color: 'bg-indigo-500', icon: '' },
+  { id: 'negociacion', label: 'Negociación', color: 'bg-orange-500', icon: '' },
+  { id: 'mandato_firmado', label: 'Mandato Firmado', color: 'bg-emerald-500', icon: '' },
+  { id: 'en_espera', label: 'En Espera', color: 'bg-gray-500', icon: '' },
+  { id: 'ganado', label: 'Ganados', color: 'bg-emerald-600', icon: '' },
+  { id: 'perdido', label: 'Perdidos', color: 'bg-red-500', icon: '' },
 ];
 
 export const ACTIVITY_LABELS: Record<ActivityType, string> = {

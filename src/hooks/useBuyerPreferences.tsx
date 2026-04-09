@@ -5,8 +5,11 @@ import { toast } from 'sonner';
 
 interface BuyerPreferences {
   id: string;
-  user_id: string;
+  user_id?: string;
   email: string;
+  full_name?: string;
+  phone?: string;
+  company?: string;
   preferred_sectors?: string[];
   preferred_locations?: string[];
   min_valuation?: number;
@@ -40,24 +43,47 @@ export const useBuyerPreferences = () => {
 
   const savePreferences = useMutation({
     mutationFn: async (prefs: Partial<BuyerPreferences>) => {
-      if (!user) throw new Error('User not authenticated');
+      const payload: any = {
+        email: prefs.email,
+        full_name: prefs.full_name,
+        phone: prefs.phone,
+        company: prefs.company,
+        preferred_sectors: prefs.preferred_sectors,
+        preferred_locations: prefs.preferred_locations,
+        min_valuation: prefs.min_valuation,
+        max_valuation: prefs.max_valuation,
+        alert_frequency: prefs.alert_frequency,
+        is_active: prefs.is_active,
+      };
+
+      // If user is authenticated, link to their account
+      if (user) {
+        payload.user_id = user.id;
+        if (!payload.email) payload.email = user.email;
+      }
+
+      if (!payload.email) throw new Error('Email is required');
 
       const { data, error } = await supabase
         .from('buyer_preferences')
-        .upsert({
-          user_id: user.id,
-          email: user.email!,
-          ...prefs
-        })
+        .upsert(payload, { onConflict: user ? 'user_id' : undefined })
         .select()
         .single();
 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['buyer-preferences'] });
-      toast.success('Preferencias guardadas');
+      toast.success('Preferencias guardadas correctamente');
+      
+      // Fire-and-forget: send notification emails
+      supabase.functions.invoke('send-buyer-alert-notification', {
+        body: { preferences: data }
+      }).then(res => {
+        if (res.error) console.error('Error sending buyer alert notification:', res.error);
+        else console.log('Buyer alert notification sent successfully');
+      }).catch(err => console.error('Error invoking buyer alert notification:', err));
     },
     onError: (error: any) => {
       console.error('Error saving preferences:', error);

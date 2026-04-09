@@ -67,7 +67,7 @@ export const useSectorCaseStudy = (
       // Buscar operaciones activas del sector, priorizando destacadas
       const { data, error } = await supabase
         .from('company_operations')
-        .select('id, company_name, sector, subsector, short_description, description, valuation_amount, ebitda_amount, ebitda_multiple, highlights, is_featured, created_at')
+        .select('id, company_name, project_name, sector, subsector, short_description, description, valuation_amount, ebitda_amount, ebitda_multiple, highlights, is_featured, created_at')
         .eq('is_active', true)
         .or(`is_deleted.is.null,is_deleted.eq.false`)
         .in('sector', sectorVariants)
@@ -118,7 +118,7 @@ export const useSectorCaseStudy = (
     }
 
     const caseStudy: CaseStudyData = {
-      companyName: operation.company_name,
+      companyName: operation.project_name || operation.company_name || 'Operación confidencial',
       sector: operation.subsector || operation.sector,
       description: operation.short_description || operation.description || '',
       metrics,

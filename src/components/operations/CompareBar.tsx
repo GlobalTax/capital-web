@@ -32,11 +32,11 @@ export const CompareBar: React.FC = () => {
                   variant="secondary"
                   className="flex items-center gap-1 py-1.5 px-3 max-w-[150px]"
                 >
-                  <span className="truncate text-xs">{op.company_name}</span>
+                  <span className="truncate text-xs">{op.project_name || op.company_name}</span>
                   <button
                     onClick={() => removeFromCompare(op.id)}
                     className="ml-1 hover:text-destructive transition-colors"
-                    aria-label={`Quitar ${op.company_name} de comparación`}
+                    aria-label={`Quitar ${op.project_name || op.company_name} de comparación`}
                   >
                     <X className="h-3 w-3" />
                   </button>

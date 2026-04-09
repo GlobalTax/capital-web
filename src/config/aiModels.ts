@@ -3,6 +3,15 @@ import { AIModel } from '@/types/aiContent';
 
 export const AI_MODELS: AIModel[] = [
   {
+    id: 'claude-sonnet-4-20250514',
+    name: 'Claude Sonnet 4',
+    description: 'Modelo principal — máximo rendimiento en análisis y contenido',
+    strengths: ['Análisis profundo', 'Estructura clara', 'Precisión técnica', 'Razonamiento avanzado'],
+    maxTokens: 200000,
+    costPerToken: 0.003,
+    provider: 'anthropic'
+  },
+  {
     id: 'gpt-5-2025-08-07',
     name: 'GPT-5',
     description: 'Modelo flagship de OpenAI, máximo rendimiento',
@@ -30,15 +39,6 @@ export const AI_MODELS: AIModel[] = [
     provider: 'openai'
   },
   {
-    id: 'claude-3-5-sonnet-20241022',
-    name: 'Claude 3.5 Sonnet',
-    description: 'Excelente para análisis y contenido estructurado',
-    strengths: ['Análisis profundo', 'Estructura clara', 'Precisión técnica'],
-    maxTokens: 200000,
-    costPerToken: 0.003,
-    provider: 'anthropic'
-  },
-  {
     id: 'llama-3.1-sonar-large-128k-online',
     name: 'Perplexity Sonar Large',
     description: 'Acceso a información actualizada en tiempo real',
@@ -54,13 +54,13 @@ export const getOptimalModel = (type: string, complexity: 'low' | 'medium' | 'hi
     case 'research':
       return 'llama-3.1-sonar-large-128k-online';
     case 'content':
-      return complexity === 'high' ? 'gpt-5-2025-08-07' : 'gpt-5-mini-2025-08-07';
+      return complexity === 'high' ? 'claude-sonnet-4-20250514' : 'claude-sonnet-4-20250514';
     case 'seo':
     case 'tags':
-      return 'gpt-5-nano-2025-08-07';
+      return 'claude-sonnet-4-20250514';
     case 'title':
-      return 'claude-3-5-sonnet-20241022';
+      return 'claude-sonnet-4-20250514';
     default:
-      return 'gpt-5-mini-2025-08-07';
+      return 'claude-sonnet-4-20250514';
   }
 };

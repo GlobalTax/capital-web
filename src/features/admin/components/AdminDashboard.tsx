@@ -162,6 +162,8 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Timeline de actividad - ancho completo */}
+
+        {/* Timeline de actividad - ancho completo */}
         <div className="mt-4 md:mt-6">
           <ActivityTimeline />
         </div>

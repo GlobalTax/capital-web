@@ -23,7 +23,7 @@ const services: Service[] = [
     image: serviceValoracion,
     title: 'Valoración de empresas',
     description: 'Informes de valoración profesionales basados en múltiples metodologías y comparables de mercado.',
-    href: '/servicios/valoracion',
+    href: '/servicios/valoraciones',
   },
   {
     image: serviceDueDiligence,

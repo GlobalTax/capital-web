@@ -9,12 +9,12 @@ export const collaboratorsTranslations = {
     
     // Hero Section
     'collab.hero.badge': '⭐ Programa Exclusivo',
-    'collab.hero.title': 'Únete al equipo de expertos en M&A',
+    'collab.hero.title': 'Conviértete en Colaborador',
     'collab.hero.subtitle': 'Forma parte de nuestra red de profesionales y accede a oportunidades exclusivas de valoración y transacciones',
-    'collab.hero.stat1': 'Col·laboradors Actius',
+    'collab.hero.stat1': 'Colaboradores Activos',
     'collab.hero.stat2': 'Valor Gestionado',
     'collab.hero.stat3': 'Satisfacción',
-    'collab.hero.cta_apply': 'Aplicar Ahora',
+    'collab.hero.cta_apply': 'Colabora Ahora',
     'collab.hero.cta_requirements': 'Requisitos',
     'collab.hero.dashboard_title': 'Red de Colaboradores - Panel de Control',
     'collab.hero.dashboard_new': '+12 Nuevos',

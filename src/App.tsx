@@ -26,7 +26,9 @@ function AppContent() {
   if (hostRedirect) return hostRedirect;
 
   if (!isOnline) {
-    return <OfflineState onRetry={() => window.location.reload()} />;
+    return (
+      <OfflineState onRetry={() => window.location.reload()} />
+    );
   }
 
   return (

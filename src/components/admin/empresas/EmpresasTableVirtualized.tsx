@@ -7,6 +7,7 @@ import React, { memo, useCallback, useMemo, useState, useRef, useEffect } from '
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
   Building2,
@@ -47,6 +48,8 @@ interface EmpresasTableVirtualizedProps {
   onEdit: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
   height?: number;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 export type SortConfig = {
@@ -62,6 +65,8 @@ interface RowData {
   showFavorites: boolean;
   visibleColumns: EmpresaTableColumn[];
   columnWidths: Record<string, number>;
+  selectedIds?: Set<string>;
+  onToggleSelection?: (id: string) => void;
 }
 
 const ROW_HEIGHT = 52;
@@ -385,7 +390,7 @@ const renderCellContent = (
 
 // ========== ROW COMPONENT ==========
 const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData>) => {
-  const { empresas, onEdit, onDelete, onNavigate, visibleColumns, columnWidths } = data;
+  const { empresas, onEdit, onDelete, onNavigate, visibleColumns, columnWidths, selectedIds, onToggleSelection } = data;
   const empresa = empresas[index];
 
   return (
@@ -397,6 +402,15 @@ const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData
       )}
       onClick={() => onNavigate(empresa.id)}
     >
+      {onToggleSelection && (
+        <div className="flex items-center justify-center flex-shrink-0" style={{ width: 40, minWidth: 40 }} onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={selectedIds?.has(empresa.id) || false}
+            onCheckedChange={() => onToggleSelection(empresa.id)}
+            aria-label={`Seleccionar ${empresa.nombre}`}
+          />
+        </div>
+      )}
       {visibleColumns.map((column) => (
         <div
           key={column.column_key}
@@ -477,18 +491,29 @@ const TableHeader = memo(({
   sortConfig, 
   onSort,
   columnWidths,
-  totalWidth
+  totalWidth,
+  selectable,
+  allSelected,
+  onToggleAll,
 }: { 
   visibleColumns: EmpresaTableColumn[];
   sortConfig: SortConfig;
   onSort: (key: string) => void;
   columnWidths: Record<string, number>;
   totalWidth: number;
+  selectable?: boolean;
+  allSelected?: boolean;
+  onToggleAll?: () => void;
 }) => (
   <div 
     className="flex items-center bg-muted/50 border-b border-border py-2"
-    style={{ width: totalWidth, minWidth: totalWidth }}
+    style={{ width: totalWidth + (selectable ? 40 : 0), minWidth: totalWidth + (selectable ? 40 : 0) }}
   >
+    {selectable && (
+      <div className="flex items-center justify-center flex-shrink-0" style={{ width: 40, minWidth: 40 }}>
+        <Checkbox checked={allSelected} onCheckedChange={onToggleAll} aria-label="Seleccionar todos" />
+      </div>
+    )}
     {visibleColumns.map((column) => (
       <SortableHeader 
         key={column.column_key} 
@@ -549,7 +574,10 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   onEdit,
   onDelete,
   height = 500,
+  selectedIds,
+  onSelectionChange,
 }) => {
+  const selectable = !!onSelectionChange;
   const navigate = useNavigate();
   const { visibleColumns, isLoading: isLoadingColumns } = useEmpresasTableColumns();
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -557,8 +585,8 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   const listRef = useRef<List>(null);
 
   const handleNavigate = useCallback((id: string) => {
-    navigate(`/admin/empresas/${id}`);
-  }, [navigate]);
+    window.open(`https://godeal.es/empresas/${id}`, '_blank');
+  }, []);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig(current => {
@@ -631,6 +659,23 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     });
   }, [empresas, sortConfig]);
 
+  const toggleAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (selectedIds?.size === sortedEmpresas.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(sortedEmpresas.map(e => e.id)));
+    }
+  }, [sortedEmpresas, selectedIds, onSelectionChange]);
+
+  const toggleOne = useCallback((id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  }, [selectedIds, onSelectionChange]);
+
   const itemData = useMemo<RowData>(() => ({
     empresas: sortedEmpresas,
     onEdit,
@@ -639,7 +684,9 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     showFavorites,
     visibleColumns,
     columnWidths,
-  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns, columnWidths]);
+    selectedIds,
+    onToggleSelection: selectable ? toggleOne : undefined,
+  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns, columnWidths, selectedIds, selectable, toggleOne]);
 
   const isLoading = isLoadingData || isLoadingColumns;
 
@@ -658,6 +705,7 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   }
 
   const listHeight = Math.min(height, empresas.length * ROW_HEIGHT);
+  const effectiveWidth = totalWidth + (selectable ? 40 : 0);
 
   return (
     <div className="border border-border rounded-lg overflow-visible">
@@ -667,7 +715,7 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
         className="overflow-x-auto overflow-y-visible"
       >
         {/* Inner container with fixed width */}
-        <div style={{ minWidth: totalWidth }}>
+        <div style={{ minWidth: effectiveWidth }}>
           {/* Header */}
           <TableHeader 
             visibleColumns={visibleColumns} 
@@ -675,13 +723,16 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
             onSort={handleSort}
             columnWidths={columnWidths}
             totalWidth={totalWidth}
+            selectable={selectable}
+            allSelected={sortedEmpresas.length > 0 && selectedIds?.size === sortedEmpresas.length}
+            onToggleAll={toggleAll}
           />
           
           {/* Virtualized List */}
           <List
             ref={listRef}
             height={listHeight}
-            width={totalWidth}
+            width={effectiveWidth}
             itemCount={sortedEmpresas.length}
             itemSize={ROW_HEIGHT}
             itemData={itemData}

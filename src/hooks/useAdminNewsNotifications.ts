@@ -3,43 +3,66 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminNewsNotification {
   id: string;
-  type: 'new_pending_news' | 'auto_published' | 'scrape_error' | 'process_complete';
+  type: 'new_pending_news' | 'auto_published' | 'scrape_error' | 'process_complete' | 'lead_assignment';
   title: string;
   message: string | null;
   metadata: Record<string, unknown>;
   is_read: boolean;
   read_at: string | null;
   created_at: string;
+  source?: 'news' | 'general';
 }
 
 export const useAdminNewsNotifications = () => {
   const queryClient = useQueryClient();
 
-  // Fetch notifications
+  // Fetch notifications from both tables
   const { data: notifications, isLoading, refetch } = useQuery({
     queryKey: ['admin-news-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch news notifications
+      const { data: newsData, error: newsError } = await supabase
         .from('admin_notifications_news')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
-      return data as AdminNewsNotification[];
+      if (newsError) throw newsError;
+
+      // Fetch general admin notifications (lead assignments, etc.)
+      const { data: generalData, error: generalError } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (generalError) throw generalError;
+
+      // Merge and sort by created_at
+      const newsNotifs = (newsData || []).map(n => ({ ...n, source: 'news' as const }));
+      const generalNotifs = (generalData || []).map(n => ({ ...n, source: 'general' as const }));
+      
+      const merged = [...newsNotifs, ...generalNotifs]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 30);
+
+      return merged as AdminNewsNotification[];
     },
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 60000, // Refetch every minute
+    staleTime: 30000,
+    refetchInterval: 60000,
   });
 
   // Unread count
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
 
-  // Mark as read mutation
+  // Mark as read mutation - tries both tables
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
+      const notification = notifications?.find(n => n.id === id);
+      const table = notification?.source === 'general' ? 'admin_notifications' : 'admin_notifications_news';
+      
       const { error } = await supabase
-        .from('admin_notifications_news')
+        .from(table)
         .update({ 
           is_read: true, 
           read_at: new Date().toISOString() 
@@ -53,18 +76,22 @@ export const useAdminNewsNotifications = () => {
     },
   });
 
-  // Mark all as read
+  // Mark all as read in both tables
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from('admin_notifications_news')
-        .update({ 
-          is_read: true, 
-          read_at: new Date().toISOString() 
-        })
-        .eq('is_read', false);
+      const [r1, r2] = await Promise.all([
+        supabase
+          .from('admin_notifications_news')
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .eq('is_read', false),
+        supabase
+          .from('admin_notifications')
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .eq('is_read', false),
+      ]);
 
-      if (error) throw error;
+      if (r1.error) throw r1.error;
+      if (r2.error) throw r2.error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-news-notifications'] });

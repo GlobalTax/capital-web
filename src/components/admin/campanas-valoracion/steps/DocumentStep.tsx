@@ -134,7 +134,7 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (files) => files[0] && uploadFile(files[0]),
-    accept: { 'application/pdf': ['.pdf'] },
+    accept: { 'application/pdf': ['.pdf'], 'application/vnd.ms-powerpoint': ['.ppt'], 'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'] },
     multiple: false,
     disabled: isUploading,
   });
@@ -145,10 +145,10 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Documento PDF
+            Documento PDF / PowerPoint
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Sube el PDF que se adjuntará a todos los emails de esta campaña
+            Sube el PDF o PowerPoint que se adjuntará a todos los emails de esta campaña
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

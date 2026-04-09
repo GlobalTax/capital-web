@@ -68,8 +68,16 @@ serve(async (req) => {
       }
 
       if (action === "sign") {
+        const bucket = body.bucket as string || "campaign-presentations";
+        const allowedSignBuckets = ["campaign-presentations", "market-studies"];
+        if (!allowedSignBuckets.includes(bucket)) {
+          return new Response(
+            JSON.stringify({ error: `Bucket no permitido: ${bucket}` }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
         const { data, error } = await adminClient.storage
-          .from("campaign-presentations")
+          .from(bucket)
           .createSignedUrl(path, 3600);
 
         if (error) {
@@ -84,6 +92,44 @@ serve(async (req) => {
           JSON.stringify({ signedUrl: data.signedUrl }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
+      }
+
+      if (action === "download_blob") {
+        const bucket = body.bucket as string || "campaign-presentations";
+        const allowedDownloadBuckets = ["campaign-presentations", "market-studies"];
+        if (!allowedDownloadBuckets.includes(bucket)) {
+          return new Response(
+            JSON.stringify({ error: `Bucket no permitido: ${bucket}` }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        const { data: fileData, error: dlError } = await adminClient.storage
+          .from(bucket)
+          .download(path);
+
+        if (dlError || !fileData) {
+          console.error("[upload-campaign-presentation] download_blob error:", dlError?.message);
+          return new Response(
+            JSON.stringify({ error: dlError?.message || "No se pudo descargar" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        const ext = path.split('.').pop()?.toLowerCase() || '';
+        const mimeMap: Record<string, string> = {
+          pdf: 'application/pdf',
+          ppt: 'application/vnd.ms-powerpoint',
+          pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        };
+        const contentType = mimeMap[ext] || 'application/octet-stream';
+
+        return new Response(fileData, {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": contentType,
+            "Content-Disposition": `attachment; filename="${body.fileName || path}"`,
+          },
+        });
       }
 
       if (action === "delete") {
@@ -108,7 +154,7 @@ serve(async (req) => {
       if (action === "upload_blob") {
         const bucket = body.bucket as string;
         const base64 = body.base64 as string;
-        const allowedBuckets = ["campaign-presentations", "valuations"];
+        const allowedBuckets = ["campaign-presentations", "valuations", "market-studies"];
 
         if (!bucket || !base64) {
           return new Response(

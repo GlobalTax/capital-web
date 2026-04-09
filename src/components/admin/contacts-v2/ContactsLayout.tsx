@@ -7,20 +7,36 @@ import { RefreshCw } from 'lucide-react';
 import { useContacts } from './hooks/useContacts';
 import { useFavoriteLeadIds } from '@/hooks/useCorporateFavorites';
 import { useContactSelection } from '@/features/contacts';
-import { Contact, TabType } from './types';
+import { Contact, ContactOrigin, TabType } from './types';
 import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
 import VirtualContactsTable from './VirtualContactsTable';
 import ContactDetailSheet from '../contacts/ContactDetailSheet';
-import { ContactsPipelineView } from '../contacts/pipeline';
+
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+const ORIGIN_TABLE_MAP: Record<ContactOrigin, string> = {
+  contact: 'contact_leads',
+  valuation: 'company_valuations',
+  collaborator: 'collaborator_applications',
+  acquisition: 'acquisition_leads',
+  company_acquisition: 'company_acquisition_inquiries',
+  general: 'general_contact_leads',
+  advisor: 'advisor_valuations',
+  sell: 'sell_leads',
+  buyer_alert: 'buyer_preferences',
+  rod_download: 'buyer_contacts',
+};
 
 const ContactsLayout: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact, patchContacts } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
   
-  const [activeTab, setActiveTab] = useState<TabType>('favorites');
+  const [activeTab, setActiveTab] = useState<TabType>('directory');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -48,6 +64,37 @@ const ContactsLayout: React.FC = () => {
   const handleNavigateToFull = (contact: Contact) => {
     setSelectedContact(null);
     navigate(`/admin/contacts/${contact.origin}_${contact.id}`);
+  };
+
+  const handleDeleteSingle = async (id: string) => {
+    const confirmed = window.confirm('⚠️ ¿Eliminar DEFINITIVAMENTE este lead?\n\nEsta acción NO se puede deshacer.');
+    if (!confirmed) return;
+
+    const contact = displayedContacts.find(c => c.id === id);
+    if (!contact) return;
+
+    const table = ORIGIN_TABLE_MAP[contact.origin];
+    if (!table) {
+      toast({ title: 'Error', description: 'Tipo de lead no soportado', variant: 'destructive' });
+      return;
+    }
+
+    // Nullify FK references in empresas before deleting valuations/advisor_valuations
+    if (table === 'company_valuations' || table === 'advisor_valuations') {
+      await (supabase.from('empresas') as any)
+        .update({ source_valuation_id: null })
+        .eq('source_valuation_id', id);
+    }
+
+    const { error } = await (supabase.from(table as any) as any).delete().eq('id', id);
+
+    if (error) {
+      toast({ title: 'Error al eliminar', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: '✓ Lead eliminado permanentemente' });
+    refetch();
   };
 
   if (isLoading) {
@@ -81,6 +128,7 @@ const ContactsLayout: React.FC = () => {
             onSelectAll={selectAll}
             onViewDetails={handleViewDetails}
             onPatchContact={patchContact}
+            onDelete={handleDeleteSingle}
             isLoading={isFavoritesLoading}
           />
         );
@@ -94,18 +142,11 @@ const ContactsLayout: React.FC = () => {
             onSelectAll={selectAll}
             onViewDetails={handleViewDetails}
             onPatchContact={patchContact}
+            onDelete={handleDeleteSingle}
             isLoading={false}
           />
         );
       
-      case 'pipeline':
-        return (
-          <ContactsPipelineView
-            contacts={displayedContacts as any}
-            onViewDetails={handleViewDetails as any}
-            isLoading={false}
-          />
-        );
       
       case 'stats':
         return (
@@ -132,6 +173,7 @@ const ContactsLayout: React.FC = () => {
           contacts={displayedContacts}
           onClearSelection={clearSelection}
           onPatchContacts={patchContacts}
+          allContacts={allContacts}
         />
 
         {/* Row 2: Filters (only for directory and favorites with content) */}

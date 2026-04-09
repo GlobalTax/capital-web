@@ -18,7 +18,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search, Clock,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search, Clock, List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -28,6 +28,7 @@ import { CampaignCompanyInteractionDialog } from '@/components/admin/campanas-va
 import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
+import { CopyToListDialog } from '@/components/admin/campanas-valoracion/shared/CopyToListDialog';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
@@ -37,6 +38,8 @@ import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
+import { useOutboundQueue } from '@/hooks/useOutboundQueue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -458,11 +461,11 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
           <div className="space-y-2">
             <Input
               type="file"
-              accept="application/pdf,.pdf"
+              accept="application/pdf,.pdf,application/vnd.ms-powerpoint,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pptx"
               onChange={handleFileChange}
               className="cursor-pointer"
             />
-            <p className="text-xs text-muted-foreground">Solo se aceptan archivos en formato PDF</p>
+            <p className="text-xs text-muted-foreground">Se aceptan archivos en formato PDF o PowerPoint</p>
             <p className="text-xs text-destructive">Esto sobrescribirá el estudio actual sin posibilidad de recuperarlo</p>
           </div>
         </div>
@@ -486,11 +489,12 @@ interface FloatingActionBarProps {
   onClear: () => void;
   onDownload: () => void;
   onSend: () => void;
+  onCopyToList: () => void;
   isBusy: boolean;
   estimatedSize: string;
 }
 
-function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy, estimatedSize }: FloatingActionBarProps) {
+function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, onCopyToList, isBusy, estimatedSize }: FloatingActionBarProps) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
       <Card className="shadow-2xl border">
@@ -501,6 +505,10 @@ function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy,
           <div className="h-4 w-px bg-border" />
           <Button size="sm" variant="ghost" onClick={onClear} disabled={isBusy}>
             <X className="h-4 w-4 mr-1.5" />Limpiar
+          </Button>
+          <Button size="sm" variant="outline" onClick={onCopyToList} disabled={isBusy}>
+            <List className="h-4 w-4 mr-1.5" />
+            Copiar a lista
           </Button>
           <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
             <Download className="h-4 w-4 mr-1.5" />
@@ -526,6 +534,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const { presentations, isLoading: presentationsLoading } = useCampaignPresentations(campaignId);
   const { updateCampaign } = useCampaigns();
   const { emails: campaignEmails } = useCampaignEmails(campaignId);
+  const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
 
   // Email tracking map: company_id -> { delivery_status, email_opened }
   const emailTrackingMap = useMemo(() => {
@@ -541,7 +550,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const pauseRef = useRef(false);
 
   // Send schedule config
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false, includeValuationPdf: true, includeStudyPdf: true });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -563,6 +572,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
   // Interaction dialog
   const [interactionCompany, setInteractionCompany] = useState<CampaignCompany | null>(null);
+  const [showCopyToList, setShowCopyToList] = useState(false);
 
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -575,6 +585,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
+  const isDocument = campaign.campaign_type === 'document';
 
   // Map company_id -> sent_at for date filtering
   const emailSentAtMap = useMemo(() => {
@@ -620,7 +631,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       }
       if (!matchesCustomRange(c.revenue, filterRevenue)) return false;
       if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
-      if (!matchesCustomRange(c.valuation_central, filterValuation)) return false;
+      if (!isDocument && !matchesCustomRange(c.valuation_central, filterValuation)) return false;
       if (filterSentDate.from || filterSentDate.to) {
         const sentAt = emailSentAtMap.get(c.id);
         if (!matchesDateRange(sentAt, filterSentDate)) return false;
@@ -686,7 +697,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       }
 
       const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
-        body: { email_ids: [emailRecord.id] },
+        body: {
+          email_ids: [emailRecord.id],
+          include_valuation_pdf: sendConfig.includeValuationPdf,
+          include_study_pdf: sendConfig.includeStudyPdf,
+        },
       });
       if (error) throw error;
       if (responseData?.failed > 0) throw new Error(responseData.results?.[0]?.error || 'Error al enviar');
@@ -895,7 +910,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         setSendingProgress(p => ({ ...p, phase: 'Enviando email' }));
 
         const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
-          body: { email_ids: [emailRecord.id] },
+          body: {
+            email_ids: [emailRecord.id],
+            include_valuation_pdf: sendConfig.includeValuationPdf,
+            include_study_pdf: sendConfig.includeStudyPdf,
+          },
         });
 
         if (error) throw error;
@@ -933,7 +952,30 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const handleSendEmails = async () => {
     if (readyToSend.length === 0) return;
 
-    // If scheduled for future, start countdown
+    // SERVER-SIDE MODE: create a queue job
+    if (sendConfig.serverSide) {
+      // Get email IDs for ready companies
+      const emailIds: string[] = [];
+      for (const c of readyToSend) {
+        const email = campaignEmails.find(e => e.company_id === c.id);
+        if (email) emailIds.push(email.id);
+      }
+      if (emailIds.length === 0) {
+        toast.error('No hay emails generados. Ve al paso Mail primero.');
+        return;
+      }
+      await createJob.mutateAsync({
+        campaignId,
+        sendType: 'initial',
+        emailIds,
+        intervalMs: sendConfig.intervalMs,
+        maxPerHour: sendConfig.maxPerHour,
+        scheduledAt: sendConfig.scheduledAt || new Date(),
+      });
+      return;
+    }
+
+    // CLIENT-SIDE: If scheduled for future, start countdown
     if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
       const updateCountdown = () => {
         const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
@@ -1039,16 +1081,18 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             <p className="text-2xl font-bold tabular-nums">{companies.length}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Valoraciones</span>
-            </div>
-            <p className="text-2xl font-bold tabular-nums">{valuationReadyCount}</p>
-            <p className="text-xs text-muted-foreground">{valuationReadyCount} listas</p>
-          </CardContent>
-        </Card>
+        {!isDocument && (
+          <Card>
+            <CardContent className="pt-4 pb-3 px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Valoraciones</span>
+              </div>
+              <p className="text-2xl font-bold tabular-nums">{valuationReadyCount}</p>
+              <p className="text-xs text-muted-foreground">{valuationReadyCount} listas</p>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
@@ -1064,17 +1108,22 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         </Card>
       </div>
 
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
       {/* Send emails card */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Send className="h-4 w-4" />
-            Enviar Valoraciones ({readyToSend.length} listas para enviar)
+            {isDocument ? 'Enviar Documentos' : 'Enviar Valoraciones'} ({readyToSend.length} listas para enviar)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Se generará el PDF y se enviará el email con la valoración a cada empresa.
+            {isDocument
+              ? 'Se enviará el email con el documento a cada empresa.'
+              : 'Se generará el PDF y se enviará el email con la valoración a cada empresa.'}
           </p>
 
           {/* Schedule config panel */}
@@ -1224,14 +1273,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+            {!isDocument && <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />}
             <DateRangeFilter label="Fecha envío" value={filterSentDate} onChange={setFilterSentDate} />
-            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null || filterSentDate.from !== null || filterSentDate.to !== null) && (
+            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || (!isDocument && (filterValuation.min !== null || filterValuation.max !== null)) || filterSentDate.from !== null || filterSentDate.to !== null) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
-                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null || filterSentDate.from !== null || filterSentDate.to !== null) && (
+                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || (!isDocument && (filterValuation.min !== null || filterValuation.max !== null)) || filterSentDate.from !== null || filterSentDate.to !== null) && (
                   <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); setFilterValuation({ min: null, max: null }); setFilterSentDate({ from: null, to: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
@@ -1252,8 +1301,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 <TableHead>Empresa</TableHead>
                 <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
-                <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
-                <TableHead className="text-center">PDF Valoración</TableHead>
+                {!isDocument && <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>}
+                {!isDocument && <TableHead className="text-center">PDF Valoración</TableHead>}
                 <TableHead className="text-center">PDF Estudio</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
                 <TableHead className="text-center">Entrega</TableHead>
@@ -1302,17 +1351,21 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                     <TableCell className="text-right tabular-nums text-sm">
                       {c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        variant={hasValuation ? 'default' : 'secondary'}
-                        className={cn('text-xs', hasValuation && 'bg-green-600 hover:bg-green-700 text-white')}
-                      >
-                        {hasValuation ? 'Listo' : 'Pendiente'}
-                      </Badge>
-                    </TableCell>
+                    {!isDocument && (
+                      <TableCell className="text-right tabular-nums">
+                        {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
+                      </TableCell>
+                    )}
+                    {!isDocument && (
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={hasValuation ? 'default' : 'secondary'}
+                          className={cn('text-xs', hasValuation && 'bg-green-600 hover:bg-green-700 text-white')}
+                        >
+                          {hasValuation ? 'Listo' : 'Pendiente'}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell className="text-center">
                       <Badge
                         variant={hasStudy ? 'default' : 'outline'}
@@ -1383,21 +1436,25 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52">
                           {/* Valuation actions */}
-                          <DropdownMenuItem onClick={() => setPreviewCompany(c)} disabled={!hasValuation}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver Valoración
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading || !hasValuation}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Descargar Valoración
-                          </DropdownMenuItem>
-                          {c.professional_valuation_id && (
-                            <DropdownMenuItem onClick={() => navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
-                              <FileText className="h-4 w-4 mr-2" />
-                              Editar Valoración
-                            </DropdownMenuItem>
+                          {!isDocument && (
+                            <>
+                              <DropdownMenuItem onClick={() => setPreviewCompany(c)} disabled={!hasValuation}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver Valoración
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading || !hasValuation}>
+                                <Download className="h-4 w-4 mr-2" />
+                                Descargar Valoración
+                              </DropdownMenuItem>
+                              {c.professional_valuation_id && (
+                                <DropdownMenuItem onClick={() => navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  Editar Valoración
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                            </>
                           )}
-                          <DropdownMenuSeparator />
                           {/* Study actions */}
                           <DropdownMenuItem
                             disabled={!hasStudy}
@@ -1483,10 +1540,18 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           onClear={clearSelection}
           onDownload={() => handleDownloadSelected(selectedIds)}
           onSend={() => handleSendSelected(selectedIds)}
+          onCopyToList={() => setShowCopyToList(true)}
           isBusy={isBusy}
           estimatedSize={estimateZipSize(selectedIds.length)}
         />
       )}
+
+      {/* Copy to list dialog */}
+      <CopyToListDialog
+        open={showCopyToList}
+        onOpenChange={setShowCopyToList}
+        selectedCompanies={companies.filter(c => selectedIds.includes(c.id))}
+      />
 
       {/* Resend Confirmation Dialog */}
       <AlertDialog open={!!resendConfirm} onOpenChange={(open) => !open && setResendConfirm(null)}>

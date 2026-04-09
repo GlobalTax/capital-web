@@ -43,14 +43,22 @@ const getPageOriginLabel = (pageOrigin: string | undefined): string => {
 
 const formatCurrency = (amount: number | string | undefined): string => {
   if (!amount) return 'No especificado';
-  const num = typeof amount === 'string' ? parseFloat(amount.replace(/[^\d.-]/g, '')) : amount;
+  let num: number;
+  if (typeof amount === 'string') {
+    // Normalize Spanish number format: "2.500.000" or "2.500.000,50"
+    // Remove dots (thousands separator), replace comma with dot (decimal)
+    const normalized = amount.replace(/\./g, '').replace(',', '.');
+    num = parseFloat(normalized.replace(/[^\d.-]/g, ''));
+  } else {
+    num = amount;
+  }
   if (isNaN(num)) return String(amount);
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(num);
+  }).format(Math.abs(num));
 };
 
 const formatRevenueRange = (range: string | undefined): string => {
@@ -1137,6 +1145,7 @@ async function upsertLeadFromForm(
   try {
     const normalizedEmail = email.toLowerCase().trim();
     const company = formData.company || formData.companyName || '';
+    const employeeCount = formData.employeeCount || formData.company_size || formData.employees || null;
     const phone = formData.phone || null;
     const cif = formData.cif || null;
     const channel = mapFormTypeToChannel(formType);
@@ -1201,6 +1210,43 @@ async function upsertLeadFromForm(
         .update(updatePayload)
         .eq('id', existingLead.id);
 
+      // Ensure contacto is linked to correct empresa (replicate manual association)
+      const { data: leadFull } = await supabase
+        .from('contact_leads')
+        .select('empresa_id, crm_contacto_id')
+        .eq('id', existingLead.id)
+        .single();
+
+      if (leadFull?.empresa_id && leadFull?.crm_contacto_id) {
+        await supabase
+          .from('contactos')
+          .update({ empresa_principal_id: leadFull.empresa_id, updated_at: new Date().toISOString() })
+          .eq('id', leadFull.crm_contacto_id);
+      }
+
+      // Enrich empresa with financial data (COALESCE - don't overwrite existing)
+      if (leadFull?.empresa_id && (revenue || ebitda || employeeCount || cif || serviceType)) {
+        const { data: currentEmpresa } = await supabase
+          .from('empresas')
+          .select('facturacion, revenue, ebitda, empleados, cif, sector')
+          .eq('id', leadFull.empresa_id)
+          .single();
+
+        if (currentEmpresa) {
+          const enrichUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+          if (!currentEmpresa.facturacion && revenue) enrichUpdate.facturacion = revenue;
+          if (!currentEmpresa.revenue && revenue) enrichUpdate.revenue = revenue;
+          if (!currentEmpresa.ebitda && ebitda) enrichUpdate.ebitda = ebitda;
+          if (!currentEmpresa.empleados && employeeCount) enrichUpdate.empleados = parseInt(String(employeeCount)) || null;
+          if (!currentEmpresa.cif && cif) enrichUpdate.cif = cif;
+          if (!currentEmpresa.sector && serviceType) enrichUpdate.sector = serviceType;
+
+          if (Object.keys(enrichUpdate).length > 1) {
+            await supabase.from('empresas').update(enrichUpdate).eq('id', leadFull.empresa_id);
+          }
+        }
+      }
+
       // Add activity
       await supabase
         .from('lead_activities')
@@ -1228,13 +1274,25 @@ async function upsertLeadFromForm(
     if (company) {
       const { data: existingEmpresa } = await supabase
         .from('empresas')
-        .select('id')
+        .select('id, facturacion, revenue, ebitda, empleados, cif, sector')
         .ilike('nombre', company.trim())
         .limit(1)
         .maybeSingle();
 
       if (existingEmpresa) {
         empresaId = existingEmpresa.id;
+        // Enrich existing empresa with COALESCE logic
+        const enrichUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+        if (!existingEmpresa.facturacion && revenue) enrichUpdate.facturacion = revenue;
+        if (!existingEmpresa.revenue && revenue) enrichUpdate.revenue = revenue;
+        if (!existingEmpresa.ebitda && ebitda) enrichUpdate.ebitda = ebitda;
+        if (!existingEmpresa.empleados && employeeCount) enrichUpdate.empleados = parseInt(String(employeeCount)) || null;
+        if (!existingEmpresa.cif && cif) enrichUpdate.cif = cif;
+        if (!existingEmpresa.sector && serviceType) enrichUpdate.sector = serviceType;
+
+        if (Object.keys(enrichUpdate).length > 1) {
+          await supabase.from('empresas').update(enrichUpdate).eq('id', empresaId);
+        }
       } else {
         const { data: newEmpresa } = await supabase
           .from('empresas')
@@ -1242,6 +1300,10 @@ async function upsertLeadFromForm(
             nombre: company.trim(),
             cif: cif || null,
             facturacion: revenue,
+            revenue: revenue,
+            ebitda: ebitda,
+            empleados: employeeCount ? (parseInt(String(employeeCount)) || null) : null,
+            sector: serviceType,
           })
           .select('id')
           .single();
@@ -1260,6 +1322,13 @@ async function upsertLeadFromForm(
 
     if (existingContacto) {
       contactoId = existingContacto.id;
+      // Always ensure empresa_principal_id is set on existing contacto
+      if (empresaId) {
+        await supabase
+          .from('contactos')
+          .update({ empresa_principal_id: empresaId, updated_at: new Date().toISOString() })
+          .eq('id', existingContacto.id);
+      }
     } else {
       const nameParts = fullName.trim().split(' ');
       const nombre = nameParts[0] || '';
@@ -1368,7 +1437,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build CRM link with real leadId
     const crmLink = leadId
-      ? `https://capittal.es/admin/contacts/${leadId}`
+      ? `https://capittal.es/admin/contacts/contact_${leadId}`
       : 'https://capittal.es/admin/crm';
 
     // ====== STEP 2: Generate email templates ======
@@ -1391,13 +1460,15 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       const { data: allActive } = await supabase
         .from('email_recipients_config')
-        .select('email, is_default_copy')
+        .select('email, is_default_copy, is_bcc')
         .eq('is_active', true);
       
       if (allActive && allActive.length > 0) {
         dynamicEmails = allActive.map((r: any) => r.email);
-        dynamicBccEmails = allActive.filter((r: any) => r.is_default_copy).map((r: any) => r.email);
-        console.log(`[dynamic] Fetched ${dynamicEmails.length} active recipients, ${dynamicBccEmails.length} with default_copy`);
+        // CC = default_copy + NOT bcc; BCC = default_copy + bcc
+        dynamicBccEmails = allActive.filter((r: any) => r.is_default_copy && r.is_bcc).map((r: any) => r.email);
+        const dynamicCcEmails = allActive.filter((r: any) => r.is_default_copy && !r.is_bcc).map((r: any) => r.email);
+        console.log(`[dynamic] Fetched ${dynamicEmails.length} active recipients, ${dynamicCcEmails.length} CC, ${dynamicBccEmails.length} BCC`);
       }
     } catch (e) {
       console.error('[dynamic] Error fetching email_recipients_config, using hardcoded fallback:', e);

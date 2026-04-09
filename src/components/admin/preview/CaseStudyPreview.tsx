@@ -16,6 +16,8 @@ interface CaseStudyPreviewProps {
     year?: number;
     is_featured: boolean;
     is_value_confidential?: boolean;
+    logo_url?: string;
+    counterpart_logo_url?: string;
   };
 }
 
@@ -25,14 +27,36 @@ const CaseStudyPreview = ({ caseStudy }: CaseStudyPreviewProps) => {
       <h3 className="text-lg font-medium text-black mb-4">Vista Previa - Caso de Éxito</h3>
       <Card className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group max-w-md mx-auto">
         <CardContent className="p-6">
+          {/* Header: Sector + Year + Featured */}
           <div className="flex items-center justify-between mb-4">
-            <Badge className="bg-white border-0.5 border-black text-black rounded-lg">
-              {caseStudy.sector}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-gray-100 text-black border-0">
+                {caseStudy.sector}
+              </Badge>
+              {caseStudy.year && (
+                <span className="text-sm text-gray-500">• {caseStudy.year}</span>
+              )}
+            </div>
             {caseStudy.is_featured && (
               <Award className="w-5 h-5 text-yellow-500" />
             )}
           </div>
+
+          {/* Logos - large and centered */}
+          {(caseStudy.logo_url || caseStudy.counterpart_logo_url) && (
+            <div className="flex items-center justify-center gap-5 my-6">
+              {caseStudy.logo_url && (
+                <div className="w-24 h-24 bg-gray-50 rounded-xl p-2.5 overflow-hidden border border-gray-100">
+                  <img src={caseStudy.logo_url} alt="Parte asesorada" className="w-full h-full object-contain" />
+                </div>
+              )}
+              {caseStudy.counterpart_logo_url && (
+                <div className="w-24 h-24 bg-gray-50 rounded-xl p-2.5 overflow-hidden border border-gray-100">
+                  <img src={caseStudy.counterpart_logo_url} alt="Otra parte" className="w-full h-full object-contain" />
+                </div>
+              )}
+            </div>
+          )}
           
           <h3 className="text-lg font-semibold text-black mb-3 leading-tight">
             {caseStudy.title}

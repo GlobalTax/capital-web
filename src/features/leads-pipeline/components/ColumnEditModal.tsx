@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLeadPipelineColumns, type LeadPipelineColumn } from '../hooks/useLeadPipelineColumns';
+import type { PipelineType } from '@/hooks/useContactStatuses';
 
 // Available icons
 const AVAILABLE_ICONS = [
@@ -48,14 +49,16 @@ interface ColumnEditModalProps {
   column: LeadPipelineColumn | null;
   isOpen: boolean;
   onClose: () => void;
+  pipelineType?: PipelineType;
 }
 
 export const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
   column,
   isOpen,
   onClose,
+  pipelineType,
 }) => {
-  const { updateColumn, addColumn, isUpdating, isAdding } = useLeadPipelineColumns();
+  const { updateColumn, addColumn, isUpdating, isAdding } = useLeadPipelineColumns(pipelineType);
 
   const [label, setLabel] = useState('');
   const [stageKey, setStageKey] = useState('');

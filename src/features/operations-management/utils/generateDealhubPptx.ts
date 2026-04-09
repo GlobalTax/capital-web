@@ -1,0 +1,708 @@
+import pptxgen from 'pptxgenjs';
+import type { Operation } from '../types/operations';
+import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate, ClosingTemplate } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE, DEFAULT_CLOSING_TEMPLATE, DEFAULT_TEMPLATE_SLIDE_MAP, DEFAULT_SKIP_SLIDES } from '../types/slideTemplate';
+import { supabase } from '@/integrations/supabase/client';
+import { blobToBase64 } from '@/utils/blobToBase64';
+
+// ─── DESIGN TOKENS ───
+const NAVY = '161B22';
+const WHITE = 'FFFFFF';
+const TEXT_SECONDARY = '58606E';
+const TEXT_MUTED = '8B919B';
+const BG_CARD = 'F3F4F5';
+const ACCENT = '2563EB';
+const FONT = 'Plus Jakarta Sans';
+
+const SW = 13.33;
+const SH = 7.5;
+const M = 0.6;
+
+// ─── TYPES ───
+export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4';
+export type DealhubLocale = 'es' | 'en';
+
+export interface DealhubSection {
+  key: string;
+  label: string;
+  subtitle: string;
+  filter: (op: Operation) => boolean;
+}
+
+// ─── I18N ───
+const I18N: Record<DealhubLocale, {
+  sections: Record<string, { label: string; subtitle: string }>;
+  highlights: string;
+  summary: string;
+  keyData: string;
+  location: string;
+  locationValue: string;
+  sector: string;
+  opportunity: string;
+  revenue: string;
+  ebitda: string;
+  ebitdaMargin: string;
+  employees: string;
+  moreInfo: string;
+  indexTitle: string;
+  operationsUnit: string;
+  thanks: string;
+  confidential: string;
+  nd: string;
+}> = {
+  es: {
+    sections: {
+      sale_active: { label: 'Mandatos de Venta', subtitle: 'Empresas en proceso de venta' },
+      upcoming: { label: 'Fase de Preparación', subtitle: 'Próximamente en mercado' },
+      acquisition: { label: 'Mandatos de Compra', subtitle: 'Empresas en búsqueda de adquisición' },
+      exclusive: { label: 'En Exclusividad', subtitle: 'Procesos en fase de exclusividad' },
+    },
+    highlights: 'Aspectos Destacados',
+    summary: 'Resumen',
+    keyData: 'Datos Clave',
+    location: 'Ubicación',
+    locationValue: 'España',
+    sector: 'Sector',
+    opportunity: 'Oportunidad',
+    revenue: 'Facturación',
+    ebitda: 'EBITDA',
+    ebitdaMargin: 'Margen EBITDA',
+    employees: 'Empleados',
+    moreInfo: 'Más Información →',
+    indexTitle: 'Índice de Oportunidades',
+    operationsUnit: 'operaciones',
+    thanks: 'Gracias',
+    confidential: 'CAPITTAL — Información Confidencial',
+    nd: 'N/D',
+  },
+  en: {
+    sections: {
+      sale_active: { label: 'Sale Mandates', subtitle: 'Companies in sale process' },
+      upcoming: { label: 'Preparation Phase', subtitle: 'Coming soon to market' },
+      acquisition: { label: 'Acquisition Mandates', subtitle: 'Companies seeking acquisition' },
+      exclusive: { label: 'In Exclusivity', subtitle: 'Processes in exclusivity phase' },
+    },
+    highlights: 'Key Highlights',
+    summary: 'Summary',
+    keyData: 'Key Data',
+    location: 'Location',
+    locationValue: 'Spain',
+    sector: 'Sector',
+    opportunity: 'Opportunity',
+    revenue: 'Revenue',
+    ebitda: 'EBITDA',
+    ebitdaMargin: 'EBITDA Margin',
+    employees: 'Employees',
+    moreInfo: 'More Information →',
+    indexTitle: 'Investment Opportunities Index',
+    operationsUnit: 'operations',
+    thanks: 'Thank You',
+    confidential: 'CAPITTAL — Confidential Information',
+    nd: 'N/A',
+  },
+};
+
+export function getI18n(locale: DealhubLocale) {
+  return I18N[locale];
+}
+
+export const DEALHUB_SECTIONS: DealhubSection[] = [
+  {
+    key: 'sale_active',
+    label: 'Mandatos de Venta',
+    subtitle: 'Empresas en proceso de venta',
+    filter: (op) => op.project_status === 'active' && (op.deal_type === 'sale' || !op.deal_type),
+  },
+  {
+    key: 'upcoming',
+    label: 'Fase de Preparación',
+    subtitle: 'Próximamente en mercado',
+    filter: (op) => op.project_status === 'upcoming',
+  },
+  {
+    key: 'acquisition',
+    label: 'Mandatos de Compra',
+    subtitle: 'Empresas en búsqueda de adquisición',
+    filter: (op) => op.deal_type === 'acquisition',
+  },
+  {
+    key: 'exclusive',
+    label: 'En Exclusividad',
+    subtitle: 'Procesos en fase de exclusividad',
+    filter: (op) => op.project_status === 'exclusive',
+  },
+];
+
+// ─── HELPERS ───
+const fmtCurrency = (amount: number | undefined): string => {
+  if (!amount || amount <= 0) return 'N/D';
+  const normalized = amount < 10000 ? amount * 1_000_000 : amount;
+  if (normalized >= 1_000_000) return `€${(normalized / 1_000_000).toFixed(1)}M`;
+  if (normalized >= 1_000) return `€${(normalized / 1_000).toFixed(0)}K`;
+  return `€${normalized.toFixed(0)}`;
+};
+
+const fmtMargin = (ebitda: number | undefined, revenue: number | undefined): string => {
+  if (!ebitda || !revenue || revenue <= 0) return 'N/D';
+  return `${((ebitda / revenue) * 100).toFixed(1)}%`;
+};
+
+// ─── SLIDE BUILDERS ───
+
+function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: CoverTemplate) {
+  const slide = pptx.addSlide();
+
+  if (ct.backgroundImage) {
+    slide.background = { path: ct.backgroundImage };
+    return;
+  }
+
+  slide.background = { color: ct.background.color || NAVY };
+
+  // Year block (top-left, large)
+  const yb = ct.yearBlock;
+  if (yb && yb.visible) {
+    slide.addText(String(year), {
+      x: yb.x, y: yb.y, w: yb.w, h: yb.h,
+      fontSize: yb.fontSize || 80, fontFace: FONT, color: yb.color || WHITE,
+      bold: yb.bold ?? true, align: yb.align,
+    });
+  }
+
+  // Logo image (top-right) — rendered before branding text so text appears below
+  if (ct.logo?.visible && (ct.logo as any).imageUrl) {
+    slide.addImage({
+      path: (ct.logo as any).imageUrl,
+      x: ct.logo.x, y: ct.logo.y, w: ct.logo.w, h: ct.logo.h,
+      sizing: { type: 'contain', w: ct.logo.w, h: ct.logo.h },
+    });
+  }
+
+  // Branding text (below logo, top-right)
+  const br = ct.branding;
+  if (br && br.visible) {
+    slide.addText((br as any).text || 'M&A · Consulting', {
+      x: br.x, y: br.y, w: br.w, h: br.h,
+      fontSize: br.fontSize || 12, fontFace: FONT, color: br.color || TEXT_MUTED,
+      bold: br.bold ?? false, align: br.align || 'right',
+    });
+  }
+
+  // Title (bottom-left area)
+  if (ct.title.visible) {
+    slide.addText(ct.title.text || 'Capittal Dealhub — Open Deals', {
+      x: ct.title.x, y: ct.title.y, w: ct.title.w, h: ct.title.h,
+      fontSize: ct.title.fontSize || 44, fontFace: FONT, color: ct.title.color || WHITE,
+      bold: ct.title.bold ?? true, italic: ct.title.italic,
+      align: ct.title.align, valign: ct.title.valign,
+    });
+  }
+
+  // Subtitle
+  if (ct.subtitle.visible) {
+    slide.addText(ct.subtitle.text || 'Relación de Oportunidades de Inversión', {
+      x: ct.subtitle.x, y: ct.subtitle.y, w: ct.subtitle.w, h: ct.subtitle.h,
+      fontSize: ct.subtitle.fontSize || 16, fontFace: FONT, color: ct.subtitle.color || TEXT_MUTED,
+      bold: ct.subtitle.bold ?? false, italic: ct.subtitle.italic,
+      align: ct.subtitle.align, valign: ct.subtitle.valign,
+    });
+  }
+
+  // Quarter label
+  if (ct.quarter.visible) {
+    slide.addText(`${quarter} — ${year}`, {
+      x: ct.quarter.x, y: ct.quarter.y, w: ct.quarter.w, h: ct.quarter.h,
+      fontSize: ct.quarter.fontSize || 14, fontFace: FONT, color: ct.quarter.color || TEXT_MUTED,
+      align: ct.quarter.align,
+    });
+  }
+
+  // Divider (hidden by default)
+  if (ct.divider.visible) {
+    slide.addShape(pptx.ShapeType.rect, {
+      x: ct.divider.x, y: ct.divider.y, w: ct.divider.w, h: ct.divider.h,
+      fill: { color: ct.divider.bgColor || TEXT_MUTED },
+    });
+  }
+
+  // Footer (hidden by default)
+  if (ct.footer.visible) {
+    slide.addText(ct.footer.text || 'CAPITTAL — Información Confidencial', {
+      x: ct.footer.x, y: ct.footer.y, w: ct.footer.w, h: ct.footer.h,
+      fontSize: ct.footer.fontSize || 9, fontFace: FONT, color: ct.footer.color || TEXT_MUTED,
+      align: ct.footer.align,
+    });
+  }
+}
+
+function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate, locale: DealhubLocale = 'es') {
+  const t = getI18n(locale);
+  const slide = pptx.addSlide();
+
+  if (idx.backgroundImage) {
+    slide.background = { path: idx.backgroundImage };
+    return;
+  }
+
+  slide.background = { color: idx.background.color || WHITE };
+
+  if (idx.title.visible) {
+    slide.addText(t.indexTitle, {
+      x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
+      fontSize: idx.title.fontSize || 32, fontFace: FONT, color: idx.title.color || NAVY,
+      bold: idx.title.bold ?? true, align: idx.title.align,
+    });
+  }
+
+  const intro = idx.introText;
+  if (intro && intro.visible) {
+    slide.addText((intro as any).text || '', {
+      x: intro.x, y: intro.y, w: intro.w, h: intro.h,
+      fontSize: intro.fontSize || 14, fontFace: FONT, color: intro.color || TEXT_SECONDARY,
+      lineSpacingMultiple: intro.lineSpacing || 1.4,
+      valign: 'top', wrap: true, align: 'justify',
+    });
+  }
+
+  DEALHUB_SECTIONS.forEach((section, i) => {
+    const x = idx.cardsStartX + i * (idx.cardW + idx.cardGap);
+    const count = sectionCounts[section.key] || 0;
+    const sectionNum = String(i + 1).padStart(2, '0');
+    const sColor = idx.sectionColors[i] || ACCENT;
+    const sLabel = t.sections[section.key]?.label || section.label;
+    const sSubtitle = t.sections[section.key]?.subtitle || section.subtitle;
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x, y: idx.cardsStartY, w: idx.cardW, h: idx.cardH,
+      fill: { color: idx.cardBgColor || BG_CARD }, rectRadius: idx.cardRadius || 0.1,
+    });
+
+    slide.addText(sectionNum, {
+      x: x + 0.25, y: idx.cardsStartY + 0.2, w: idx.cardW - 0.5, h: 0.7,
+      fontSize: 36, fontFace: FONT, color: sColor, bold: true,
+    });
+
+    slide.addText(sLabel, {
+      x: x + 0.25, y: idx.cardsStartY + 1.0, w: idx.cardW - 0.5, h: 0.5,
+      fontSize: 14, fontFace: FONT, color: NAVY, bold: true,
+    });
+
+    slide.addText(`${count} ${t.operationsUnit}`, {
+      x: x + 0.25, y: idx.cardsStartY + 1.55, w: idx.cardW - 0.5, h: 0.4,
+      fontSize: 12, fontFace: FONT, color: TEXT_SECONDARY,
+    });
+
+    slide.addText(sSubtitle, {
+      x: x + 0.25, y: idx.cardsStartY + 1.95, w: idx.cardW - 0.5, h: 0.5,
+      fontSize: 9, fontFace: FONT, color: TEXT_MUTED, wrap: true,
+    });
+  });
+}
+
+function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string, sep: SeparatorTemplate, sectionKey?: string) {
+  const slide = pptx.addSlide();
+
+  const bgImage = sectionKey && sep.backgroundImages?.[sectionKey];
+  if (bgImage) {
+    slide.background = { path: bgImage };
+    return;
+  }
+
+  slide.background = { color: sep.background.color || NAVY };
+
+  // Number (top-left, large)
+  if (sep.number.visible) {
+    slide.addText(sectionNum, {
+      x: sep.number.x, y: sep.number.y, w: sep.number.w, h: sep.number.h,
+      fontSize: sep.number.fontSize || 140, fontFace: FONT,
+      color: sep.number.color || sep.accentColor || ACCENT,
+      bold: sep.number.bold ?? true, align: sep.number.align,
+    });
+  }
+
+  // Logo image (top-right) — use cover logo if available
+  // We check if the full template's cover has a logo URL to reuse here
+  const br = sep.branding;
+  if (br && br.visible) {
+    slide.addText((br as any).text || 'M&A · Consulting', {
+      x: br.x, y: br.y, w: br.w, h: br.h,
+      fontSize: br.fontSize || 12, fontFace: FONT, color: br.color || TEXT_MUTED,
+      bold: br.bold ?? false, align: br.align || 'right',
+    });
+  }
+
+  // Title (bottom-left)
+  if (sep.title.visible) {
+    slide.addText(title, {
+      x: sep.title.x, y: sep.title.y, w: sep.title.w, h: sep.title.h,
+      fontSize: sep.title.fontSize || 36, fontFace: FONT, color: sep.title.color || WHITE,
+      bold: sep.title.bold ?? true, align: sep.title.align,
+    });
+  }
+
+  // Subtitle
+  if (sep.subtitle.visible) {
+    slide.addText(subtitle, {
+      x: sep.subtitle.x, y: sep.subtitle.y, w: sep.subtitle.w, h: sep.subtitle.h,
+      fontSize: sep.subtitle.fontSize || 14, fontFace: FONT, color: sep.subtitle.color || TEXT_MUTED,
+      align: sep.subtitle.align,
+    });
+  }
+}
+
+function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, locale: DealhubLocale = 'es') {
+  const i18n = getI18n(locale);
+  const slide = pptx.addSlide();
+  slide.background = { color: WHITE };
+
+  // ─── LEFT COLUMN ───
+
+  if (t.title.visible) {
+    slide.addText(op.company_name, {
+      x: t.title.x, y: t.title.y, w: t.title.w, h: t.title.h,
+      fontSize: t.title.fontSize || 26, fontFace: FONT, color: t.title.color || NAVY,
+      bold: t.title.bold ?? true, italic: t.title.italic,
+      align: t.title.align, valign: t.title.valign,
+    });
+  }
+
+  if (t.description.visible) {
+    const rawDesc = (locale === 'en' ? (op.description_en || op.description) : op.description) || '';
+    const desc = rawDesc.length > 1320 ? rawDesc.substring(0, 1317) + '...' : rawDesc;
+    slide.addText(desc, {
+      x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
+      fontSize: 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
+      lineSpacingMultiple: t.description.lineSpacing || 1.4,
+      valign: t.description.valign || 'top',
+      align: 'justify',
+      wrap: true, shrinkText: true,
+      italic: t.description.italic,
+    });
+  }
+
+  const highlights = (locale === 'en' ? (op.highlights_en || op.highlights) : op.highlights) || [];
+  if (t.highlights.visible && highlights.length > 0) {
+    slide.addText(i18n.highlights, {
+      x: t.highlights.x, y: t.highlights.y, w: t.highlights.w, h: 0.35,
+      fontSize: 11, fontFace: FONT, color: t.highlights.color || NAVY,
+      bold: t.highlights.bold ?? true, align: t.highlights.align,
+    });
+
+    const bulletText = highlights.map(h => ({
+      text: h,
+      options: { fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY, bullet: { type: 'bullet' as const }, lineSpacingMultiple: 1.4, indentLevel: 0 },
+    }));
+    slide.addText(bulletText as any, {
+      x: t.highlights.x + 0.15, y: t.highlights.y + 0.4, w: t.highlights.w - 0.3, h: t.highlights.h - 0.4,
+      valign: 'top', align: 'justify',
+    });
+  }
+
+  // ─── RIGHT COLUMN — Dark card ───
+  if (t.summaryCard.visible) {
+    const cardColor = t.summaryCard.color || NAVY;
+    const pad = 0.3;
+    const innerW = t.summaryCard.w - pad * 2;
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: t.summaryCard.x, y: t.summaryCard.y, w: t.summaryCard.w, h: t.summaryCard.h,
+      fill: { color: cardColor }, rectRadius: t.summaryCard.rectRadius || 0.15,
+    });
+
+    if (t.summaryHeader.visible) {
+      slide.addText(i18n.summary, {
+        x: t.summaryHeader.x, y: t.summaryHeader.y, w: t.summaryHeader.w, h: t.summaryHeader.h,
+        fontSize: t.summaryHeader.fontSize || 13, fontFace: FONT, color: t.summaryHeader.color || WHITE,
+        bold: t.summaryHeader.bold ?? true, align: t.summaryHeader.align,
+      });
+    }
+
+    if (t.infoRows.visible) {
+      const LABEL_W = 1.8;
+      const LABEL_COLOR = 'B0B7C3';
+      const simpleRows = [
+        { label: i18n.location, value: i18n.locationValue },
+        { label: i18n.sector, value: op.sector || i18n.nd },
+      ];
+
+      let infoY = t.infoRows.y;
+      simpleRows.forEach((row) => {
+        slide.addText(row.label, {
+          x: t.infoRows.x, y: infoY, w: LABEL_W, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: LABEL_COLOR,
+        });
+        slide.addText(row.value, {
+          x: t.infoRows.x + LABEL_W, y: infoY, w: innerW - LABEL_W, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, align: 'right',
+        });
+        infoY += 0.45;
+      });
+
+      const oportunidadText = (locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta');
+      slide.addText(i18n.opportunity, {
+        x: t.infoRows.x, y: infoY, w: innerW, h: 0.25,
+        fontSize: 11, fontFace: FONT, color: LABEL_COLOR,
+      });
+      infoY += 0.25;
+      slide.addText(oportunidadText, {
+        x: t.infoRows.x, y: infoY, w: innerW, h: 0.7,
+        fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
+      });
+    }
+
+    if (t.financialData.visible) {
+      slide.addShape(pptx.ShapeType.rect, {
+        x: t.financialData.x, y: t.financialData.y - 0.15, w: t.financialData.w, h: 0.01,
+        fill: { color: TEXT_MUTED },
+      });
+
+      slide.addText(i18n.keyData, {
+        x: t.financialData.x, y: t.financialData.y, w: t.financialData.w, h: 0.4,
+        fontSize: t.financialData.fontSize || 13, fontFace: FONT, color: t.financialData.color || WHITE,
+        bold: t.financialData.bold ?? true, align: t.financialData.align,
+      });
+
+      const LABEL_W_FIN = 1.8;
+      const LABEL_COLOR_FIN = 'B0B7C3';
+      const financialRows = [
+        { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
+        { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
+        { label: i18n.ebitdaMargin, value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
+        { label: i18n.employees, value: op.company_size_employees || i18n.nd },
+      ];
+
+      financialRows.forEach((row, i) => {
+        const rowY = t.financialData.y + 0.5 + i * 0.55;
+        slide.addText(row.label, {
+          x: t.financialData.x, y: rowY, w: LABEL_W_FIN, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: LABEL_COLOR_FIN,
+        });
+        slide.addText(row.value, {
+          x: t.financialData.x + LABEL_W_FIN, y: rowY, w: t.financialData.w - LABEL_W_FIN, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: t.financialData.color || WHITE, bold: t.financialData.bold ?? true, align: 'right',
+        });
+      });
+    }
+
+    if (t.cta.visible) {
+      const ctaText = (t.cta as any).text || i18n.moreInfo;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
+        fill: { color: t.cta.bgColor || '3A3F47' }, rectRadius: t.cta.rectRadius || 0.05,
+      });
+      slide.addText(ctaText, {
+        x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
+        fontSize: t.cta.fontSize || 11, fontFace: FONT, color: t.cta.color || WHITE,
+        bold: t.cta.bold ?? true, align: t.cta.align || 'center', valign: t.cta.valign || 'middle',
+        hyperlink: { url: `https://capittal.es/lp/consulta-oportunidades?operation=${op.id}` },
+      });
+    }
+  }
+
+  if (t.footer.visible) {
+    const footerText = (t.footer as any).text || i18n.confidential;
+    slide.addText(footerText, {
+      x: t.footer.x, y: t.footer.y, w: t.footer.w, h: t.footer.h,
+      fontSize: t.footer.fontSize || 8, fontFace: FONT, color: t.footer.color || TEXT_MUTED,
+      align: t.footer.align,
+    });
+  }
+}
+
+function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate, locale: DealhubLocale = 'es') {
+  const closingLocaleTexts = getI18n(locale);
+  const slide = pptx.addSlide();
+
+  if (cl.backgroundImage) {
+    slide.background = { path: cl.backgroundImage };
+    return;
+  }
+
+  slide.background = { color: cl.background?.color || WHITE };
+
+  // Bottom half navy background
+  const bottomColor = cl.bottomBgColor || NAVY;
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: SH / 2, w: SW, h: SH / 2,
+    fill: { color: bottomColor },
+  });
+
+  // Logo (top-right, white area)
+  const logo = cl.logo;
+  if (logo && logo.visible && (logo as any).imageUrl) {
+    slide.addImage({
+      path: (logo as any).imageUrl,
+      x: logo.x, y: logo.y, w: logo.w, h: logo.h,
+      sizing: { type: 'contain', w: logo.w, h: logo.h },
+    });
+  }
+
+  // "Gracias" / "Thank You" text (bottom half)
+  const thanks = cl.thanksText;
+  if (thanks && thanks.visible) {
+    slide.addText((thanks as any).text || closingLocaleTexts.thanks, {
+      x: thanks.x, y: thanks.y, w: thanks.w, h: thanks.h,
+      fontSize: thanks.fontSize || 40, fontFace: FONT, color: thanks.color || WHITE,
+      bold: thanks.bold ?? true,
+    });
+  }
+
+  // Email
+  const email = cl.email;
+  if (email && email.visible) {
+    slide.addText((email as any).text || 'capittal.es/oportunidades', {
+      x: email.x, y: email.y, w: email.w, h: email.h,
+      fontSize: email.fontSize || 14, fontFace: FONT, color: email.color || TEXT_MUTED,
+      hyperlink: { url: 'https://capittal.es/lp/consulta-oportunidades' },
+    });
+  }
+
+  // Doc title (bottom-right)
+  const docTitle = cl.docTitle;
+  if (docTitle && docTitle.visible) {
+    slide.addText(`Capittal Dealhub — ${quarter} ${year}`, {
+      x: docTitle.x, y: docTitle.y, w: docTitle.w, h: docTitle.h,
+      fontSize: docTitle.fontSize || 12, fontFace: FONT, color: docTitle.color || TEXT_MUTED,
+      align: docTitle.align || 'right',
+    });
+  }
+}
+
+// ─── MAIN EXPORT ───
+
+export async function generateDealhubPptx(
+  operations: Operation[],
+  selectedSections: string[],
+  quarter: QuarterType,
+  year?: number,
+  fullTemplate?: FullSlideTemplate,
+  locale: DealhubLocale = 'es',
+) {
+  const currentYear = year || new Date().getFullYear();
+  const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
+  const ft = fullTemplate || DEFAULT_FULL_TEMPLATE;
+  const localeSuffix = locale === 'en' ? '_EN' : '';
+  const fileName = `Capittal_Dealhub${localeSuffix}_${quarter}_${currentYear}.pptx`;
+  const i18n = getI18n(locale);
+
+  // If a template PPTX is uploaded, use the merge flow
+  if (ft.templatePptxUrl) {
+    await generateWithMerge(activeOps, selectedSections, quarter, currentYear, ft, fileName, locale);
+    return;
+  }
+
+  // Standard flow: generate everything with pptxgenjs
+  const pptx = new pptxgen();
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.author = 'Capittal';
+  pptx.title = `Capittal Dealhub - Open Deals ${quarter} ${currentYear}`;
+
+  const sectionCounts: Record<string, number> = {};
+  DEALHUB_SECTIONS.forEach(s => {
+    sectionCounts[s.key] = activeOps.filter(s.filter).length;
+  });
+
+  // 1. Cover
+  addCoverSlide(pptx, quarter, currentYear, ft.cover);
+
+  // 2. Index
+  addIndexSlide(pptx, sectionCounts, ft.index, locale);
+
+  // 3. Sections
+  DEALHUB_SECTIONS.forEach((section, idx) => {
+    if (!selectedSections.includes(section.key)) return;
+    const ops = activeOps.filter(section.filter);
+    if (ops.length === 0) return;
+
+    const sectionNum = String(idx + 1).padStart(2, '0');
+    const sLabel = i18n.sections[section.key]?.label || section.label;
+    const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
+    addSectionSeparator(pptx, sectionNum, sLabel, sSubtitle, ft.separator, section.key);
+
+    ops.forEach(op => addOperationSlide(pptx, op, ft.operation, locale));
+  });
+
+  // 4. Closing slide
+  const closingTemplate = ft.closing || DEFAULT_CLOSING_TEMPLATE;
+  addClosingSlide(pptx, quarter, currentYear, closingTemplate, locale);
+
+  await pptx.writeFile({ fileName });
+}
+
+// ─── MERGE FLOW ───
+
+async function generateWithMerge(
+  activeOps: Operation[],
+  selectedSections: string[],
+  quarter: QuarterType,
+  currentYear: number,
+  ft: FullSlideTemplate,
+  fileName: string,
+  locale: DealhubLocale = 'es',
+) {
+  // 1. Generate ops-only PPTX with pptxgenjs
+  const opsPptx = new pptxgen();
+  opsPptx.layout = 'LAYOUT_WIDE';
+  opsPptx.author = 'Capittal';
+
+  const sectionSlideCounts: Record<string, number> = {};
+
+  DEALHUB_SECTIONS.forEach((section) => {
+    if (!selectedSections.includes(section.key)) return;
+    const ops = activeOps.filter(section.filter);
+    if (ops.length === 0) return;
+    sectionSlideCounts[section.key] = ops.length;
+    ops.forEach(op => addOperationSlide(opsPptx, op, ft.operation, locale));
+  });
+
+  // Generate ops PPTX as blob
+  const opsBlob = await opsPptx.write({ outputType: 'blob' }) as Blob;
+  const opsBase64 = await blobToBase64(opsBlob);
+
+  // 2. Use templateSlideMap (user-configured) or defaults
+  const slideMap = ft.templateSlideMap || DEFAULT_TEMPLATE_SLIDE_MAP;
+  const skipSlides = ft.skipSlides || DEFAULT_SKIP_SLIDES;
+
+  // Only include sections that have operations
+  const sectionInsertPoints: Record<string, number> = {};
+  for (const section of DEALHUB_SECTIONS) {
+    if (!selectedSections.includes(section.key)) continue;
+    if (!sectionSlideCounts[section.key]) continue;
+    if (slideMap[section.key]) {
+      sectionInsertPoints[section.key] = slideMap[section.key];
+    }
+  }
+
+  // 3. Call edge function
+  const { data, error } = await supabase.functions.invoke('merge-pptx', {
+    body: {
+      templateUrl: ft.templatePptxUrl,
+      operationsBase64: opsBase64,
+      sectionInsertPoints,
+      sectionSlideCounts,
+      skipSlides,
+    },
+  });
+
+  if (error) throw new Error(`Merge failed: ${error.message}`);
+  
+  const mergedBase64 = data?.mergedPptxBase64;
+  if (!mergedBase64) throw new Error('No merged PPTX returned');
+
+  // 4. Download the merged file
+  const binaryString = atob(mergedBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+  
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

@@ -21,6 +21,7 @@ interface CaseStudy {
   is_featured: boolean;
   is_value_confidential?: boolean;
   logo_url?: string;
+  counterpart_logo_url?: string;
 }
 
 const CaseStudiesCompact = () => {
@@ -118,36 +119,47 @@ const CaseStudiesCompact = () => {
                 role="listitem"
               >
                 <CardContent className="p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    {case_.sector && (
-                      <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-card text-primary border border-border">
-                        {case_.sector}
-                      </Badge>
-                    )}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {case_.sector && (
+                        <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-card text-primary border-0">
+                          {case_.sector}
+                        </Badge>
+                      )}
+                      {case_.year && (
+                        <span className="text-sm text-muted-foreground">• {case_.year}</span>
+                      )}
+                    </div>
                     {case_.is_featured && (
                       <Award className="w-5 h-5 text-yellow-500" />
                     )}
                   </div>
                   
-                  {/* Logo - much larger and more prominent */}
-                  {case_.logo_url && (
-                    <div className="w-28 h-28 mb-6 bg-gray-50 rounded-lg p-3 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200 mx-auto">
-                      <img 
-                        src={case_.logo_url} 
-                        alt={`Logo de ${case_.title}`}
-                        className="w-full h-full object-contain"
-                        width={112}
-                        height={112}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = document.createElement('div');
-                          fallback.className = 'w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500 text-xs font-medium';
-                          fallback.textContent = 'Logo';
-                          e.currentTarget.parentElement?.appendChild(fallback);
-                        }}
-                      />
+                  {/* Logos - large and centered */}
+                  {(case_.logo_url || case_.counterpart_logo_url) && (
+                    <div className="flex items-center justify-center gap-5 my-6">
+                      {case_.logo_url && (
+                        <div className="w-24 h-24 bg-gray-50 rounded-xl p-2.5 overflow-hidden border border-gray-100">
+                          <img 
+                            src={case_.logo_url} 
+                            alt={`Logo de ${case_.title}`}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      )}
+                      {case_.counterpart_logo_url && (
+                        <div className="w-24 h-24 bg-gray-50 rounded-xl p-2.5 overflow-hidden border border-gray-100">
+                          <img 
+                            src={case_.counterpart_logo_url} 
+                            alt={`Contraparte de ${case_.title}`}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                   
@@ -181,15 +193,6 @@ const CaseStudiesCompact = () => {
                         </div>
                       ) : null}
                       
-                      {case_.year && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600 flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            {t('cases.year')}
-                          </span>
-                          <span className="font-medium text-black">{case_.year}</span>
-                        </div>
-                      )}
 
                       {case_.company_size && (
                         <div className="flex items-center justify-between">

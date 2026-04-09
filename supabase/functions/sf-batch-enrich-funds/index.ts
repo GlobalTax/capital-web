@@ -263,6 +263,12 @@ serve(async (req) => {
   }
 
   try {
+    // ========== AUTH: Validate JWT + Admin role ==========
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[SF Enrich] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
+
     // Parse request body
     let body: { mode?: 'preview' | 'execute'; limit?: number; fundIds?: string[] } = {};
     try {
@@ -278,7 +284,7 @@ serve(async (req) => {
     console.log(`[SF Enrich] Mode: ${mode}, Limit: ${limit}, Specific IDs: ${fundIds?.length || 'all'}`);
 
     // Initialize Supabase client
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = auth.adminClient;
 
     // Build query for funds needing enrichment
     let query = supabase

@@ -5,6 +5,7 @@ import { FixedSizeList as List } from 'react-window';
 import { Building2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { CRFund, CRFundType, CRFundStatus, CR_FUND_TYPE_LABELS, CR_FUND_STATUS_LABELS } from '@/types/capitalRiesgo';
 import { useDeleteCRFund, useUpdateCRFund } from '@/hooks/useCRFunds';
@@ -29,6 +30,8 @@ interface CRFundsTableVirtualizedProps {
   sortBy?: 'name' | 'people_count' | 'aum' | 'portfolio_count';
   sortOrder?: 'asc' | 'desc';
   onSort?: (field: 'name' | 'people_count' | 'aum' | 'portfolio_count') => void;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 // Fund type options - static
@@ -75,7 +78,10 @@ const TableHeader = React.memo<{
   sortOrder?: 'asc' | 'desc';
   onSort?: (field: any) => void;
   scrollLeft: number;
-}>(({ showFavorites, sortBy, sortOrder, onSort, scrollLeft }) => (
+  selectable?: boolean;
+  allSelected?: boolean;
+  onToggleAll?: () => void;
+}>(({ showFavorites, sortBy, sortOrder, onSort, scrollLeft, selectable, allSelected, onToggleAll }) => (
   <div className="overflow-hidden border-b border-border/50">
     <div 
       className="flex bg-muted/30"
@@ -84,6 +90,11 @@ const TableHeader = React.memo<{
         transform: `translateX(-${scrollLeft}px)` 
       }}
     >
+      {selectable && (
+        <div className="flex items-center justify-center h-8" style={{ flex: '0 0 36px', minWidth: 36 }}>
+          <Checkbox checked={allSelected} onCheckedChange={onToggleAll} aria-label="Seleccionar todos" />
+        </div>
+      )}
       {showFavorites && (
         <div 
           className="flex items-center h-8" 
@@ -153,6 +164,8 @@ interface ItemData {
   onUpdateFundType: (fundId: string, newType: string) => Promise<void>;
   onUpdateStatus: (fundId: string, newStatus: string) => Promise<void>;
   onDelete: (fundId: string) => void;
+  selectedIds?: Set<string>;
+  onToggleSelection?: (id: string) => void;
 }
 
 // Virtualized row wrapper
@@ -163,19 +176,28 @@ const VirtualizedRow = React.memo<{
 }>(({ index, style, data }) => {
   const fund = data.funds[index];
   const isLast = index === data.funds.length - 1;
+  const isSelected = data.selectedIds?.has(fund.id) || false;
   
   return (
-    <CRFundTableRow
-      style={style}
-      fund={fund}
-      showFavorites={data.showFavorites}
-      fundTypeOptions={data.fundTypeOptions}
-      statusOptions={data.statusOptions}
-      onUpdateFundType={data.onUpdateFundType}
-      onUpdateStatus={data.onUpdateStatus}
-      onDelete={data.onDelete}
-      isLast={isLast}
-    />
+    <div style={style} className="flex items-center">
+      {data.onToggleSelection && (
+        <div className="flex items-center justify-center h-full" style={{ flex: '0 0 36px', minWidth: 36 }} onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isSelected} onCheckedChange={() => data.onToggleSelection!(fund.id)} aria-label={`Seleccionar ${fund.name}`} />
+        </div>
+      )}
+      <div className="flex-1 min-w-0" style={{ height: '100%' }}>
+        <CRFundTableRow
+          fund={fund}
+          showFavorites={data.showFavorites}
+          fundTypeOptions={data.fundTypeOptions}
+          statusOptions={data.statusOptions}
+          onUpdateFundType={data.onUpdateFundType}
+          onUpdateStatus={data.onUpdateStatus}
+          onDelete={data.onDelete}
+          isLast={isLast}
+        />
+      </div>
+    </div>
   );
 });
 
@@ -188,7 +210,10 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
   sortBy,
   sortOrder,
   onSort,
+  selectedIds,
+  onSelectionChange,
 }) => {
+  const selectable = !!onSelectionChange;
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(500);
@@ -239,6 +264,23 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
     deleteMutation.mutate(fundId);
   }, [deleteMutation]);
 
+  const toggleAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (selectedIds?.size === funds.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(funds.map(f => f.id)));
+    }
+  }, [funds, selectedIds, onSelectionChange]);
+
+  const toggleOne = useCallback((id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  }, [selectedIds, onSelectionChange]);
+
   // Memoized item data
   const itemData = useMemo<ItemData>(() => ({
     funds,
@@ -248,7 +290,9 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
     onUpdateFundType: handleUpdateFundType,
     onUpdateStatus: handleUpdateStatus,
     onDelete: handleDelete,
-  }), [funds, showFavorites, handleUpdateFundType, handleUpdateStatus, handleDelete]);
+    selectedIds,
+    onToggleSelection: selectable ? toggleOne : undefined,
+  }), [funds, showFavorites, handleUpdateFundType, handleUpdateStatus, handleDelete, selectedIds, selectable, toggleOne]);
 
   // Loading skeleton
   if (isLoading) {
@@ -287,6 +331,9 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
           sortOrder={sortOrder}
           onSort={onSort}
           scrollLeft={scrollLeft}
+          selectable={selectable}
+          allSelected={funds.length > 0 && selectedIds?.size === funds.length}
+          onToggleAll={toggleAll}
         />
         
         {/* Virtualized List with horizontal scroll */}

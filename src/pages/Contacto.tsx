@@ -61,23 +61,7 @@ const Contacto = () => {
     else setLang('es');
   }, [location.pathname, setLang]);
 
-  // Hreflang links
-  useEffect(() => {
-    const hreflangUrls: Record<string, string> = {
-      es: 'https://capittal.es/contacto',
-      ca: 'https://capittal.es/contacte',
-      en: 'https://capittal.es/contact',
-      'x-default': 'https://capittal.es/contacto',
-    };
-    document.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
-    Object.entries(hreflangUrls).forEach(([lang, url]) => {
-      const link = document.createElement('link');
-      link.rel = 'alternate';
-      link.hreflang = lang;
-      link.href = url;
-      document.head.appendChild(link);
-    });
-  }, []);
+  // Hreflang managed by useHreflang hook (via routeMap)
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

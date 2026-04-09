@@ -1,0 +1,1 @@
+ALTER TABLE email_recipients_config ADD COLUMN is_bcc BOOLEAN DEFAULT false;

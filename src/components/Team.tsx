@@ -313,7 +313,7 @@ const Team = () => {
                 Un solo grupo, todas las respuestas que tu empresa necesita.
               </p>
               <a
-                href="https://nrro.es"
+                href="https://nvrro.es/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-background text-foreground font-medium py-3 px-6 rounded-lg hover:bg-background/90 transition-colors"

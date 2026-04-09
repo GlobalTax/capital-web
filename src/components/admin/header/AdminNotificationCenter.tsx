@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, CheckCircle, AlertCircle, Newspaper, Bot, Loader2, CheckCheck } from 'lucide-react';
+import { Bell, CheckCircle, AlertCircle, Newspaper, Bot, Loader2, CheckCheck, UserPlus } from 'lucide-react';
 import { useAdminNewsNotifications, AdminNewsNotification } from '@/hooks/useAdminNewsNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 const AdminNotificationCenter = () => {
+  const navigate = useNavigate();
   const { 
     notifications, 
     unreadCount, 
@@ -32,6 +34,8 @@ const AdminNotificationCenter = () => {
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       case 'process_complete':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'lead_assignment':
+        return <UserPlus className="h-4 w-4 text-purple-500" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
@@ -83,7 +87,12 @@ const AdminNotificationCenter = () => {
               <DropdownMenuItem 
                 key={notification.id} 
                 className={`cursor-pointer p-3 ${!notification.is_read ? 'bg-blue-50/50' : ''}`}
-                onClick={() => !notification.is_read && markAsRead(notification.id)}
+                onClick={() => {
+                  if (!notification.is_read) markAsRead(notification.id);
+                  if (notification.type === 'lead_assignment' && notification.metadata?.lead_id) {
+                    navigate('/admin/leads-pipeline');
+                  }
+                }}
               >
                 <div className="flex gap-3 w-full">
                   <div className="mt-0.5">

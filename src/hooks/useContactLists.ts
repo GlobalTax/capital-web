@@ -16,12 +16,18 @@ async function fetchAllRows<T = any>(
   pageSize = 1000
 ): Promise<T[]> {
   const allData: T[] = [];
+  const seenIds = new Set<string>();
   let from = 0;
   while (true) {
     const { data, error } = await buildQuery(from, from + pageSize - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
-    allData.push(...data);
+    for (const row of data as any[]) {
+      const id = row?.id;
+      if (id && seenIds.has(id)) continue;
+      if (id) seenIds.add(id);
+      allData.push(row);
+    }
     if (data.length < pageSize) break;
     from += pageSize;
   }
@@ -68,6 +74,7 @@ export interface ContactListCompany {
   posicion_contacto: string | null;
   cnae: string | null;
   descripcion_actividad: string | null;
+  consolidador: boolean;
   created_at: string;
 }
 
@@ -183,7 +190,7 @@ export const useContactLists = () => {
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
 
       const companies = await fetchAllRows((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).is('deleted_at', null).range(from, to)
       );
       if (companies.length > 0) {
         const copies = (companies as any[]).map(({ id: _, list_id, created_at, ...rest }) => ({ ...rest, list_id: (newList as any).id }));
@@ -204,7 +211,7 @@ export const useContactLists = () => {
 };
 
 // ===== LIST COMPANIES =====
-export const useContactListCompanies = (listId: string | undefined) => {
+export const useContactListCompanies = (listId: string | undefined, madreListId?: string | null) => {
   const queryClient = useQueryClient();
 
   const { data: companies = [], isLoading } = useQuery({
@@ -212,7 +219,7 @@ export const useContactListCompanies = (listId: string | undefined) => {
     enabled: !!listId,
     queryFn: async () => {
       const data = await fetchAllRows<ContactListCompany>((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).is('deleted_at', null).order('created_at', { ascending: false }).order('id').range(from, to)
       );
       return data;
     },
@@ -221,6 +228,11 @@ export const useContactListCompanies = (listId: string | undefined) => {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+    // Si esta lista es sublista, invalidar cache de la madre
+    if (madreListId) {
+      queryClient.invalidateQueries({ queryKey: ['sublist-company-map', madreListId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', madreListId] });
+    }
   };
 
   const addCompany = useMutation({
@@ -234,7 +246,7 @@ export const useContactListCompanies = (listId: string | undefined) => {
 
   const addCompanies = useMutation({
     mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }): Promise<{ inserted: number; failed: number; errors: Array<{ startIndex: number; count: number; message: string }> }> => {
-      const BATCH_SIZE = 25;
+      const BATCH_SIZE = 20;
       const SUB_BATCH_SIZE = 5;
       const DELAY_MS = 150;
       const total = rows.length;
@@ -254,9 +266,18 @@ export const useContactListCompanies = (listId: string | undefined) => {
             const sub = batch.slice(j, j + SUB_BATCH_SIZE);
             const { error: subErr } = await supabase.from(TB_COMPANIES).insert(sub);
             if (subErr) {
-              console.error(`[Import] Sub-batch error at row ${i + j}:`, subErr.message);
-              failed += sub.length;
-              errors.push({ startIndex: i + j, count: sub.length, message: subErr.message });
+              // Fallback: try each row individually so one bad row doesn't block the rest
+              for (let k = 0; k < sub.length; k++) {
+                const { error: rowErr } = await supabase.from(TB_COMPANIES).insert([sub[k]]);
+                if (rowErr) {
+                  const empresa = (sub[k] as any).empresa || '?';
+                  console.error(`[Import] Row error (${empresa}):`, rowErr.message);
+                  failed += 1;
+                  errors.push({ startIndex: i + j + k, count: 1, message: `${empresa}: ${rowErr.message}` });
+                } else {
+                  inserted += 1;
+                }
+              }
             } else {
               inserted += sub.length;
             }
@@ -297,19 +318,19 @@ export const useContactListCompanies = (listId: string | undefined) => {
 
   const deleteCompany = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(TB_COMPANIES).delete().eq('id', id);
+      const { error } = await supabase.from(TB_COMPANIES).update({ deleted_at: new Date().toISOString() } as any).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: invalidate,
+    onSuccess: () => { invalidate(); toast.success('Empresa eliminada del listado'); },
     onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const deleteCompanies = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await supabase.from(TB_COMPANIES).delete().in('id', ids);
+      const { error } = await supabase.from(TB_COMPANIES).update({ deleted_at: new Date().toISOString() } as any).in('id', ids);
       if (error) throw error;
     },
-    onSuccess: () => { invalidate(); toast.success('Empresas eliminadas'); },
+    onSuccess: () => { invalidate(); toast.success('Empresas eliminadas del listado'); },
     onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 

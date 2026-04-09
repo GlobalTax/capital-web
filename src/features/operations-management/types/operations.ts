@@ -1,6 +1,7 @@
 export interface Operation {
   id: string;
   company_name: string;
+  project_name?: string;
   sector: string;
   subsector?: string;
   valuation_amount: number;
@@ -10,7 +11,10 @@ export interface Operation {
   ebitda_multiple?: number;
   year: number;
   description: string;
+  description_en?: string;
   short_description?: string;
+  short_description_en?: string;
+  highlights_en?: string[];
   is_featured: boolean;
   is_active: boolean;
   is_deleted: boolean;

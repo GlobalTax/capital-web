@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { formatCurrency } from '@/shared/utils/format';
 
-export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
+export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'buyer_alert' | 'rod_download';
 
 export interface UnifiedContact {
   id: string;
@@ -176,6 +176,8 @@ export const useUnifiedContacts = () => {
       acquisition: 0,
       company_acquisition: 0,
       advisor: 0,
+      buyer_alert: 0,
+      rod_download: 0,
     },
     growth: 0,
     potentialValue: 0,
@@ -262,6 +264,23 @@ export const useUnifiedContacts = () => {
         .order('created_at', { ascending: false });
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
+
+      // Fetch buyer_preferences (alert subscriptions)
+      const { data: buyerAlertLeads, error: buyerAlertError } = await supabase
+        .from('buyer_preferences')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (buyerAlertError) console.error('Error fetching buyer preferences:', buyerAlertError);
+
+      // Fetch buyer_contacts (ROD downloads)
+      const { data: rodDownloadLeads, error: rodDownloadError } = await supabase
+        .from('buyer_contacts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5000);
+
+      if (rodDownloadError) console.error('Error fetching buyer contacts (ROD):', rodDownloadError);
 
       // 🔥 NEW: Fetch professional_valuations linked to contact_leads
       const { data: proValuations, error: proValuationsError } = await supabase
@@ -350,6 +369,8 @@ export const useUnifiedContacts = () => {
             ai_negative_tags: (lead as any).ai_negative_tags,
             ai_classification_confidence: (lead as any).ai_classification_confidence,
             ai_classification_at: (lead as any).ai_classification_at,
+            // Duplicate detection
+            is_possible_duplicate: (lead as any).is_possible_duplicate || false,
           };
         }),
         
@@ -416,6 +437,8 @@ export const useUnifiedContacts = () => {
           ai_negative_tags: (lead as any).ai_negative_tags,
           ai_classification_confidence: (lead as any).ai_classification_confidence,
           ai_classification_at: (lead as any).ai_classification_at,
+          // Duplicate detection
+          is_possible_duplicate: (lead as any).is_possible_duplicate || false,
         })),
         
         // Collaborator applications
@@ -601,6 +624,44 @@ export const useUnifiedContacts = () => {
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
           // 🔥 NEW: Business registration date
           lead_received_at: (lead as any).lead_received_at || lead.created_at,
+        })),
+
+        // Buyer alert preferences
+        ...(buyerAlertLeads || []).map(lead => ({
+          id: lead.id,
+          origin: 'buyer_alert' as const,
+          name: lead.full_name || '',
+          email: lead.email,
+          phone: lead.phone || undefined,
+          company: lead.company || undefined,
+          created_at: lead.created_at || new Date().toISOString(),
+          status: lead.is_active ? 'active' : 'inactive',
+          sectors_of_interest: lead.preferred_sectors?.join(', ') || undefined,
+          preferred_location: lead.preferred_locations?.join(', ') || undefined,
+          priority: 'warm' as const,
+          is_hot_lead: false,
+          source: 'buyer_alert',
+          lead_received_at: lead.created_at || new Date().toISOString(),
+        })),
+
+        // ROD download contacts (buyer_contacts)
+        ...(rodDownloadLeads || []).map(lead => ({
+          id: lead.id,
+          origin: 'rod_download' as const,
+          name: lead.full_name || `${lead.first_name} ${lead.last_name || ''}`.trim(),
+          email: lead.email,
+          phone: lead.phone || undefined,
+          company: lead.company || undefined,
+          created_at: lead.created_at || new Date().toISOString(),
+          status: lead.lead_status_crm || lead.status || 'new',
+          sectors_of_interest: lead.sectors_of_interest || undefined,
+          preferred_location: lead.preferred_location || undefined,
+          investment_budget: lead.investment_range || undefined,
+          priority: 'warm' as const,
+          is_hot_lead: false,
+          source: 'rod_download',
+          lead_received_at: lead.lead_received_at || lead.created_at || new Date().toISOString(),
+          lead_status_crm: lead.lead_status_crm,
         })),
       ];
 

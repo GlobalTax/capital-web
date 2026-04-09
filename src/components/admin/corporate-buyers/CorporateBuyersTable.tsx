@@ -2,16 +2,33 @@
 // CORPORATE BUYERS TABLE
 // =============================================
 
-import { memo, useMemo, useCallback } from 'react';
+import { memo, useMemo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList as List } from 'react-window';
-import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe, CheckCircle2 } from 'lucide-react';
+import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe, CheckCircle2, Search, X, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CorporateBuyer, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
+import { CorporateBuyer, CorporateBuyerType, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface TableFilters {
+  search: string;
+  type: string;
+  country: string;
+  sector: string;
+}
+
+const EMPTY_FILTERS: TableFilters = { search: '', type: 'all', country: 'all', sector: 'all' };
 
 interface CorporateBuyersTableProps {
   buyers: CorporateBuyer[];
@@ -19,7 +36,6 @@ interface CorporateBuyersTableProps {
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onToggleReviewed: (id: string, isReviewed: boolean) => void;
   isLoading?: boolean;
-  // Selection props
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   selectionMode?: boolean;
@@ -52,16 +68,49 @@ export const CorporateBuyersTable = memo(({
   selectionMode = false,
 }: CorporateBuyersTableProps) => {
   const navigate = useNavigate();
+  const [tableFilters, setTableFilters] = useState<TableFilters>(EMPTY_FILTERS);
 
-  // Selection handlers
+  // Extract unique values for filter dropdowns
+  const uniqueTypes = useMemo(() => {
+    const types = new Set(buyers.map(b => b.buyer_type).filter(Boolean) as CorporateBuyerType[]);
+    return Array.from(types).sort();
+  }, [buyers]);
+
+  const uniqueCountries = useMemo(() => {
+    const c = new Set(buyers.map(b => b.country_base).filter(Boolean) as string[]);
+    return Array.from(c).sort();
+  }, [buyers]);
+
+  const uniqueSectors = useMemo(() => {
+    const s = new Set(buyers.flatMap(b => b.sector_focus || []));
+    return Array.from(s).sort();
+  }, [buyers]);
+
+  // Apply inline filters
+  const filteredBuyers = useMemo(() => {
+    return buyers.filter(b => {
+      if (tableFilters.search) {
+        const q = tableFilters.search.toLowerCase();
+        if (!b.name?.toLowerCase().includes(q)) return false;
+      }
+      if (tableFilters.type !== 'all' && b.buyer_type !== tableFilters.type) return false;
+      if (tableFilters.country !== 'all' && b.country_base !== tableFilters.country) return false;
+      if (tableFilters.sector !== 'all' && !b.sector_focus?.includes(tableFilters.sector)) return false;
+      return true;
+    });
+  }, [buyers, tableFilters]);
+
+  const hasActiveFilters = tableFilters.search || tableFilters.type !== 'all' || tableFilters.country !== 'all' || tableFilters.sector !== 'all';
+
+  // Selection handlers - use filteredBuyers
   const handleSelectAll = useCallback(() => {
     if (!onSelectionChange) return;
-    if (selectedIds.size === buyers.length) {
+    if (selectedIds.size === filteredBuyers.length) {
       onSelectionChange(new Set());
     } else {
-      onSelectionChange(new Set(buyers.map(b => b.id)));
+      onSelectionChange(new Set(filteredBuyers.map(b => b.id)));
     }
-  }, [buyers, selectedIds.size, onSelectionChange]);
+  }, [filteredBuyers, selectedIds.size, onSelectionChange]);
 
   const handleSelectOne = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -75,12 +124,12 @@ export const CorporateBuyersTable = memo(({
     onSelectionChange(newSet);
   }, [selectedIds, onSelectionChange]);
 
-  const isAllSelected = buyers.length > 0 && selectedIds.size === buyers.length;
-  const isIndeterminate = selectedIds.size > 0 && selectedIds.size < buyers.length;
+  const isAllSelected = filteredBuyers.length > 0 && selectedIds.size === filteredBuyers.length;
+  const isIndeterminate = selectedIds.size > 0 && selectedIds.size < filteredBuyers.length;
 
   const Row = useMemo(() => 
     memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
-      const buyer = buyers[index];
+      const buyer = filteredBuyers[index];
       const isFavorite = favoriteIds.has(buyer.id);
       const isSelected = selectedIds.has(buyer.id);
 
@@ -236,7 +285,7 @@ export const CorporateBuyersTable = memo(({
         </div>
       );
     }),
-    [buyers, favoriteIds, selectedIds, navigate, onToggleFavorite, onToggleReviewed, selectionMode, handleSelectOne]
+    [filteredBuyers, favoriteIds, selectedIds, navigate, onToggleFavorite, onToggleReviewed, selectionMode, handleSelectOne]
   );
 
   if (isLoading) {
@@ -265,7 +314,6 @@ export const CorporateBuyersTable = memo(({
         className="flex bg-muted/50 border-b border-border sticky top-0 z-10"
         style={{ height: HEADER_HEIGHT, minWidth: minTableWidth }}
       >
-        {/* Select All Checkbox */}
         {selectionMode && (
           <div className="w-10 flex-shrink-0 flex items-center justify-center">
             <Checkbox
@@ -317,18 +365,110 @@ export const CorporateBuyersTable = memo(({
         <div className="w-10 flex-shrink-0" />
       </div>
 
-      {/* Virtual List with horizontal scroll */}
+      {/* Filter Row */}
+      <div 
+        className="flex bg-muted/20 border-b border-border items-center"
+        style={{ height: 40, minWidth: minTableWidth }}
+      >
+        {selectionMode && <div className="w-10 flex-shrink-0" />}
+        <div className="w-12 flex-shrink-0" />
+        <div className="w-10 flex-shrink-0 flex items-center justify-center">
+          <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        {/* Search by name */}
+        <div className="w-[200px] flex-shrink-0 px-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              value={tableFilters.search}
+              onChange={(e) => setTableFilters(f => ({ ...f, search: e.target.value }))}
+              className="h-7 text-xs pl-7 pr-2"
+            />
+          </div>
+        </div>
+        {/* Type */}
+        <div className="w-28 flex-shrink-0 px-1">
+          <Select value={tableFilters.type} onValueChange={(v) => setTableFilters(f => ({ ...f, type: v }))}>
+            <SelectTrigger className="h-7 text-xs border-border/50">
+              <SelectValue placeholder="Tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {uniqueTypes.map(t => (
+                <SelectItem key={t} value={t}>{BUYER_TYPE_LABELS[t]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Country */}
+        <div className="w-24 flex-shrink-0 px-1">
+          <Select value={tableFilters.country} onValueChange={(v) => setTableFilters(f => ({ ...f, country: v }))}>
+            <SelectTrigger className="h-7 text-xs border-border/50">
+              <SelectValue placeholder="País" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {uniqueCountries.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Sector */}
+        <div className="w-40 flex-shrink-0 px-1">
+          <Select value={tableFilters.sector} onValueChange={(v) => setTableFilters(f => ({ ...f, sector: v }))}>
+            <SelectTrigger className="h-7 text-xs border-border/50">
+              <SelectValue placeholder="Sector" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {uniqueSectors.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Spacer for remaining columns */}
+        <div className="flex-1 flex items-center px-2">
+          {hasActiveFilters && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {filteredBuyers.length} de {buyers.length}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                onClick={() => setTableFilters(EMPTY_FILTERS)}
+              >
+                <X className="h-3 w-3" />
+                Limpiar
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Virtual List */}
       <div className="overflow-x-auto">
         <div style={{ minWidth: minTableWidth }}>
-          <List
-            height={Math.min(buyers.length * ROW_HEIGHT, 600)}
-            width="100%"
-            itemCount={buyers.length}
-            itemSize={ROW_HEIGHT}
-            overscanCount={5}
-          >
-            {Row}
-          </List>
+          {filteredBuyers.length === 0 ? (
+            <div className="p-8 flex flex-col items-center justify-center gap-2">
+              <Building2 className="h-10 w-10 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">No hay resultados con los filtros actuales</p>
+            </div>
+          ) : (
+            <List
+              height={Math.min(filteredBuyers.length * ROW_HEIGHT, 600)}
+              width="100%"
+              itemCount={filteredBuyers.length}
+              itemSize={ROW_HEIGHT}
+              overscanCount={5}
+            >
+              {Row}
+            </List>
+          )}
         </div>
       </div>
     </div>

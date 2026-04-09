@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, Users, Briefcase, Target, History, FileText } from 'lucide-react';
+import { Loader2, Users, Briefcase, Target, History, FileText, Paperclip } from 'lucide-react';
 import { useSFFund, useCreateSFFund, useUpdateSFFund } from '@/hooks/useSFFunds';
 import { useSFPeople, useDeleteSFPerson } from '@/hooks/useSFPeople';
 import { useSFAcquisitions, useDeleteSFAcquisition } from '@/hooks/useSFAcquisitions';
@@ -16,6 +16,8 @@ import { SFFundDetailSidebar } from '@/components/admin/search-funds/SFFundDetai
 import { SFFundDetailHeader } from '@/components/admin/search-funds/SFFundDetailHeader';
 import { SFFundPeoplePanel } from '@/components/admin/search-funds/SFFundPeoplePanel';
 import { SFFundAcquisitionsPanel } from '@/components/admin/search-funds/SFFundAcquisitionsPanel';
+import { SFFundFilesPanel } from '@/components/admin/search-funds/SFFundFilesPanel';
+import { useSFFundFiles } from '@/hooks/useSFFundFiles';
 import { SFFund, SFFundFormData, SFPerson, SFAcquisition } from '@/types/searchFunds';
 import {
   AlertDialog,
@@ -45,6 +47,9 @@ export default function SFFundDetailPage() {
   // Acquisitions data
   const { data: acquisitions = [] } = useSFAcquisitions(isNew ? undefined : id);
   const deleteAcquisition = useDeleteSFAcquisition();
+
+  // Files data
+  const { data: fundFiles = [] } = useSFFundFiles(isNew ? undefined : id);
 
   // Modal states
   const [editingPerson, setEditingPerson] = useState<SFPerson | null | 'new'>(null);
@@ -167,6 +172,16 @@ export default function SFFundDetailPage() {
                   Matches
                   <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
                     {fund?.matches?.length || 0}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="files" 
+                  className="h-10 px-0 pb-3 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm gap-1.5"
+                >
+                  <Paperclip className="h-3.5 w-3.5" />
+                  Documentos
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
+                    {fundFiles.length}
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger 
@@ -330,6 +345,15 @@ export default function SFFundDetailPage() {
                         <p className="text-sm text-muted-foreground">No hay matches</p>
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Files Tab */}
+              <TabsContent value="files" className="m-0 p-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <SFFundFilesPanel fundId={id!} />
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -83,12 +83,12 @@ const SectorOperationCard: React.FC<{ operation: SectorOperation }> = ({ operati
         <div className="flex items-start gap-3 mb-4">
           <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-slate-700 font-bold text-lg">
-              {operation.company_name.charAt(0)}
+              {(operation.project_name || operation.company_name || 'O').charAt(0)}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-base text-slate-900 line-clamp-1">
-              {operation.company_name}
+              {operation.project_name || operation.company_name || 'Operación confidencial'}
             </h3>
             <p className="text-sm text-slate-500 line-clamp-1">
               {operation.subsector || operation.sector}

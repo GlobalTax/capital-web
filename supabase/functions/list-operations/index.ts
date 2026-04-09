@@ -3,11 +3,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -29,254 +28,201 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const body = await req.json();
     const { 
       searchTerm, 
       sector,
+      sectors: sectorsFilter,
       location,
-      companySize,
       dealType,
-      projectStatus,
       sortBy = 'created_at', 
       limit = 20, 
-      offset = 0, 
-      displayLocation,
-      valuationMin,
-      valuationMax,
+      offset = 0,
       createdAfter,
-      locale = 'es' // NUEVO: idioma solicitado (es, en, ca)
-    } = await req.json();
+      locale = 'es'
+    } = body;
 
-    console.log('🌍 Locale requested:', locale);
-
-    console.log('📋 List operations request:', { 
-      searchTerm, 
-      sector,
-      location,
-      companySize,
-      dealType,
-      projectStatus,
-      sortBy, 
-      limit, 
-      offset, 
-      displayLocation,
-      valuationMin,
-      valuationMax,
-      createdAfter,
-      locale,
+    console.log('📋 list-operations (ROD) request:', { 
+      searchTerm, sector, location, dealType, sortBy, limit, offset, createdAfter, locale,
       timestamp: new Date().toISOString()
     });
 
-    // Base query with better error context
+    // ── Main query: mandatos + datos_proyecto ──
+    // We query datos_proyecto and join with mandatos to check visible_en_rod
     let query = supabase
-      .from('company_operations')
-      .select('*', { count: 'exact' })
-      .eq('is_active', true)
-      .eq('is_deleted', false);
+      .from('datos_proyecto')
+      .select(`
+        id,
+        mandato_id,
+        project_name,
+        project_number,
+        ubicacion,
+        sector,
+        short_description,
+        short_description_en,
+        description,
+        description_en,
+        year,
+        revenue_amount,
+        ebitda_amount,
+        ebitda_margin,
+        rango_facturacion_min,
+        rango_facturacion_max,
+        rango_ebitda_min,
+        rango_ebitda_max,
+        estado,
+        created_at,
+        updated_at,
+        mandatos!inner (
+          id,
+          tipo,
+          visible_en_rod,
+          nombre_proyecto,
+          is_favorite
+        )
+      `, { count: 'exact' })
+      .eq('mandatos.visible_en_rod', true);
 
-    // Apply filters with validation
+    // ── Apply filters ──
     if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
-      const sanitizedSearch = searchTerm.trim().substring(0, 100);
-      query = query.or(`company_name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
-      console.log('🔍 Search filter applied:', sanitizedSearch);
+      const s = searchTerm.trim().substring(0, 100);
+      query = query.or(`project_name.ilike.%${s}%,description.ilike.%${s}%,short_description.ilike.%${s}%,sector.ilike.%${s}%`);
     }
 
-    if (sector && typeof sector === 'string') {
-      query = query.eq('sector', sector);
-      console.log('🏢 Sector filter applied:', sector);
+    // Support both single sector (legacy) and multi-sector array
+    if (sectorsFilter && Array.isArray(sectorsFilter) && sectorsFilter.length > 0) {
+      const orConditions = sectorsFilter.map((s: string) => `sector.ilike.%${s}%`).join(',');
+      query = query.or(orConditions);
+    } else if (sector && typeof sector === 'string') {
+      query = query.ilike('sector', `%${sector}%`);
     }
 
-    if (displayLocation && typeof displayLocation === 'string') {
-      query = query.contains('display_locations', [displayLocation]);
-      console.log('📍 Location filter applied:', displayLocation);
-    }
-
-    // Geographic location filter (real location, separate from display_locations)
     if (location && typeof location === 'string') {
-      query = query.eq('geographic_location', location);
-      console.log('📍 Geographic location filter applied:', location);
+      query = query.eq('ubicacion', location);
     }
 
-    // Company size filter
-    if (companySize && typeof companySize === 'string') {
-      query = query.eq('company_size_employees', companySize);
-      console.log('👥 Company size filter applied:', companySize);
-    }
-
-    // Deal type filter
     if (dealType && typeof dealType === 'string') {
-      query = query.eq('deal_type', dealType);
-      console.log('🤝 Deal type filter applied:', dealType);
+      // Map frontend values to mandatos.tipo
+      const tipoMap: Record<string, string> = { 'sale': 'venta', 'acquisition': 'compra', 'venta': 'venta', 'compra': 'compra', 'sell-side': 'venta', 'buy-side': 'compra' };
+      const mappedTipo = tipoMap[dealType] || dealType;
+      query = query.eq('mandatos.tipo', mappedTipo);
     }
 
-    // Valuation range filters
-    if (valuationMin && typeof valuationMin === 'number') {
-      query = query.gte('valuation_amount', valuationMin);
-      console.log('💰 Valuation min filter applied:', valuationMin);
-    }
-    if (valuationMax && typeof valuationMax === 'number') {
-      query = query.lte('valuation_amount', valuationMax);
-      console.log('💰 Valuation max filter applied:', valuationMax);
-    }
-
-    // Publication date filter
     if (createdAfter && typeof createdAfter === 'string') {
       query = query.gte('created_at', createdAfter);
-      console.log('📅 Created after filter applied:', createdAfter);
     }
 
-    // Project status filter
-    if (projectStatus && typeof projectStatus === 'string') {
-      query = query.eq('project_status', projectStatus);
-      console.log('📊 Project status filter applied:', projectStatus);
-    }
-
-    // Apply sorting with validation
-    const validSortFields = ['created_at', 'year', 'valuation_amount', 'company_name'];
+    // ── Sorting ──
+    const validSortFields = ['created_at', 'revenue_amount', 'project_name'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
-    const sortOrder = ['created_at', 'year', 'valuation_amount'].includes(sortField) ? 'desc' : 'asc';
+    const sortOrder = sortField !== 'project_name' ? 'desc' : 'asc';
     
-    // Featured operations first (primary sort), then user's sort criteria (secondary)
-    query = query.order('is_featured', { ascending: false, nullsFirst: false });
+    // Featured (is_favorite on mandatos) first, then sort
+    query = query.order('mandatos(is_favorite)', { ascending: false, nullsFirst: false });
     query = query.order(sortField, { ascending: sortOrder === 'asc' });
-    console.log('📊 Sorting:', { featuredFirst: true, sortField, sortOrder });
 
-    // Apply pagination with bounds check
+    // ── Pagination ──
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safeOffset = Math.max(0, offset);
     query = query.range(safeOffset, safeOffset + safeLimit - 1);
 
-    // Execute main query with timeout
     const { data, error, count } = await query;
 
     if (error) {
       console.error('❌ Database error:', error);
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to fetch operations',
-          details: error.message,
-          data: [],
-          count: 0,
-          sectors: []
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ error: 'Failed to fetch operations', details: error.message, data: [], count: 0, sectors: [] }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get unique sectors for filter options with translations
-    let sectors: { key: string; label: string }[] = [];
-    let locations: string[] = [];
-    let companySizes: string[] = [];
-    let dealTypes: string[] = [];
-    let projectStatuses: string[] = [];
-    
-    // Fetch sectors from sectors table with translations
-    const { data: sectorsData, error: sectorsError } = await supabase
+    // ── Fetch filter options ──
+    // Get unique sectors from visible datos_proyecto only
+    const { data: availableSectorsData } = await supabase
+      .from('datos_proyecto')
+      .select('sector, mandatos!inner(visible_en_rod)')
+      .eq('mandatos.visible_en_rod', true)
+      .not('sector', 'is', null);
+
+    const uniqueSectorNames = [...new Set((availableSectorsData || []).map(d => d.sector).filter(Boolean))].sort();
+
+    // Enrich with translations from sectors table
+    const { data: sectorsData } = await supabase
       .from('sectors')
       .select('name_es, name_en, slug')
       .eq('is_active', true)
       .order('display_order');
 
-    if (sectorsError) {
-      console.warn('⚠️ Sectors query error (non-critical):', sectorsError.message);
-    } else if (sectorsData) {
-      // Resolve sector name by locale with fallback to ES
-      sectors = sectorsData.map(s => ({
-        key: s.slug,
-        label: (locale === 'en' && s.name_en) ? s.name_en : s.name_es
-      }));
-      console.log(`📊 Resolved ${sectors.length} sectors for locale: ${locale}`);
+    // Only include sectors that exist in visible operations
+    let sectors: { key: string; label: string }[] = uniqueSectorNames.map(sectorName => {
+      const match = sectorsData?.find(s => s.name_es === sectorName);
+      return {
+        key: match?.slug || sectorName,
+        label: (locale === 'en' && match?.name_en) ? match.name_en : sectorName
+      };
+    });
+
+    // Unique locations from datos_proyecto
+    let locations: string[] = [];
+    const { data: locationsData } = await supabase
+      .from('datos_proyecto')
+      .select('ubicacion, mandatos!inner(visible_en_rod)')
+      .eq('mandatos.visible_en_rod', true)
+      .not('ubicacion', 'is', null);
+
+    if (locationsData) {
+      locations = [...new Set(locationsData.map(d => d.ubicacion).filter(Boolean))].sort();
     }
 
-    // Get unique geographic locations
-    const { data: locationsData, error: locationsError } = await supabase
-      .from('company_operations')
-      .select('geographic_location')
-      .eq('is_active', true)
-      .eq('is_deleted', false)
-      .not('geographic_location', 'is', null);
+    // Deal types from mandatos
+    const dealTypes = ['venta', 'compra'];
 
-    if (locationsError) {
-      console.warn('⚠️ Locations query error (non-critical):', locationsError.message);
-    } else if (locationsData) {
-      locations = [...new Set(locationsData.map(op => op.geographic_location).filter(Boolean))].sort();
-    }
+    console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total (ROD source)`);
 
-    // Get unique company sizes
-    const { data: sizesData, error: sizesError } = await supabase
-      .from('company_operations')
-      .select('company_size_employees')
-      .eq('is_active', true)
-      .eq('is_deleted', false)
-      .not('company_size_employees', 'is', null);
-
-    if (sizesError) {
-      console.warn('⚠️ Company sizes query error (non-critical):', sizesError.message);
-    } else if (sizesData) {
-      companySizes = [...new Set(sizesData.map(op => op.company_size_employees).filter(Boolean))].sort();
-    }
-
-    // Get unique deal types
-    const { data: typesData, error: typesError } = await supabase
-      .from('company_operations')
-      .select('deal_type')
-      .eq('is_active', true)
-      .eq('is_deleted', false)
-      .not('deal_type', 'is', null);
-
-    if (typesError) {
-      console.warn('⚠️ Deal types query error (non-critical):', typesError.message);
-    } else if (typesData) {
-      dealTypes = [...new Set(typesData.map(op => op.deal_type).filter(Boolean))].sort();
-    }
-
-    // Get unique project statuses
-    const { data: statusesData, error: statusesError } = await supabase
-      .from('company_operations')
-      .select('project_status')
-      .eq('is_active', true)
-      .eq('is_deleted', false)
-      .not('project_status', 'is', null);
-
-    if (statusesError) {
-      console.warn('⚠️ Project statuses query error (non-critical):', statusesError.message);
-    } else if (statusesData) {
-      projectStatuses = [...new Set(statusesData.map(op => op.project_status).filter(Boolean))].sort();
-    }
-
-    console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
-
-    // Resolve operation descriptions and sector by locale with fallback to ES
-    const resolvedData = (data || []).map(op => {
-      // Find sector translation from sectors table
-      const sectorMatch = sectorsData?.find(s => s.name_es === op.sector);
+    // ── Map response to frontend-compatible shape ──
+    const resolvedData = (data || []).map(row => {
+      const mandato = row.mandatos as any;
+      
+      // Find sector translation
+      const sectorMatch = sectorsData?.find(s => s.name_es === row.sector);
       const resolvedSector = (locale === 'en' && sectorMatch?.name_en)
         ? sectorMatch.name_en
-        : op.sector;
+        : row.sector;
+
+      // Phase mapping
+      const phaseMap: Record<string, string> = {
+        'en_preparacion': 'En Preparación',
+        'go_to_market': 'Go to Market',
+        'negociacion_y_cierre': 'Negociación y Cierre'
+      };
 
       return {
-        ...op,
-        // Resolve sector by locale
+        id: mandato?.id || row.mandato_id,
+        project_name: row.project_name || mandato?.nombre_proyecto || 'Operación confidencial',
+        project_number: row.project_number,
+        sector: row.sector,
         resolved_sector: resolvedSector,
-        // Resolve description by locale
-        resolved_description: locale === 'en' && op.description_en 
-          ? op.description_en 
-          : locale === 'ca' && op.description_ca
-            ? op.description_ca
-            : op.description,
-        resolved_short_description: locale === 'en' && op.short_description_en 
-          ? op.short_description_en 
-          : locale === 'ca' && op.short_description_ca
-            ? op.short_description_ca
-            : op.short_description,
-        // Resolve highlights by locale
-        resolved_highlights: locale === 'en' && op.highlights_en && op.highlights_en.length > 0
-          ? op.highlights_en 
-          : locale === 'ca' && op.highlights_ca && op.highlights_ca.length > 0
-            ? op.highlights_ca
-            : op.highlights
+        revenue_amount: row.revenue_amount ? Number(row.revenue_amount) : null,
+        ebitda_amount: row.ebitda_amount ? Number(row.ebitda_amount) : null,
+        ebitda_margin: row.ebitda_margin ? Number(row.ebitda_margin) : null,
+        rango_facturacion_min: row.rango_facturacion_min ? Number(row.rango_facturacion_min) : null,
+        rango_facturacion_max: row.rango_facturacion_max ? Number(row.rango_facturacion_max) : null,
+        rango_ebitda_min: row.rango_ebitda_min ? Number(row.rango_ebitda_min) : null,
+        rango_ebitda_max: row.rango_ebitda_max ? Number(row.rango_ebitda_max) : null,
+        valuation_currency: 'EUR',
+        year: row.year,
+        description: row.description,
+        short_description: row.short_description,
+        resolved_description: (locale === 'en' && row.description_en) ? row.description_en : row.description,
+        resolved_short_description: (locale === 'en' && row.short_description_en) ? row.short_description_en : row.short_description,
+        geographic_location: row.ubicacion,
+        deal_type: mandato?.tipo === 'venta' ? 'sale' : mandato?.tipo === 'compra' ? 'acquisition' : mandato?.tipo,
+        is_featured: mandato?.is_favorite || false,
+        is_active: true,
+        project_status: row.estado,
+        project_status_label: phaseMap[row.estado] || row.estado,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
       };
     });
 
@@ -284,37 +230,19 @@ serve(async (req) => {
       JSON.stringify({
         data: resolvedData,
         count: count || 0,
-        sectors: sectors,
-        locations: locations,
-        companySizes: companySizes,
-        dealTypes: dealTypes,
-        projectStatuses: projectStatuses,
-        locale: locale
+        sectors,
+        locations,
+        dealTypes,
+        locale
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('❌ CRITICAL ERROR in list-operations function:', {
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-    
+    console.error('❌ CRITICAL ERROR in list-operations:', error.message);
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message,
-        data: [],
-        count: 0,
-        sectors: []
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'Internal server error', details: error.message, data: [], count: 0, sectors: [] }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

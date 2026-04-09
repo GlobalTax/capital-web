@@ -68,6 +68,7 @@ import {
   CorporateBuyerFormData
 } from '@/types/corporateBuyers';
 import { CorporateAIPanel } from '@/components/admin/corporate-buyers/CorporateAIPanel';
+import { CorporateBuyerFilesPanel } from '@/components/admin/corporate-buyers/CorporateBuyerFilesPanel';
 import { CorporateEmailDialog } from '@/components/admin/corporate-buyers/CorporateEmailDialog';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -704,6 +705,9 @@ const CorporateBuyerDetailPage = () => {
         <div className="space-y-6">
           {/* AI Panel */}
           <CorporateAIPanel buyer={buyer} />
+
+          {/* Files */}
+          {id && <CorporateBuyerFilesPanel buyerId={id} />}
 
           {/* Contacts */}
           <Card>
