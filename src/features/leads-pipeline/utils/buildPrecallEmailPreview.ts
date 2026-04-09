@@ -154,27 +154,29 @@ export function buildPrecallEmailPreview(
       break;
 
     case 'compra-cast':
-      saludo = contactFirstName ? `Apreciado ${contactFirstName},` : 'Apreciado/a,';
-      intro = `Soy ${senderFirstName}, del equipo de fusiones y adquisiciones de Capittal. Encantado de saludarte.`;
+      saludo = contactFirstName ? `Estimado ${contactFirstName},` : 'Estimado/a,';
+      intro = `Soy ${senderFirstName}, del equipo de Capittal.`;
       paragraphs = [
-        'Me pongo en contacto contigo porque hemos recibido tu consulta relacionada con la adquisición de empresas. Tras analizar tu perfil e intereses, nos ha parecido muy interesante poder conversar sobre las oportunidades que encajen con lo que estás buscando.',
-        'Desconozco si ya tenéis un mandato de compra en curso, si estáis explorando el mercado, o si simplemente queréis conocer las oportunidades disponibles. En cualquier caso, me gustaría hablar contigo para entender mejor vuestras necesidades y criterios de inversión.',
-        'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
+        'Hemos recibido tu solicitud de información sobre oportunidades de adquisición de compañías y nos gustaría conocer mejor tu perfil, así como el tipo de empresa que estás buscando adquirir.',
+        'En Capittal somos una boutique de M&A especializada en operaciones de compraventa de empresas en el mercado español. Actualmente gestionamos un pipeline activo de más de 50 oportunidades de adquisición en distintos sectores y rangos de tamaño, y trabajamos con perfiles muy diversos de compradores, incluyendo grupos industriales, firmas de capital riesgo y family offices.',
+        'En este sentido, me gustaría proponerte mantener una breve conversación telefónica para entender mejor qué estáis buscando y poder orientarte de la forma más adecuada.',
+        'En paralelo, he pensado que podría ser de interés adjuntarte nuestra Relación de Oportunidades Activas Q2 2026, donde encontrarás un resumen de los mandatos de venta y compra que estamos gestionando actualmente.',
       ];
-      phoneBlock = `Te dejo mi número: ${senderPhone} por si prefieres llamarme tú directamente.`;
-      closing = 'Un cordial saludo,';
+      phoneBlock = `Si te parece bien, puedes indicarme cuándo te vendría bien que habláramos y lo coordinamos. Si lo prefieres, también puedes llamarme directamente al ${senderPhone} cuando te resulte conveniente.`;
+      closing = 'Un saludo,';
       break;
 
     case 'compra-cat':
-      saludo = contactFirstName ? `Apreciat ${contactFirstName},` : 'Apreciat/ada,';
-      intro = `Soc ${senderFirstName}, de l'equip de fusions i adquisicions de Capittal. Encantat de saludar-te.`;
+      saludo = contactFirstName ? `Estimat ${contactFirstName},` : 'Estimat/ada,';
+      intro = `Soc ${senderFirstName}, de l'equip de Capittal.`;
       paragraphs = [
-        'Em poso en contacte amb tu perquè hem rebut la teva consulta relacionada amb l\'adquisició d\'empreses. Després d\'analitzar el teu perfil i interessos, ens ha semblat molt interessant poder conversar sobre les oportunitats que encaixin amb el que esteu buscant.',
-        'Desconec si ja teniu un mandat de compra en curs, si esteu explorant el mercat, o si simplement voleu conèixer les oportunitats disponibles. En qualsevol cas, m\'agradaria parlar amb tu per entendre millor les vostres necessitats i criteris d\'inversió.',
-        'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o bé em pots indicar l\'horari que millor et vagi.',
+        'Hem rebut la teva sol·licitud d\'informació sobre oportunitats d\'adquisició de companyies i ens agradaria conèixer millor el teu perfil, així com el tipus d\'empresa que estàs buscant adquirir.',
+        'A Capittal som una boutique de M&A especialitzada en operacions de compravenda d\'empreses al mercat espanyol. Actualment gestionem un pipeline actiu de més de 50 oportunitats d\'adquisició en diferents sectors i rangs de mida, i treballem amb perfils molt diversos de compradors, incloent-hi grups industrials, firmes de capital risc i family offices.',
+        'En aquest sentit, m\'agradaria proposar-te mantenir una breu conversa telefònica per entendre millor què esteu buscant i poder orientar-te de la manera més adequada.',
+        'En paral·lel, he pensat que podria ser d\'interès adjuntar-te la nostra Relació d\'Oportunitats Actives Q2 2026, on trobaràs un resum dels mandats de venda i compra que estem gestionant actualment.',
       ];
-      phoneBlock = `Et deixo el meu número: ${senderPhone} per si prefereixes trucar-me directament.`;
-      closing = 'Una cordial salutació,';
+      phoneBlock = `Si et sembla bé, pots indicar-me quan et vindria bé que parléssim i ho coordinarem. Si ho prefereixes, també pots trucar-me directament al ${senderPhone} quan et resulti convenient.`;
+      closing = 'Una salutació,';
       break;
   }
 
