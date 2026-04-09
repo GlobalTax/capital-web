@@ -345,8 +345,35 @@ export const useBuyPipeline = () => {
         .eq('id', leadId);
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       toast.success(variables.userId ? 'Lead asignado correctamente' : 'Lead desasignado');
+      
+      // Send notification to assigned user
+      if (variables.userId) {
+        try {
+          const lead = leads.find(l => l.id === variables.leadId);
+          const assignee = adminUsers?.find(u => u.user_id === variables.userId);
+          
+          const { data: { user } } = await supabase.auth.getUser();
+          const currentAdmin = adminUsers?.find(u => u.user_id === user?.id);
+          
+          await supabase.functions.invoke('notify-lead-assignment', {
+            body: {
+              lead_id: variables.leadId,
+              lead_name: lead?.contact_name || '',
+              company: lead?.company_name || '',
+              phone: lead?.phone || null,
+              email: lead?.email || null,
+              assigned_to_user_id: variables.userId,
+              assigned_to_email: assignee?.email || null,
+              assigned_to_name: assignee?.full_name || null,
+              assigned_by_name: currentAdmin?.full_name || user?.email || 'Sistema',
+            },
+          });
+        } catch (err) {
+          console.error('Error sending assignment notification:', err);
+        }
+      }
     },
     onError: (error, _vars, context) => {
       if (context?.previous) queryClient.setQueryData(['buy-pipeline'], context.previous);
