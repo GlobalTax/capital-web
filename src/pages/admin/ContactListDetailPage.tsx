@@ -1080,6 +1080,8 @@ export default function ContactListDetailPage() {
       // 2. Update duplicates if user opted in
       if (updateDuplicates && validationResult.duplicadas.length > 0) {
         const UPDATABLE_FIELDS = ['tipo_accionista', 'nombre_accionista', 'notas', 'contacto', 'email', 'linkedin', 'director_ejecutivo', 'telefono', 'web', 'posicion_contacto', 'consolidador', 'cnae', 'descripcion_actividad', 'facturacion', 'ebitda', 'num_trabajadores', 'provincia', 'comunidad_autonoma'];
+        const UPDATE_DELAY_MS = 150;
+        const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
         
         for (let i = 0; i < validationResult.duplicadas.length; i++) {
           const row = validationResult.duplicadas[i];
@@ -1098,14 +1100,18 @@ export default function ContactListDetailPage() {
           if (Object.keys(updates).length === 0) continue;
 
           try {
-            const { error } = await supabase
+            const { data: updated, error } = await supabase
               .from('outbound_list_companies' as any)
               .update(updates)
               .eq('list_id', listId)
-              .eq('cif', cif);
+              .ilike('cif', cif)
+              .select('id');
             
             if (error) {
               console.error(`[Import] Failed to update CIF ${cif}:`, error);
+              failedCount++;
+            } else if (!updated || updated.length === 0) {
+              console.warn(`[Import] No rows matched for CIF ${cif}`);
               failedCount++;
             } else {
               updatedCount++;
@@ -1116,6 +1122,11 @@ export default function ContactListDetailPage() {
           }
 
           setImportProgress({ done: rowsToInsert.length + i + 1, total: totalOperations });
+
+          // Throttle to avoid rate limiting
+          if (i % 5 === 4) {
+            await delay(UPDATE_DELAY_MS);
+          }
         }
       }
 
