@@ -130,7 +130,8 @@ export const useBuyPipeline = () => {
 
       if (err2) throw err2;
 
-      // Fetch company_valuations with lead_status_crm = 'compras'
+      // Fetch company_valuations marked as buy pipeline
+      const buyStatusKeys = ['compras', 'nuevo', 'contactado_nr', 'contacto_efectivo', 'reunion_programada', 'no_interesa', 'capital_riesgo', 'search_fund', 'corporativo'];
       const { data: valCompras, error: err3 } = await supabase
         .from('company_valuations')
         .select(`
@@ -141,12 +142,12 @@ export const useBuyPipeline = () => {
           precall_email_sent, call_attempts_count, email_sent, email_opened
         `)
         .eq('is_deleted', false)
-        .eq('lead_status_crm', 'compras')
+        .in('lead_status_crm', buyStatusKeys)
         .order('created_at', { ascending: false });
 
       if (err3) throw err3;
 
-      // Fetch contact_leads with lead_status_crm = 'compras'
+      // Fetch contact_leads marked as buy pipeline
       const { data: contactCompras, error: err4 } = await supabase
         .from('contact_leads')
         .select(`
@@ -156,7 +157,7 @@ export const useBuyPipeline = () => {
           email_sent, email_opened
         `)
         .eq('is_deleted', false)
-        .eq('lead_status_crm', 'compras')
+        .in('lead_status_crm', buyStatusKeys)
         .order('created_at', { ascending: false });
 
       if (err4) throw err4;
@@ -209,7 +210,7 @@ export const useBuyPipeline = () => {
         company_name: v.company_name || '',
         email: v.email || '',
         phone: v.phone || null,
-        lead_status_crm: 'nuevo' as LeadStatus,
+        lead_status_crm: (v.lead_status_crm === 'compras' || !v.lead_status_crm) ? 'nuevo' as LeadStatus : v.lead_status_crm as LeadStatus,
         investment_budget: null,
         sectors_of_interest: v.ai_sector_name || null,
         acquisition_type: null,
@@ -238,7 +239,7 @@ export const useBuyPipeline = () => {
         company_name: c.company || '',
         email: c.email || '',
         phone: c.phone || null,
-        lead_status_crm: 'nuevo' as LeadStatus,
+        lead_status_crm: (c.lead_status_crm === 'compras' || !c.lead_status_crm) ? 'nuevo' as LeadStatus : c.lead_status_crm as LeadStatus,
         investment_budget: null,
         sectors_of_interest: null,
         acquisition_type: null,
