@@ -194,6 +194,8 @@ export type Database = {
           apollo_org_id: string | null
           apollo_people_data: Json | null
           apollo_status: string | null
+          assigned_at: string | null
+          assigned_to: string | null
           brevo_deleted_at: string | null
           brevo_lists: number[] | null
           brevo_unsubscribed_lists: number[] | null
@@ -263,6 +265,8 @@ export type Database = {
           apollo_org_id?: string | null
           apollo_people_data?: Json | null
           apollo_status?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
           brevo_unsubscribed_lists?: number[] | null
@@ -332,6 +336,8 @@ export type Database = {
           apollo_org_id?: string | null
           apollo_people_data?: Json | null
           apollo_status?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
           brevo_unsubscribed_lists?: number[] | null
@@ -388,6 +394,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "acquisition_channels"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acquisition_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "acquisition_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "acquisition_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users_safe"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "acquisition_leads_lead_form_fkey"
@@ -4647,6 +4674,8 @@ export type Database = {
           apollo_org_id: string | null
           apollo_people_data: Json | null
           apollo_status: string | null
+          assigned_at: string | null
+          assigned_to: string | null
           brevo_deleted_at: string | null
           brevo_lists: number[] | null
           brevo_unsubscribed_lists: number[] | null
@@ -4721,6 +4750,8 @@ export type Database = {
           apollo_org_id?: string | null
           apollo_people_data?: Json | null
           apollo_status?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
           brevo_unsubscribed_lists?: number[] | null
@@ -4795,6 +4826,8 @@ export type Database = {
           apollo_org_id?: string | null
           apollo_people_data?: Json | null
           apollo_status?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
           brevo_deleted_at?: string | null
           brevo_lists?: number[] | null
           brevo_unsubscribed_lists?: number[] | null
@@ -4857,6 +4890,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "acquisition_channels"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_acquisition_inquiries_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_acquisition_inquiries_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_acquisition_inquiries_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users_safe"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "company_acquisition_inquiries_lead_form_fkey"
