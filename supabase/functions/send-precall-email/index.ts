@@ -31,9 +31,10 @@ interface SendPrecallEmailRequest {
   contactName: string;
   companyName: string;
   email: string;
-  assignedTo?: string; // user_id of the assigned admin user
-  customSubject?: string; // Optional: edited subject from preview
-  customHtmlBody?: string; // Optional: edited HTML body from preview
+  assignedTo?: string;
+  customSubject?: string;
+  customHtmlBody?: string;
+  pipelineType?: 'venta' | 'compra';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -49,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[send-precall-email] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
 
     const payload: SendPrecallEmailRequest = await req.json();
-    const { leadId, contactName, companyName, email, assignedTo, customSubject, customHtmlBody } = payload;
+    const { leadId, contactName, companyName, email, assignedTo, customSubject, customHtmlBody, pipelineType } = payload;
 
     console.log(`[send-precall-email] Processing lead: ${leadId}, email: ${email}, assignedTo: ${assignedTo}`);
 
@@ -211,6 +212,55 @@ const handler = async (req: Request): Promise<Response> => {
     }
     if (bccEmails.length > 0) {
       emailParams.bcc = bccEmails;
+    }
+
+    // ========== Fetch attachments for buy pipeline ==========
+    if (pipelineType === 'compra') {
+      try {
+        const { data: attachmentDocs } = await supabase
+          .from('buy_pipeline_attachments')
+          .select('file_name, storage_path, file_type')
+          .eq('is_active', true);
+
+        if (attachmentDocs && attachmentDocs.length > 0) {
+          const attachments: { filename: string; content: string }[] = [];
+
+          for (const doc of attachmentDocs) {
+            try {
+              const { data: fileData, error: downloadError } = await supabase.storage
+                .from('buy-pipeline-attachments')
+                .download(doc.storage_path);
+
+              if (downloadError || !fileData) {
+                console.warn(`[send-precall-email] Could not download ${doc.file_name}:`, downloadError);
+                continue;
+              }
+
+              const arrayBuffer = await fileData.arrayBuffer();
+              const bytes = new Uint8Array(arrayBuffer);
+              let binary = '';
+              const chunkSize = 32768;
+              for (let i = 0; i < bytes.length; i += chunkSize) {
+                const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+                binary += String.fromCharCode(...chunk);
+              }
+              const base64 = btoa(binary);
+
+              attachments.push({ filename: doc.file_name, content: base64 });
+              console.log(`[send-precall-email] Attached: ${doc.file_name} (${base64.length} chars base64)`);
+            } catch (fileError) {
+              console.warn(`[send-precall-email] Error processing attachment ${doc.file_name}:`, fileError);
+            }
+          }
+
+          if (attachments.length > 0) {
+            emailParams.attachments = attachments;
+            console.log(`[send-precall-email] Total attachments: ${attachments.length}`);
+          }
+        }
+      } catch (attachError) {
+        console.warn('[send-precall-email] Error fetching attachments, sending without:', attachError);
+      }
     }
 
     console.log(`[send-precall-email] Sending from: ${sender.full_name} <${sender.email}>, CC: ${ccEmails.join(', ')}, BCC: ${bccEmails.join(', ')}`);
