@@ -475,7 +475,7 @@ export const BuyPipelineView: React.FC = () => {
               </div>
             </PopoverContent>
           </Popover>
-          <PipelineColumnsEditor />
+          <PipelineColumnsEditor pipelineType="buy" />
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Actualizar
