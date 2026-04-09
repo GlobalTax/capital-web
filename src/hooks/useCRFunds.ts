@@ -117,8 +117,12 @@ export function useCreateCRFund() {
     },
     onError: (error: any) => {
       console.error('Error creating CR fund:', error);
-      const message = error?.message || error?.details || 'Error desconocido';
-      toast.error(`Error al crear el fondo: ${message}`);
+      if (error?.code === '23505' || error?.message?.includes('duplicate key') || error?.message?.includes('unique')) {
+        toast.error('Ya existe un fondo activo con ese nombre. Usa un nombre diferente o edita el existente.');
+      } else {
+        const message = error?.message || error?.details || 'Error desconocido';
+        toast.error(`Error al crear el fondo: ${message}`);
+      }
     },
   });
 }
