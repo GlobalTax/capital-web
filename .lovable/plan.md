@@ -1,59 +1,53 @@
 
 
-## Plan: Propagar datos de lista madre a sublistas (la madre manda)
+## Plan: Documentos adjuntos para emails de compra + fix build error
 
-### Problema
+### 1. Fix build error en `send-corporate-email`
+- Cambiar `import { Resend } from "npm:resend@2.0.0"` a `import { Resend } from "https://esm.sh/resend@4.0.0"` (mismo patrón que `send-precall-email`)
 
-Hay dos cuestiones:
+### 2. Crear tabla `buy_pipeline_attachments` para gestionar los adjuntos
+Nueva tabla con migración SQL:
+- `id` (UUID PK)
+- `label` (text) - nombre descriptivo (ej: "Relación de Oportunidades Activas Q2 2026")
+- `file_name` (text) - nombre del archivo original
+- `file_type` (text) - MIME type
+- `file_size_bytes` (bigint)
+- `storage_path` (text) - ruta en el bucket
+- `is_active` (boolean, default true) - si se adjunta actualmente
+- `uploaded_by` (UUID, nullable)
+- `created_at`, `updated_at` (timestamps)
 
-1. **El trigger actual NO sobrescribe**: `sync_madre_company_to_sublists` usa `COALESCE(NULLIF(NEW.valor, ''), valor_existente)`, lo que solo rellena campos vacíos en la sublista. Si la sublista ya tiene un dato antiguo, no se actualiza con el nuevo de la madre.
+Esto es independiente de `rod_documents` para dar flexibilidad total sobre qué archivos adjuntar.
 
-2. **Los datos ya subidos no se propagaron**: Como el trigger no sobrescribía, las ~10.215 empresas actualizadas en la madre no trasladaron su información nueva a las sublistas. Hace falta un re-sync en bloque.
+### 3. Crear bucket `buy-pipeline-attachments`
+- Bucket público para que la Edge Function pueda descargar los archivos
+- Políticas RLS para upload/delete solo por admins autenticados
 
-3. **Match CIF case-sensitive**: El trigger compara `cif = NEW.cif` sin normalizar mayúsculas/minúsculas.
+### 4. Crear componente `BuyPipelineAttachments`
+Panel colapsable dentro de `BuyPipelineView` (en la barra de herramientas superior) con:
+- Lista de archivos adjuntos activos (nombre, tamaño, fecha)
+- Botón para subir nuevo archivo (drag & drop con `useDropzone`)
+- Toggle de activar/desactivar cada archivo (para no adjuntarlo sin eliminarlo)
+- Botón eliminar con confirmación
+- Botón reemplazar (sube nuevo y desactiva el anterior)
+- Accesible desde un botón con icono de clip/adjuntos en la toolbar
 
-### Solución (1 migración SQL)
+### 5. Modificar Edge Function `send-precall-email`
+Cuando reciba `pipelineType: 'compra'`:
+- Consultar `buy_pipeline_attachments` donde `is_active = true`
+- Descargar cada archivo desde el bucket
+- Convertir a Base64
+- Añadir como `attachments` en el objeto de Resend:
+  ```
+  attachments: [{ filename, content: base64 }]
+  ```
+- Fallback graceful: si falla la descarga de un archivo, enviar el email sin ese adjunto
 
-**Archivo:** Nueva migración SQL
+### 6. Pasar `pipelineType` al email
+Asegurar que `BuyPipelineView` pase `pipelineType: 'compra'` en la llamada a `send-precall-email` (puede que ya esté hecho del cambio anterior).
 
-#### A. Actualizar el trigger `sync_madre_company_to_sublists`
-
-Cambiar la lógica para que la madre siempre sobrescriba los campos de las sublistas cuando el nuevo valor no sea vacío/nulo:
-
-```sql
--- Antes (solo rellena vacíos):
-empresa = COALESCE(NULLIF(NEW.empresa, ''), empresa)
-
--- Después (la madre manda):
-empresa = CASE WHEN NEW.empresa IS NOT NULL AND NEW.empresa <> '' 
-               THEN NEW.empresa ELSE empresa END
-```
-
-Aplicar este patrón a todos los campos sincronizados. Además, usar `lower(trim(cif))` para el match.
-
-#### B. Re-sync en bloque de todas las listas madre existentes
-
-Ejecutar un UPDATE masivo que copie los datos actuales de cada empresa en cada lista madre hacia sus sublistas correspondientes, usando la misma lógica "la madre manda":
-
-```sql
-UPDATE outbound_list_companies sub
-SET empresa = CASE WHEN m.empresa IS NOT NULL AND m.empresa <> '' 
-                   THEN m.empresa ELSE sub.empresa END,
-    contacto = CASE WHEN m.contacto IS NOT NULL ...
-    -- todos los campos
-FROM outbound_list_companies m
-JOIN outbound_lists sl ON sl.id = sub.list_id AND sl.lista_madre_id = m.list_id
-WHERE lower(trim(sub.cif)) = lower(trim(m.cif))
-  AND m.cif IS NOT NULL AND m.cif <> '';
-```
-
-#### C. También actualizar `sync_sublist_company_to_madre` (coherencia inversa)
-
-Mantener la misma lógica: cuando se edita en una sublista, también sube a la madre sobrescribiendo.
-
-### Resultado
-
-- Todos los datos nuevos ya importados en la madre se copiarán inmediatamente a las sublistas.
-- A partir de ahora, cualquier cambio en la madre sobrescribirá automáticamente en las sublistas.
-- El match por CIF será case-insensitive.
+### Notas
+- La tabla separada permite gestionar los adjuntos de compra independientemente de los ROD del catálogo público
+- Se pueden actualizar los documentos en cualquier momento sin tocar código
+- El componente se integra visualmente en la toolbar existente del pipeline de compras
 
