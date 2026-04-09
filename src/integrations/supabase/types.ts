@@ -2654,6 +2654,45 @@ export type Database = {
         }
         Relationships: []
       }
+      buy_pipeline_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size_bytes: number
+          file_type: string
+          id: string
+          is_active: boolean
+          label: string
+          storage_path: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size_bytes?: number
+          file_type: string
+          id?: string
+          is_active?: boolean
+          label: string
+          storage_path: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number
+          file_type?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       buy_side_mandates: {
         Row: {
           created_at: string
