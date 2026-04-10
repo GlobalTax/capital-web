@@ -60,7 +60,8 @@ export const useLeadsPipeline = () => {
           .select(`
             id, full_name, company, email, phone, service_type,
             lead_status_crm, acquisition_channel_id, lead_form,
-            created_at, assigned_to, email_sent, email_opened, notes, empresa_id
+            created_at, assigned_to, email_sent, email_opened, notes, empresa_id,
+            revenue, ebitda
           `)
           .eq('is_deleted', false)
           .not('lead_status_crm', 'is', null)
