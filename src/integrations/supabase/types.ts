@@ -2812,6 +2812,7 @@ export type Database = {
       }
       buyer_contacts: {
         Row: {
+          acquisition_channel_id: string | null
           campaign_name: string | null
           campaign_type: string | null
           company: string | null
@@ -2830,6 +2831,7 @@ export type Database = {
           investor_type: string | null
           last_activity_at: string | null
           last_name: string | null
+          lead_form: string | null
           lead_received_at: string | null
           lead_status_crm: string | null
           origin: string
@@ -2844,6 +2846,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           campaign_name?: string | null
           campaign_type?: string | null
           company?: string | null
@@ -2862,6 +2865,7 @@ export type Database = {
           investor_type?: string | null
           last_activity_at?: string | null
           last_name?: string | null
+          lead_form?: string | null
           lead_received_at?: string | null
           lead_status_crm?: string | null
           origin?: string
@@ -2876,6 +2880,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           campaign_name?: string | null
           campaign_type?: string | null
           company?: string | null
@@ -2894,6 +2899,7 @@ export type Database = {
           investor_type?: string | null
           last_activity_at?: string | null
           last_name?: string | null
+          lead_form?: string | null
           lead_received_at?: string | null
           lead_status_crm?: string | null
           origin?: string
@@ -2907,7 +2913,22 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "buyer_contacts_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_contacts_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       buyer_documents: {
         Row: {
@@ -3170,6 +3191,7 @@ export type Database = {
       }
       buyer_preferences: {
         Row: {
+          acquisition_channel_id: string | null
           alert_frequency: string | null
           company: string | null
           company_size_preferences: string[] | null
@@ -3179,6 +3201,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_active: boolean | null
+          lead_form: string | null
           max_valuation: number | null
           min_valuation: number | null
           phone: string | null
@@ -3188,6 +3211,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           alert_frequency?: string | null
           company?: string | null
           company_size_preferences?: string[] | null
@@ -3197,6 +3221,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean | null
+          lead_form?: string | null
           max_valuation?: number | null
           min_valuation?: number | null
           phone?: string | null
@@ -3206,6 +3231,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           alert_frequency?: string | null
           company?: string | null
           company_size_preferences?: string[] | null
@@ -3215,6 +3241,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active?: boolean | null
+          lead_form?: string | null
           max_valuation?: number | null
           min_valuation?: number | null
           phone?: string | null
@@ -3223,7 +3250,22 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "buyer_preferences_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_preferences_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       buyer_source_tags: {
         Row: {
