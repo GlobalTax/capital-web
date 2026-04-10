@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp, TrendingDown, Minus, ArrowLeft, Shield } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { SEOHead } from '@/components/seo';
 
 // ── Palette ──────────────────────────────────────────────
@@ -674,19 +675,348 @@ interface ContactForm {
   firmName: string;
 }
 
+// ── PDF Generation ──────────────────────────────────────
+const generateValuationPDF = (result: ValuationResult, form: FormData, contact: ContactForm) => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297;
+  const navy = [22, 27, 34] as const;
+  const gold = [197, 164, 90] as const;
+  const white = [255, 255, 255] as const;
+  const gray = [148, 163, 184] as const;
+  const grayDark = [88, 96, 110] as const;
+  const lightGray = [243, 244, 245] as const;
+
+  const fmtE = (v: number) => v.toLocaleString('es-ES') + ' €';
+  const today = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  const revenue = parseES(form.revenue);
+  const ebitda = parseES(form.ebitda);
+  const netDebt = parseES(form.netDebt);
+  const employees = parseES(form.employees);
+  const clients = parseES(form.activeClients);
+
+  // ─── PAGE 1 — COVER ───
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...gold);
+  doc.rect(0, 0, W, 3, 'F');
+
+  doc.setTextColor(...gold);
+  doc.setFontSize(11);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('CONFIDENCIAL', W / 2, 80, { align: 'center' });
+
+  doc.setTextColor(...white);
+  doc.setFontSize(32);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Informe de', W / 2, 110, { align: 'center' });
+  doc.text('Valoración', W / 2, 125, { align: 'center' });
+
+  doc.setFontSize(16);
+  doc.setFont('Helvetica', 'normal');
+  doc.text(contact.firmName || 'Asesoría', W / 2, 150, { align: 'center' });
+
+  doc.setTextColor(...gray);
+  doc.setFontSize(11);
+  doc.text(form.location || '', W / 2, 162, { align: 'center' });
+  doc.text(today, W / 2, 172, { align: 'center' });
+
+  doc.setFillColor(...gold);
+  doc.rect(85, 195, 40, 0.5, 'F');
+
+  doc.setTextColor(...white);
+  doc.setFontSize(14);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Capittal', W / 2, 240, { align: 'center' });
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...gray);
+  doc.text('Transacciones · M&A · Consulting', W / 2, 248, { align: 'center' });
+  doc.text('capittal.es · 934 593 600', W / 2, 256, { align: 'center' });
+
+  // ─── PAGE 2 — VALUATION ───
+  doc.addPage();
+  // Header bar
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, W, 14, 'F');
+  doc.setTextColor(...white);
+  doc.setFontSize(7);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('CAPITTAL  |  INFORME DE VALORACIÓN  |  CONFIDENCIAL', W / 2, 9, { align: 'center' });
+
+  let y = 30;
+  doc.setTextColor(...navy);
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'normal');
+  doc.text('RANGO DE VALORACIÓN ESTIMADO (ENTERPRISE VALUE)', W / 2, y, { align: 'center' });
+
+  y += 12;
+  doc.setFontSize(24);
+  doc.setFont('Helvetica', 'bold');
+  doc.text(`${fmtE(result.evL)}  –  ${fmtE(result.evH)}`, W / 2, y, { align: 'center' });
+
+  y += 10;
+  doc.setFontSize(11);
+  doc.setFont('Helvetica', 'normal');
+  doc.text(`Valor central estimado: ${fmtE(result.evM)}`, W / 2, y, { align: 'center' });
+
+  // Metrics table
+  y += 14;
+  doc.setFillColor(...lightGray);
+  doc.rect(20, y, W - 40, 24, 'F');
+  doc.setFontSize(8);
+  doc.setTextColor(...grayDark);
+  const colW = (W - 40) / 3;
+  ['Múltiplo aplicado', 'Margen EBITDA', 'Equity Value'].forEach((label, i) => {
+    doc.text(label, 20 + colW * i + colW / 2, y + 8, { align: 'center' });
+  });
+  doc.setTextColor(...navy);
+  doc.setFontSize(14);
+  doc.setFont('Helvetica', 'bold');
+  const mVals = [`${result.mM.toFixed(1)}x`, `${result.margen.toFixed(0)}%`, fmtEurShort(result.eqM)];
+  mVals.forEach((v, i) => {
+    doc.text(v, 20 + colW * i + colW / 2, y + 19, { align: 'center' });
+  });
+
+  // User data table
+  y += 34;
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(...navy);
+  doc.text('DATOS DE LA ASESORÍA', 20, y);
+  y += 6;
+
+  const dataRows = [
+    ['Servicios', form.services.join(', ') || '—'],
+    ['Ubicación', form.location || '—'],
+    ['Empleados', form.employees || '—'],
+    ['Facturación', fmtE(revenue)],
+    ['EBITDA', fmtE(ebitda)],
+    ['Margen EBITDA', `${result.margen.toFixed(1)}%`],
+    ['Recurrencia', `${form.recurringPct}%`],
+    ['Crecimiento', form.growthTrend],
+    ['Deuda neta', netDebt > 0 ? fmtE(netDebt) : '0 €'],
+    ['Clientes activos', clients > 0 ? clients.toLocaleString('es-ES') : '—'],
+  ];
+
+  doc.setFont('Helvetica', 'normal');
+  dataRows.forEach((row, i) => {
+    const ry = y + i * 7;
+    if (i % 2 === 0) {
+      doc.setFillColor(249, 250, 251);
+      doc.rect(20, ry - 4, W - 40, 7, 'F');
+    }
+    doc.setTextColor(...grayDark);
+    doc.setFontSize(8);
+    doc.text(row[0], 22, ry);
+    doc.setTextColor(...navy);
+    doc.text(row[1], W - 22, ry, { align: 'right' });
+  });
+
+  // Factors
+  y += dataRows.length * 7 + 10;
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(...navy);
+  doc.text('FACTORES DE VALORACIÓN', 20, y);
+  y += 7;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8);
+  result.factors.forEach((f) => {
+    const dotColor = f.type === 'positive' ? [34, 134, 58] : f.type === 'neutral' ? [217, 119, 6] : [203, 36, 49];
+    doc.setFillColor(dotColor[0], dotColor[1], dotColor[2]);
+    doc.circle(24, y - 1.2, 1.5, 'F');
+    doc.setTextColor(...grayDark);
+    doc.text(f.text, 28, y);
+    y += 6;
+  });
+
+  // ─── PAGE 3 — MARKET CONTEXT ───
+  doc.addPage();
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, W, 14, 'F');
+  doc.setTextColor(...white);
+  doc.setFontSize(7);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('CAPITTAL  |  INFORME DE VALORACIÓN  |  CONFIDENCIAL', W / 2, 9, { align: 'center' });
+
+  y = 30;
+  doc.setTextColor(...gold);
+  doc.setFontSize(12);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('CONTEXTO DE MERCADO · 2025–2026', W / 2, y, { align: 'center' });
+
+  y += 14;
+  doc.setTextColor(...navy);
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'normal');
+
+  const marketParas = [
+    'El sector de asesorías y despachos profesionales en España vive un proceso de consolidación sin precedentes. Al menos 6 plataformas respaldadas por fondos de Private Equity buscan activamente firmas para integrar en sus plataformas, generando un entorno de alta competencia por las mejores operaciones.',
+    'En España existen más de 11.000 despachos de gestión administrativa y asesoría, la mayoría de los cuales carecen de plan de sucesión definido. La edad media de los socios fundadores supera los 55 años, lo que crea una ventana natural de oportunidad para la transmisión del negocio.',
+    'Los compradores valoran especialmente la recurrencia de ingresos, la diversificación de servicios, el margen EBITDA superior al 20%, la base de clientes diversificada y la capacidad de retención del equipo post-transacción. Los múltiplos en España se sitúan entre 3x y 10x EBITDA, dependiendo del tamaño y calidad del despacho.',
+  ];
+
+  marketParas.forEach((p) => {
+    const lines = doc.splitTextToSize(p, W - 44);
+    doc.text(lines, 22, y);
+    y += lines.length * 4.5 + 4;
+  });
+
+  // Buyer table
+  y += 4;
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(...navy);
+  doc.text('PRINCIPALES COMPRADORES', 22, y);
+  y += 7;
+
+  const buyers = [
+    ['Afianza', 'BlackRock', '59 integraciones · €50M fact. 2024 · Objetivo €100M en 2026'],
+    ['Auren', 'Waterland', '€104M fact. · Objetivo duplicar a €200M · 15-18 adquisiciones/año'],
+    ['Asenza', 'Ufenau', 'Sagardoy + Carrillo · 250+ profesionales · Objetivo Top 10'],
+    ['Adlanter', 'Artá Capital', 'Consolidación multiservicios · Presencia nacional'],
+    ['Grant Thornton', 'New Mountain', 'Expansión mid-market · Foco auditoría + consultoría'],
+    ['ETL Global', 'KKR', 'Red europea · 250+ oficinas · Crecimiento orgánico + adquisiciones'],
+  ];
+
+  doc.setFontSize(7);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFillColor(...lightGray);
+  doc.rect(22, y - 4, W - 44, 6, 'F');
+  doc.setTextColor(...grayDark);
+  doc.text('Plataforma', 24, y);
+  doc.text('Fondo', 56, y);
+  doc.text('Datos clave', 86, y);
+  y += 7;
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(7.5);
+  buyers.forEach((b, i) => {
+    if (i % 2 === 0) {
+      doc.setFillColor(249, 250, 251);
+      doc.rect(22, y - 4, W - 44, 7, 'F');
+    }
+    doc.setTextColor(...navy);
+    doc.setFont('Helvetica', 'bold');
+    doc.text(b[0], 24, y);
+    doc.setFont('Helvetica', 'normal');
+    doc.setTextColor(...gold);
+    doc.text(b[1], 56, y);
+    doc.setTextColor(...grayDark);
+    const keyLines = doc.splitTextToSize(b[2], W - 90);
+    doc.text(keyLines, 86, y);
+    y += Math.max(keyLines.length * 4, 7);
+  });
+
+  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(...grayDark);
+  const conclusion = 'Los múltiplos en España (3-10x EBITDA) se sitúan todavía por debajo de los mercados anglosajones (USA/UK: 6-15x), lo que sugiere recorrido al alza a medida que el proceso de consolidación madura.';
+  const concLines = doc.splitTextToSize(conclusion, W - 44);
+  doc.text(concLines, 22, y);
+
+  // ─── PAGE 4 — NEXT STEPS ───
+  doc.addPage();
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, W, 14, 'F');
+  doc.setTextColor(...white);
+  doc.setFontSize(7);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('CAPITTAL  |  INFORME DE VALORACIÓN  |  CONFIDENCIAL', W / 2, 9, { align: 'center' });
+
+  y = 30;
+  doc.setTextColor(...gold);
+  doc.setFontSize(12);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('PRÓXIMOS PASOS', W / 2, y, { align: 'center' });
+
+  const steps = [
+    { title: '1. Valoración profesional detallada', desc: 'Realizamos un análisis exhaustivo con DCF, comparables sectoriales y ajustes cualitativos para determinar el rango preciso de valor de tu despacho.' },
+    { title: '2. Preparación para la venta', desc: 'Optimizamos la presentación financiera, identificamos palancas de valor y preparamos el cuaderno de venta (Information Memorandum) para maximizar el precio.' },
+    { title: '3. Proceso competitivo', desc: 'Contactamos de forma confidencial a los compradores más adecuados, generando competencia entre ellos para obtener las mejores condiciones de precio y estructura.' },
+    { title: '4. Cierre y transición', desc: 'Acompañamos la negociación final, la due diligence y la firma, asegurando una transición ordenada para clientes y equipo.' },
+  ];
+
+  y += 14;
+  steps.forEach((s) => {
+    doc.setTextColor(...navy);
+    doc.setFontSize(11);
+    doc.setFont('Helvetica', 'bold');
+    doc.text(s.title, 22, y);
+    y += 6;
+    doc.setTextColor(...grayDark);
+    doc.setFontSize(8.5);
+    doc.setFont('Helvetica', 'normal');
+    const sLines = doc.splitTextToSize(s.desc, W - 44);
+    doc.text(sLines, 22, y);
+    y += sLines.length * 4.5 + 8;
+  });
+
+  // Gold separator
+  doc.setFillColor(...gold);
+  doc.rect(22, y, W - 44, 0.5, 'F');
+  y += 14;
+
+  // Contact
+  doc.setTextColor(...navy);
+  doc.setFontSize(12);
+  doc.setFont('Helvetica', 'bold');
+  doc.text('Capittal Transacciones', 22, y);
+  y += 8;
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...grayDark);
+  const contactLines = [
+    'Ausiàs March 36, 08010 Barcelona',
+    '934 593 600',
+    'samuel@capittal.es',
+    'capittal.es',
+  ];
+  contactLines.forEach((l) => {
+    doc.text(l, 22, y);
+    y += 5.5;
+  });
+
+  // Disclaimer
+  y += 10;
+  doc.setFontSize(6.5);
+  doc.setTextColor(160, 160, 160);
+  const disclaimer = 'Este informe ha sido elaborado con fines informativos y no constituye una valoración formal, una oferta de compra ni un asesoramiento financiero vinculante. Los múltiplos y rangos utilizados se basan en transacciones públicas y estimaciones de mercado. Capittal Transacciones S.L. no asume responsabilidad por decisiones tomadas en base a este documento. Para una valoración vinculante es necesario un análisis detallado con acceso a la información financiera completa del despacho.';
+  const discLines = doc.splitTextToSize(disclaimer, W - 44);
+  doc.text(discLines, 22, y);
+
+  // Download
+  const firmSlug = (contact.firmName || 'Asesoria').replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ]/g, '_').replace(/_+/g, '_');
+  doc.save(`Valoracion_${firmSlug}_Capittal.pdf`);
+};
+
+// ── Step Two ────────────────────────────────────────────
 const StepTwo = ({
   result,
   form,
   onBack,
+  onDownloaded,
 }: {
   result: ValuationResult;
   form: FormData;
   onBack: () => void;
+  onDownloaded: (contact: ContactForm) => void;
 }) => {
   const ctaRef = useRef<HTMLDivElement>(null);
   const [contact, setContact] = useState<ContactForm>({ name: '', email: '', phone: '', firmName: '' });
+  const [downloaded, setDownloaded] = useState(false);
 
   const scrollToCta = () => ctaRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+  const canDownload = contact.name.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email);
+
+  const handleDownload = () => {
+    if (!canDownload) return;
+    generateValuationPDF(result, form, contact);
+    setDownloaded(true);
+    onDownloaded(contact);
+  };
 
   const factorDot = (type: Factor['type']) => {
     const colors: Record<Factor['type'], string> = { positive: '#22863a', neutral: '#D97706', negative: '#cb2431' };
@@ -1026,14 +1356,14 @@ const StepTwo = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto mb-6">
           <input
             type="text"
-            placeholder="Tu nombre"
+            placeholder="Tu nombre *"
             value={contact.name}
             onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))}
             style={darkInput}
           />
           <input
             type="email"
-            placeholder="Email profesional"
+            placeholder="Email profesional *"
             value={contact.email}
             onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))}
             style={darkInput}
@@ -1056,14 +1386,17 @@ const StepTwo = ({
 
         <div className="text-center mb-5">
           <button
+            onClick={handleDownload}
+            disabled={!canDownload && !downloaded}
             className="px-8 py-3 rounded-lg text-sm font-semibold transition-all"
             style={{
               fontFamily: ff.body,
-              background: C.gold,
-              color: C.navy,
+              background: downloaded ? '#22863a' : canDownload ? C.gold : '#4A5568',
+              color: downloaded ? C.white : C.navy,
+              cursor: canDownload || downloaded ? 'pointer' : 'not-allowed',
             }}
           >
-            Descargar informe PDF
+            {downloaded ? '✓ PDF descargado' : 'Descargar informe PDF'}
           </button>
         </div>
 
@@ -1126,6 +1459,44 @@ const LandingCalculadoraAsesorias = () => {
     setResult(null);
   };
 
+  const handleDownloaded = (contact: ContactForm) => {
+    setStep(3);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const revenue = parseES(form.revenue);
+    const ebitda = parseES(form.ebitda);
+
+    // TODO: connect webhook to send lead data to CRM/Supabase
+    console.log('[LEAD_CAPTURED]', JSON.stringify({
+      contact: {
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        firmName: contact.firmName,
+      },
+      form: {
+        services: form.services,
+        location: form.location,
+        employees: form.employees,
+        revenue,
+        ebitda,
+        margen: result?.margen,
+        recurringPct: form.recurringPct,
+        growthTrend: form.growthTrend,
+        netDebt: parseES(form.netDebt),
+        activeClients: parseES(form.activeClients),
+      },
+      valuation: {
+        multiplo: result?.mM,
+        evLow: result?.evL,
+        evMid: result?.evM,
+        evHigh: result?.evH,
+        equityValue: result?.eqM,
+      },
+      timestamp: new Date().toISOString(),
+    }, null, 2));
+  };
+
   useEffect(() => {
     const hreflangUrls: Record<string, string> = {
       es: 'https://capittal.es/lp/calculadora-asesorias',
@@ -1159,11 +1530,11 @@ const LandingCalculadoraAsesorias = () => {
         <Hero />
         <StatsBanner />
         <main className="flex-1" style={{ background: C.white }}>
-          <Stepper current={step} onStepClick={(s) => { if (s === 1) handleBack(); }} />
+          <Stepper current={step} onStepClick={(s) => { if (s === 1) handleBack(); if (s === 2 && step === 3 && result) setStep(2); }} />
           {step === 1 && (
             <StepOne form={form} onChange={handleChange} onNext={handleCalculate} />
           )}
-          {step === 2 && result && <StepTwo result={result} form={form} onBack={handleBack} />}
+          {(step === 2 || step === 3) && result && <StepTwo result={result} form={form} onBack={handleBack} onDownloaded={handleDownloaded} />}
         </main>
         <Footer />
       </div>
