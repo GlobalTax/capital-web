@@ -3,6 +3,9 @@ import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp,
 import jsPDF from 'jspdf';
 import { SEOHead } from '@/components/seo';
 
+// ── Webhook ──────────────────────────────────────────────
+const WEBHOOK_URL = 'TU_URL_WEBHOOK';
+
 // ── Palette ──────────────────────────────────────────────
 const C = {
   navy: '#161B22',
