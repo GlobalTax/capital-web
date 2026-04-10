@@ -231,6 +231,14 @@ const tableCapabilities: Record<string, {
     hasLocation: false,
     hasLeadForm: false,
   },
+  'buyer_preferences': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: false,
+    hasLeadStatusCrm: false,
+    hasAcquisitionChannel: false,
+    hasLocation: false,
+    hasLeadForm: false,
+  },
   'accountex_leads': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: false,
@@ -266,6 +274,8 @@ export const useContactInlineUpdate = () => {
       'sell': 'sell_leads',
       'company_acquisition': 'company_acquisition_inquiries',
       'buyer': 'buyer_contacts',
+      'buyer_alert': 'buyer_preferences',
+      'rod_download': 'buyer_contacts',
     };
 
     const table = tableMap[origin];
