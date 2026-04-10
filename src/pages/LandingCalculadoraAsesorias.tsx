@@ -848,12 +848,24 @@ const Footer = () => (
 const LandingCalculadoraAsesorias = () => {
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
+  const [result, setResult] = useState<ValuationResult | null>(null);
 
   const handleChange = (partial: Partial<FormData>) =>
     setForm((prev) => ({ ...prev, ...partial }));
 
+  const handleCalculate = () => {
+    const r = calculateValuation(form);
+    setResult(r);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setStep(1);
+    setResult(null);
+  };
+
   useEffect(() => {
-    // hreflang
     const hreflangUrls: Record<string, string> = {
       es: 'https://capittal.es/lp/calculadora-asesorias',
       'x-default': 'https://capittal.es/lp/calculadora-asesorias',
@@ -886,11 +898,17 @@ const LandingCalculadoraAsesorias = () => {
         <Hero />
         <StatsBanner />
         <main className="flex-1" style={{ background: C.white }}>
-          <Stepper current={step} onStepClick={setStep} />
+          <Stepper current={step} onStepClick={(s) => { if (s === 1) handleBack(); }} />
           {step === 1 && (
-            <StepOne form={form} onChange={handleChange} onNext={() => setStep(2)} />
+            <StepOne form={form} onChange={handleChange} onNext={handleCalculate} />
           )}
-          {step === 2 && <StepTwo onBack={() => setStep(1)} />}
+          {step === 2 && result && <StepTwo result={result} onBack={handleBack} />}
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+};
         </main>
         <Footer />
       </div>
