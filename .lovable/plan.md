@@ -1,38 +1,31 @@
 
 
-## Plan: Reemplazar contenido de los 4 artículos con el texto completo original
+## Plan: Insertar 3 nuevos artículos de blog
 
-### Problema
-Los 4 artículos en `blog_posts` se insertaron como resúmenes HTML compactos (1500-2000 chars) en lugar del contenido completo que proporcionaste (4000-8000+ chars por artículo). Falta la narrativa detallada, los párrafos explicativos, las secciones completas y el tono editorial original.
+### Resumen
+Insertar los artículos 5, 6 y 7 en `blog_posts` con el contenido completo en HTML semántico, siguiendo el mismo formato que los 4 artículos existentes.
 
-### Solución
-Dado que solo tenemos acceso INSERT (no UPDATE) vía `psql`, crearemos una **migración SQL** que haga UPDATE de los 4 artículos existentes, reemplazando el campo `content` con el texto completo convertido a HTML semántico.
+### Artículos
 
-### Contenido a insertar (por artículo)
+| # | Slug | Título | Categoría | Reading time | Featured |
+|---|------|--------|-----------|-------------|----------|
+| 5 | `private-equity-asesorias-eeuu-europa` | De EE.UU. a España: cómo el private equity ha transformado las asesorías en el mundo [2026] | M&A | 12 min | false |
+| 6 | `15-mayores-deals-asesorias-mundo-2024-2026` | Los 15 mayores deals en asesorías del mundo (2024-2026) | M&A | 10 min | true |
+| 7 | `lecciones-consolidacion-asesorias-europa-espana` | Lo que España puede aprender de la consolidación de asesorías en Europa [2026] | M&A | 11 min | false |
 
-| # | Slug | Chars aprox. del contenido completo |
-|---|------|-------------------------------------|
-| 1 | `consolidacion-asesorias-espana-2026` | ~5500 |
-| 2 | `cuanto-vale-asesoria-multiplos-2026` | ~6000 |
-| 3 | `vender-asesoria-guia-maximizar-precio` | ~7000 |
-| 4 | `crecer-comprando-plataforma-asesorias` | ~7500 |
-
-### Formato HTML
-Cada artículo se convertirá a HTML rico con:
-- `<h2>` para secciones principales, `<h3>` para subsecciones
-- `<p>` con todo el texto narrativo completo (cada párrafo del original)
-- `<strong>` para datos clave y estadísticas
-- `<blockquote>` para citas destacadas
-- `<table>` donde corresponda (compradores, múltiplos)
-- `<ul>`/`<ol>` para listas
-- `<a href="/lp/calculadora-asesorias">` para CTAs internos
-- Se preservará el tono editorial original sin resumir ni recortar
+### Contenido HTML
+- Todo el texto completo del usuario convertido a HTML semántico
+- `<h2>` para secciones, `<p>` para párrafos, `<strong>` para datos clave
+- CTAs internos con `<a href="/lp/calculadora-asesorias">`
+- FAQs en `faq_data` JSONB (3-4 preguntas por artículo)
+- Meta titles y descriptions optimizados para SEO
+- `author_name`: "Samuel Navarro"
 
 ### Implementación
-1. Crear migración SQL con 4 sentencias UPDATE (una por artículo)
-2. Desactivar temporalmente el trigger `trigger_google_indexing` para evitar el error de `net.http_post`
-3. Cada UPDATE reemplaza solo el campo `content` — el resto de campos (title, meta, FAQ, etc.) se mantienen intactos
+1. Usar herramienta de insert para insertar los 3 artículos con contenido HTML completo
+2. Desactivar/reactivar el trigger `trigger_google_indexing` vía migración si es necesario
+3. Cada artículo incluirá: content, excerpt, meta_title, meta_description, faq_data, tags
 
-### Archivos
-- Nueva migración SQL en `supabase/migrations/`
+### Archivos modificados
+Ninguno — inserción directa en base de datos.
 
