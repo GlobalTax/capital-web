@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp, TrendingDown, Minus, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp, TrendingDown, Minus, ArrowLeft, Shield } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 
 // ── Palette ──────────────────────────────────────────────
@@ -661,118 +661,253 @@ const StepOne = ({
 };
 
 const fmtEur = (v: number) => v.toLocaleString('es-ES') + ' €';
+const fmtEurShort = (v: number) => {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1).replace('.', ',')}M €`;
+  if (v >= 1_000) return `${Math.round(v / 1000)}K €`;
+  return fmtEur(v);
+};
 
-const StepTwo = ({ result, onBack }: { result: ValuationResult; onBack: () => void }) => {
-  const factorIcon = (type: Factor['type']) => {
-    if (type === 'positive') return <TrendingUp size={14} style={{ color: '#22863a' }} />;
-    if (type === 'negative') return <TrendingDown size={14} style={{ color: '#cb2431' }} />;
-    return <Minus size={14} style={{ color: C.gray2 }} />;
-  };
-  const factorColor = (type: Factor['type']) => {
-    if (type === 'positive') return '#22863a';
-    if (type === 'negative') return '#cb2431';
-    return C.gray2;
+interface ContactForm {
+  name: string;
+  email: string;
+  phone: string;
+  firmName: string;
+}
+
+const StepTwo = ({
+  result,
+  form,
+  onBack,
+}: {
+  result: ValuationResult;
+  form: FormData;
+  onBack: () => void;
+}) => {
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const [contact, setContact] = useState<ContactForm>({ name: '', email: '', phone: '', firmName: '' });
+
+  const scrollToCta = () => ctaRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+  const factorDot = (type: Factor['type']) => {
+    const colors: Record<Factor['type'], string> = { positive: '#22863a', neutral: '#D97706', negative: '#cb2431' };
+    return (
+      <span
+        className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1"
+        style={{ background: colors[type] }}
+      />
+    );
   };
 
-  const metrics = [
-    { label: 'Múltiplo central', value: `${result.mM.toFixed(1)}x` },
-    { label: 'Margen EBITDA', value: `${result.margen.toFixed(0)}%` },
-    { label: 'Equity Value', value: fmtEur(result.eqM) },
-    { label: 'Ingresos recurrentes', value: fmtEur(Math.round(result.ingRec)) },
-    { label: 'Múltiplo s/ recurrentes', value: `${result.multIngRec.toFixed(1)}x` },
-    { label: 'Fact. / empleado', value: `${Math.round(result.revEmp / 1000)}K €` },
-  ];
+  const marginBenchmark = result.margen >= 25 ? 'Excelente' : result.margen >= 15 ? 'En media' : 'Por debajo';
+  const marginBenchColor = result.margen >= 25 ? '#22863a' : result.margen >= 15 ? '#D97706' : '#cb2431';
+
+  const revEmp = result.revEmp;
+  const revEmpPct = Math.min(100, (revEmp / 120_000) * 100);
+  const revEmpColor = revEmp >= 70_000 ? '#22863a' : revEmp >= 50_000 ? '#D97706' : '#cb2431';
+
+  const marketPos = ((result.mM - 3.0) / (10.0 - 3.0)) * 100;
+
+  const darkInput: React.CSSProperties = {
+    fontFamily: ff.body,
+    fontSize: '14px',
+    background: '#1E2530',
+    border: `1px solid #2D3748`,
+    borderRadius: '8px',
+    padding: '10px 14px',
+    color: C.white,
+    width: '100%',
+    outline: 'none',
+  };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pb-10">
-      <h2
-        className="text-2xl font-bold text-center mb-2"
-        style={{ fontFamily: ff.heading, color: C.navy }}
-      >
-        Valoración estimada
-      </h2>
-      <p
-        className="text-center text-sm mb-8"
-        style={{ fontFamily: ff.body, color: C.gray2 }}
-      >
-        Basada en múltiplos de transacciones reales en el sector
-      </p>
-
-      {/* Primary card */}
-      <div
-        className="rounded-xl p-8 text-center mb-6"
-        style={{ background: C.navy }}
-      >
-        <div
-          className="text-[11px] uppercase tracking-wider mb-2"
+    <div className="max-w-3xl mx-auto px-4 pb-0">
+      {/* ─── 1. HERO ─── */}
+      <div className="text-center mb-10 pt-2">
+        <p
+          className="text-[10px] uppercase tracking-[0.15em] mb-3"
+          style={{ fontFamily: ff.mono, color: C.gray2 }}
+        >
+          Rango de valoración estimado (Enterprise Value)
+        </p>
+        <h2
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3"
+          style={{ fontFamily: ff.heading, color: C.navy }}
+        >
+          {fmtEur(result.evL)} – {fmtEur(result.evH)}
+        </h2>
+        <p className="text-sm mb-2" style={{ fontFamily: ff.body, color: C.gray1 }}>
+          Valor central estimado: <strong style={{ color: C.navy }}>{fmtEur(result.evM)}</strong>
+        </p>
+        <p
+          className="text-[10px] uppercase tracking-[0.12em]"
           style={{ fontFamily: ff.mono, color: C.gray3 }}
         >
-          Enterprise Value central
-        </div>
-        <div
-          className="text-4xl sm:text-5xl font-bold mb-3"
-          style={{ fontFamily: ff.heading, color: C.white }}
-        >
-          {fmtEur(result.evM)}
-        </div>
-        <div
-          className="text-sm"
-          style={{ fontFamily: ff.mono, color: C.gold }}
-        >
-          Rango: {fmtEur(result.evL)} — {fmtEur(result.evH)}
-        </div>
-        <div
-          className="text-[11px] mt-1"
-          style={{ fontFamily: ff.mono, color: C.gray3 }}
-        >
-          Múltiplo {result.mL.toFixed(1)}x – {result.mH.toFixed(1)}x EBITDA
-        </div>
+          Múltiplos EV/EBITDA · transacciones asesorías España 2023–2026
+        </p>
       </div>
 
-      {/* Metrics grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-        {metrics.map((m) => (
+      {/* ─── 2. GRID 3 MÉTRICAS ─── */}
+      <div
+        className="grid grid-cols-1 sm:grid-cols-3 rounded-xl border mb-8 overflow-hidden"
+        style={{ borderColor: C.border1 }}
+      >
+        {[
+          {
+            label: 'Múltiplo aplicado',
+            value: `${result.mM.toFixed(1)}x`,
+            sub: `${result.mL.toFixed(1)}x – ${result.mH.toFixed(1)}x`,
+          },
+          {
+            label: 'Margen EBITDA',
+            value: `${result.margen.toFixed(0)}%`,
+            sub: marginBenchmark,
+            subColor: marginBenchColor,
+          },
+          {
+            label: 'Equity Value',
+            value: fmtEurShort(result.eqM),
+            sub: 'EV – deuda neta',
+          },
+        ].map((m, i) => (
           <div
             key={m.label}
-            className="rounded-lg p-4 border text-center"
-            style={{ background: C.bg2, borderColor: C.border2 }}
+            className="text-center px-4 py-5"
+            style={{
+              background: C.white,
+              borderRight: i < 2 ? `1px solid ${C.border1}` : undefined,
+              borderBottom: i < 2 ? `1px solid ${C.border1}` : undefined,
+            }}
           >
             <div
-              className="text-lg font-bold mb-1"
+              className="text-[10px] uppercase tracking-[0.1em] mb-2"
+              style={{ fontFamily: ff.mono, color: C.gray2 }}
+            >
+              {m.label}
+            </div>
+            <div
+              className="text-2xl font-bold mb-1"
               style={{ fontFamily: ff.heading, color: C.navy }}
             >
               {m.value}
             </div>
             <div
-              className="text-[10px] uppercase tracking-wider"
-              style={{ fontFamily: ff.mono, color: C.gray2 }}
+              className="text-xs"
+              style={{ fontFamily: ff.mono, color: (m as any).subColor || C.gray3 }}
             >
-              {m.label}
+              {m.sub}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Factors */}
+      {/* ─── 3. BOX INGRESOS RECURRENTES ─── */}
+      <div
+        className="rounded-xl p-6 mb-8"
+        style={{ border: `1.5px dashed ${C.border1}`, background: C.bg2 }}
+      >
+        <p
+          className="text-[10px] uppercase tracking-[0.12em] mb-2"
+          style={{ fontFamily: ff.mono, color: C.gray2 }}
+        >
+          Múltiplo sobre ingresos recurrentes
+        </p>
+        <div
+          className="text-3xl font-bold mb-2"
+          style={{ fontFamily: ff.heading, color: C.navy }}
+        >
+          {result.multIngRec.toFixed(1)}x
+        </div>
+        <p className="text-xs leading-relaxed" style={{ fontFamily: ff.body, color: C.gray2 }}>
+          Sobre ingresos recurrentes ({fmtEur(Math.round(result.ingRec))}). Rango habitual en España: 0,7–1,5x honorarios recurrentes.
+        </p>
+      </div>
+
+      {/* ─── 4. BARRA FACTURACIÓN/EMPLEADO ─── */}
       <div className="mb-8">
-        <h3
-          className="text-sm font-semibold mb-3"
-          style={{ fontFamily: ff.mono, color: C.navy, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+        <div className="flex items-baseline justify-between mb-2">
+          <p
+            className="text-[10px] uppercase tracking-[0.12em]"
+            style={{ fontFamily: ff.mono, color: C.gray2 }}
+          >
+            Facturación por empleado
+          </p>
+          <span
+            className="text-sm font-bold"
+            style={{ fontFamily: ff.heading, color: C.navy }}
+          >
+            {Math.round(revEmp / 1000)}K €
+          </span>
+        </div>
+        <div
+          className="w-full h-3 rounded-full overflow-hidden"
+          style={{ background: C.border2 }}
+        >
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${revEmpPct}%`, background: revEmpColor }}
+          />
+        </div>
+        <div className="flex justify-between mt-1">
+          {['€30K', '€60K', '€90K', '€120K+'].map((t) => (
+            <span
+              key={t}
+              className="text-[9px]"
+              style={{ fontFamily: ff.mono, color: C.gray3 }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── 5. BARRA POSICIÓN EN MERCADO ─── */}
+      <div className="mb-8">
+        <p
+          className="text-[10px] uppercase tracking-[0.12em] mb-2"
+          style={{ fontFamily: ff.mono, color: C.gray2 }}
+        >
+          Posición en el mercado
+        </p>
+        <div className="relative">
+          <div
+            className="w-full h-2 rounded-full"
+            style={{ background: `linear-gradient(90deg, ${C.border1}, ${C.navy})` }}
+          />
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2"
+            style={{
+              left: `calc(${clamp(marketPos, 2, 98)}% - 10px)`,
+              background: C.gold,
+              borderColor: C.white,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            }}
+          />
+        </div>
+        <div className="flex justify-between mt-2">
+          <span className="text-[9px]" style={{ fontFamily: ff.mono, color: C.gray3 }}>3.0x</span>
+          <span
+            className="text-xs font-semibold"
+            style={{ fontFamily: ff.mono, color: C.navy }}
+          >
+            {result.mM.toFixed(1)}x aplicado
+          </span>
+          <span className="text-[9px]" style={{ fontFamily: ff.mono, color: C.gray3 }}>10.0x</span>
+        </div>
+      </div>
+
+      {/* ─── 6. FACTORES ─── */}
+      <div className="mb-10">
+        <p
+          className="text-[10px] uppercase tracking-[0.12em] mb-3"
+          style={{ fontFamily: ff.mono, color: C.gray2 }}
         >
           Factores de valoración
-        </h3>
-        <div className="space-y-2">
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {result.factors.map((f, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-lg px-4 py-2.5 border"
-              style={{ borderColor: C.border2, background: C.white }}
-            >
-              {factorIcon(f.type)}
-              <span
-                className="text-sm"
-                style={{ fontFamily: ff.body, color: factorColor(f.type) }}
-              >
+            <div key={i} className="flex items-start gap-2.5 py-1.5">
+              {factorDot(f.type)}
+              <span className="text-sm" style={{ fontFamily: ff.body, color: C.gray1 }}>
                 {f.text}
               </span>
             </div>
@@ -780,41 +915,167 @@ const StepTwo = ({ result, onBack }: { result: ValuationResult; onBack: () => vo
         </div>
       </div>
 
-      {/* CTA download */}
+      {/* ─── 7. COMPRADORES ACTIVOS ─── */}
       <div
-        className="rounded-lg border p-6 text-center mb-8"
-        style={{ borderColor: C.border1, background: C.bg2 }}
+        className="rounded-xl p-6 sm:p-8 mb-10 -mx-4 sm:mx-0"
+        style={{ background: C.navy }}
       >
-        <FileText size={32} className="mx-auto mb-3" style={{ color: C.gray3 }} />
         <p
-          className="text-sm mb-4"
-          style={{ fontFamily: ff.body, color: C.gray2 }}
+          className="text-[10px] uppercase tracking-[0.15em] mb-4"
+          style={{ fontFamily: ff.mono, color: C.gold }}
         >
-          Recibe un informe detallado en PDF con la valoración completa de tu despacho
+          Compradores activos en España · 2025–2026
         </p>
+        <p className="text-sm mb-3 leading-relaxed" style={{ fontFamily: ff.body, color: '#CBD5E0' }}>
+          Al menos 6 plataformas de Private Equity buscan activamente asesorías y despachos profesionales en España para integrar en sus plataformas de consolidación.
+        </p>
+        <p className="text-sm mb-6 leading-relaxed" style={{ fontFamily: ff.body, color: '#CBD5E0' }}>
+          Solo en 2025, Afianza integró 16 firmas en un año. La ventana de oportunidad para vender a múltiplos atractivos es la más favorable de la última década.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              name: 'Afianza',
+              backer: 'BlackRock',
+              lines: ['59 integraciones', '€50M fact. 2024', 'Objetivo €100M en 2026', '1.200 profesionales'],
+            },
+            {
+              name: 'Auren',
+              backer: 'Waterland',
+              lines: ['€104M fact.', 'Plan: duplicar a €200M en 3 años', '15-18 adquisiciones/año'],
+            },
+            {
+              name: 'Asenza',
+              backer: 'Ufenau',
+              lines: ['Sagardoy + Carrillo', '250+ profesionales', 'Objetivo Top 10 España'],
+            },
+          ].map((card) => (
+            <div
+              key={card.name}
+              className="rounded-lg p-4"
+              style={{ background: '#1E2530', border: `1px solid #2D3748` }}
+            >
+              <div className="mb-2">
+                <span
+                  className="text-sm font-bold"
+                  style={{ fontFamily: ff.body, color: C.white }}
+                >
+                  {card.name}
+                </span>
+                <span
+                  className="text-[10px] ml-1.5"
+                  style={{ fontFamily: ff.mono, color: C.gold }}
+                >
+                  ({card.backer})
+                </span>
+              </div>
+              {card.lines.map((l) => (
+                <p
+                  key={l}
+                  className="text-xs leading-relaxed"
+                  style={{ fontFamily: ff.body, color: '#94A3B8' }}
+                >
+                  · {l}
+                </p>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── 8. BOTONES ─── */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
         <button
-          disabled
-          className="px-6 py-3 rounded-lg text-sm font-semibold"
-          style={{
-            fontFamily: ff.body,
-            background: C.border1,
-            color: C.gray3,
-            cursor: 'not-allowed',
-          }}
+          onClick={onBack}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg border text-sm"
+          style={{ fontFamily: ff.body, borderColor: C.border1, color: C.gray1 }}
         >
-          Descargar informe PDF
+          <ArrowLeft size={14} />
+          Modificar datos
+        </button>
+        <button
+          onClick={scrollToCta}
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold"
+          style={{ fontFamily: ff.body, background: C.navy, color: C.white }}
+        >
+          Quiero un informe detallado
+          <ChevronRight size={16} />
         </button>
       </div>
 
-      <div className="flex justify-start">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-sm"
-          style={{ fontFamily: ff.body, color: C.gray2 }}
+      {/* ─── 9. CTA SECTION ─── */}
+      <div
+        ref={ctaRef}
+        className="rounded-xl p-6 sm:p-10 -mx-4 sm:mx-0 mb-10"
+        style={{ background: C.navy }}
+      >
+        <h3
+          className="text-2xl sm:text-3xl font-bold text-center mb-2"
+          style={{ fontFamily: ff.heading, color: C.white }}
         >
-          <ArrowLeft size={14} />
-          Volver al formulario
-        </button>
+          Descarga tu informe de valoración
+        </h3>
+        <p
+          className="text-sm text-center mb-8"
+          style={{ fontFamily: ff.body, color: '#94A3B8' }}
+        >
+          Recibe un PDF detallado con la valoración completa, comparables de mercado y análisis de factores
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto mb-6">
+          <input
+            type="text"
+            placeholder="Tu nombre"
+            value={contact.name}
+            onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))}
+            style={darkInput}
+          />
+          <input
+            type="email"
+            placeholder="Email profesional"
+            value={contact.email}
+            onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))}
+            style={darkInput}
+          />
+          <input
+            type="tel"
+            placeholder="Teléfono"
+            value={contact.phone}
+            onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))}
+            style={darkInput}
+          />
+          <input
+            type="text"
+            placeholder="Nombre de tu asesoría"
+            value={contact.firmName}
+            onChange={(e) => setContact((p) => ({ ...p, firmName: e.target.value }))}
+            style={darkInput}
+          />
+        </div>
+
+        <div className="text-center mb-5">
+          <button
+            className="px-8 py-3 rounded-lg text-sm font-semibold transition-all"
+            style={{
+              fontFamily: ff.body,
+              background: C.gold,
+              color: C.navy,
+            }}
+          >
+            Descargar informe PDF
+          </button>
+        </div>
+
+        <div className="flex items-start gap-2 max-w-md mx-auto">
+          <Shield size={14} className="flex-shrink-0 mt-0.5" style={{ color: '#4A5568' }} />
+          <p
+            className="text-[10px] leading-relaxed"
+            style={{ fontFamily: ff.body, color: '#4A5568' }}
+          >
+            Tus datos están protegidos. Los utilizaremos exclusivamente para enviarte el informe de valoración. Puedes ejercer tus derechos RGPD en cualquier momento escribiendo a privacidad@capittal.com.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -902,7 +1163,7 @@ const LandingCalculadoraAsesorias = () => {
           {step === 1 && (
             <StepOne form={form} onChange={handleChange} onNext={handleCalculate} />
           )}
-          {step === 2 && result && <StepTwo result={result} onBack={handleBack} />}
+          {step === 2 && result && <StepTwo result={result} form={form} onBack={handleBack} />}
         </main>
         <Footer />
       </div>
