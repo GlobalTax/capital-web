@@ -50,6 +50,26 @@ const INITIAL_FORM: FormData = {
   activeClients: '',
 };
 
+interface Factor {
+  text: string;
+  type: 'positive' | 'neutral' | 'negative';
+}
+
+interface ValuationResult {
+  evL: number;
+  evH: number;
+  evM: number;
+  eqM: number;
+  mL: number;
+  mM: number;
+  mH: number;
+  ingRec: number;
+  multIngRec: number;
+  margen: number;
+  revEmp: number;
+  factors: Factor[];
+}
+
 const SERVICES = [
   'Fiscal',
   'Contable',
