@@ -1,34 +1,42 @@
 
 
-## Plan: Nueva página `/lp/calculadora-asesorias`
+## Plan: Rediseñar Step 1 del formulario de calculadora-asesorias
 
 ### Resumen
-Crear una landing page standalone para valoración de asesorías/despachos profesionales, con diseño custom (no reutiliza UnifiedLayout) usando la paleta navy/gold especificada y las fonts Playfair Display, DM Sans y Roboto Mono.
+Reemplazar completamente el `StepOne` y el `FormData` del archivo `src/pages/LandingCalculadoraAsesorias.tsx` con las 6 secciones especificadas, slider de recurrencia, chips multiselect/single-select, inputs numéricos con formateo español, y validación.
 
-### Archivos a crear/modificar
+### Cambios en `src/pages/LandingCalculadoraAsesorias.tsx`
 
-**1. `index.html`** — Añadir DM Sans a la carga de Google Fonts (Roboto Mono ya se usa vía `font-mono` de Tailwind; DM Sans no está cargada).
+**1. Actualizar `FormData` interface y `INITIAL_FORM`:**
+- Eliminar: `contactName`, `email`, `phone`, `firmName`, `firmType` (se moverán al paso de contacto/informe más adelante)
+- Añadir: `services: string[]`, `location: string`, `employees: string`, `revenue: string`, `ebitda: string`, `recurringPct: number` (default 70), `growthTrend: string` (default "Creciendo 5-15%"), `netDebt: string`, `activeClients: string`
 
-**2. `src/pages/LandingCalculadoraAsesorias.tsx`** — Página principal. Componente autocontenido con:
-- **Header propio**: Logo "Capittal" (tracking-[2px]) + "M&A · Consulting" en monospace + badge "Herramienta gratuita" con borde gold
-- **Hero section**: Fondo #161B22, título en Playfair Display, subtítulo en DM Sans
-- **Banner de stats**: 3 tarjetas con "6+", "11.000+", "3-10x" sobre fondo #F3F4F5
-- **Stepper visual**: 3 pasos con estado activo/completado/pendiente
-- **Paso 1 (formulario)**: Campos agrupados — datos de contacto, datos del despacho, datos financieros. Campos: nombre, email, teléfono, nombre del despacho, tipo de despacho (select), empleados (select), facturación, EBITDA. Sin lógica de envío real, solo estructura visual y navegación de estado.
-- **Paso 2 (resultados placeholder)**: Layout de resultados con valores placeholder (0€), CTA "Descargar informe PDF" deshabilitado
-- **Footer**: Disclaimer legal + "© Capittal Transacciones"
+**2. Eliminar constantes obsoletas:** `FIRM_TYPES`, `EMPLOYEE_RANGES`
 
-**3. `src/core/routing/AppRoutes.tsx`** — Añadir lazy import y ruta `/lp/calculadora-asesorias`.
+**3. Añadir constantes nuevas:**
+- `SERVICES`: array de 8 strings (Fiscal, Contable, Laboral/Nóminas, etc.)
+- `GROWTH_TRENDS`: array de 4 opciones
 
-### Detalles de diseño
-- Sin usar UnifiedLayout (diseño 100% custom para esta LP)
-- Paleta estricta: Navy #161B22, Gold #C5A45A (solo acentos mínimos), grises especificados
-- Fonts: Playfair Display para H1/H2, DM Sans para body/inputs, Roboto Mono para labels/overlines/stepper
-- Stepper interactivo: click en paso completado vuelve atrás
-- Formulario con validación visual básica (required fields marcados)
-- Responsive mobile-first
-- Sin lógica de cálculo ni envío a Supabase
+**4. Añadir helper de formateo numérico:**
+- `formatES(value)`: formatea con `toLocaleString('es-ES')` al blur
+- `parseES(value)`: limpia puntos para obtener número raw
+- Usar `onBlur` en inputs numéricos para aplicar formateo
 
-### Complejidad
-Archivo principal ~500-600 líneas (todo en un componente para esta fase). Se podrá modularizar cuando se añada la lógica de cálculo.
+**5. Reescribir componente `StepOne` con las 6 secciones:**
+
+- **Sección 1** — "Servicios que presta tu asesoría": chips multiselect con toggle, borde `#E2E4E8` inactivo, fondo `#161B22` + texto blanco activo
+- **Sección 2** — Grid 2 cols: Ubicación (text input) + Empleados (input numérico)
+- **Divisor dashed** — `border-dashed` con color `#E2E4E8`
+- **Sección 3** — "Datos financieros" con subtítulo mono: Facturación + EBITDA en grid 2 cols, inputs con formateo `es-ES` on blur
+- **Sección 4** — Slider % Ingresos recurrentes: HTML `<input type="range">` con min=10, max=100, step=5, default=70. Badge monospace a la derecha mostrando `{value}%`. Track estilizado con CSS inline (navy para filled, border para unfilled)
+- **Sección 5** — Tendencia de crecimiento: chips single-select, default "Creciendo 5-15%"
+- **Sección 6** — Grid 2 cols: Deuda financiera neta + Clientes activos (opcionales)
+- **Info box** — Fondo `#F9FAFB`, borde `#E2E4E8`, texto explicativo sobre EBITDA
+- **Botón** — "Calcular valoración", disabled hasta validación completa, fondo `#161B22`
+
+**6. Validación para habilitar botón:**
+`services.length > 0 && location.trim() && parseInt(employees) > 0 && parseES(revenue) > 0 && parseES(ebitda) > 0`
+
+### Archivos modificados
+Solo `src/pages/LandingCalculadoraAsesorias.tsx` — cambios internos al componente existente.
 
