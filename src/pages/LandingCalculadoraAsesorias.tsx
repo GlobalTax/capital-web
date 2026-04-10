@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp, TrendingDown, Minus, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { SEOHead } from '@/components/seo';
 
 // ── Palette ──────────────────────────────────────────────
 const C = {
