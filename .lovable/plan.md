@@ -1,53 +1,37 @@
 
 
-## Plan: Documentos adjuntos para emails de compra + fix build error
+## Problem
 
-### 1. Fix build error en `send-corporate-email`
-- Cambiar `import { Resend } from "npm:resend@2.0.0"` a `import { Resend } from "https://esm.sh/resend@4.0.0"` (mismo patrón que `send-precall-email`)
+The `useInlineUpdate` hook's `tableMap` is missing the `buyer_alert` and `rod_download` origins that the contacts-v2 system uses. When you try to update a lead with these origins (shown as "Compras" in the UI), it fails with "Error: origen de lead desconocido".
 
-### 2. Crear tabla `buy_pipeline_attachments` para gestionar los adjuntos
-Nueva tabla con migración SQL:
-- `id` (UUID PK)
-- `label` (text) - nombre descriptivo (ej: "Relación de Oportunidades Activas Q2 2026")
-- `file_name` (text) - nombre del archivo original
-- `file_type` (text) - MIME type
-- `file_size_bytes` (bigint)
-- `storage_path` (text) - ruta en el bucket
-- `is_active` (boolean, default true) - si se adjunta actualmente
-- `uploaded_by` (UUID, nullable)
-- `created_at`, `updated_at` (timestamps)
+The existing map has `buyer` -> `buyer_contacts`, but contacts-v2 uses `rod_download` for that same table and `buyer_alert` for `buyer_preferences`.
 
-Esto es independiente de `rod_documents` para dar flexibilidad total sobre qué archivos adjuntar.
+## Fix
 
-### 3. Crear bucket `buy-pipeline-attachments`
-- Bucket público para que la Edge Function pueda descargar los archivos
-- Políticas RLS para upload/delete solo por admins autenticados
+Add the two missing origin mappings to the `tableMap` and their corresponding `tableCapabilities` entries in `src/hooks/useInlineUpdate.ts`:
 
-### 4. Crear componente `BuyPipelineAttachments`
-Panel colapsable dentro de `BuyPipelineView` (en la barra de herramientas superior) con:
-- Lista de archivos adjuntos activos (nombre, tamaño, fecha)
-- Botón para subir nuevo archivo (drag & drop con `useDropzone`)
-- Toggle de activar/desactivar cada archivo (para no adjuntarlo sin eliminarlo)
-- Botón eliminar con confirmación
-- Botón reemplazar (sube nuevo y desactiva el anterior)
-- Accesible desde un botón con icono de clip/adjuntos en la toolbar
+1. `'buyer_alert'` -> `'buyer_preferences'` (no `lead_status_crm`, no `acquisition_channel`, no `location`, no `lead_form`)
+2. `'rod_download'` -> `'buyer_contacts'` (same capabilities as existing `buyer_contacts` entry)
 
-### 5. Modificar Edge Function `send-precall-email`
-Cuando reciba `pipelineType: 'compra'`:
-- Consultar `buy_pipeline_attachments` donde `is_active = true`
-- Descargar cada archivo desde el bucket
-- Convertir a Base64
-- Añadir como `attachments` en el objeto de Resend:
-  ```
-  attachments: [{ filename, content: base64 }]
-  ```
-- Fallback graceful: si falla la descarga de un archivo, enviar el email sin ese adjunto
+### File: `src/hooks/useInlineUpdate.ts`
 
-### 6. Pasar `pipelineType` al email
-Asegurar que `BuyPipelineView` pase `pipelineType: 'compra'` en la llamada a `send-precall-email` (puede que ya esté hecho del cambio anterior).
+**tableMap** (line ~258): Add two entries:
+```typescript
+'buyer_alert': 'buyer_preferences',
+'rod_download': 'buyer_contacts',
+```
 
-### Notas
-- La tabla separada permite gestionar los adjuntos de compra independientemente de los ROD del catálogo público
-- Se pueden actualizar los documentos en cualquier momento sin tocar código
-- El componente se integra visualmente en la toolbar existente del pipeline de compras
+**tableCapabilities** (line ~154): Add entry for `buyer_preferences`:
+```typescript
+'buyer_preferences': {
+  hasUpdatedAt: true,
+  hasLeadReceivedAt: false,
+  hasLeadStatusCrm: false,
+  hasAcquisitionChannel: false,
+  hasLocation: false,
+  hasLeadForm: false,
+},
+```
+
+This is a small, targeted fix -- two lines in the map and one new capabilities block.
 
