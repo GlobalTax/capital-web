@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp, TrendingDown, Minus, ArrowLeft, Shield } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { SEOHead } from '@/components/seo';
 
 // ── Palette ──────────────────────────────────────────────
