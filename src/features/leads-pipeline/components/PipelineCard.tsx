@@ -19,7 +19,9 @@ import {
   Mail,
   MailCheck,
   UserCheck,
-  X as XIcon
+  X as XIcon,
+  Pencil,
+  Check,
 } from 'lucide-react';
 import {
   DropdownMenu,
