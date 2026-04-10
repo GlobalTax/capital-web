@@ -98,6 +98,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   adminUsers = [],
   onAssignLead,
   variantOptions,
+  onUpdateFinancials,
 }) => {
   // Drag detection to avoid navigating on drag
   const mouseDownPos = useRef<{x:number,y:number}|null>(null);
