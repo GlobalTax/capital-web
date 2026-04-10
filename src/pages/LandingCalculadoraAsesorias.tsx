@@ -273,136 +273,232 @@ const StepOne = ({
   onChange: (f: Partial<FormData>) => void;
   onNext: () => void;
 }) => {
+  const toggleService = (s: string) => {
+    const next = form.services.includes(s)
+      ? form.services.filter((x) => x !== s)
+      : [...form.services, s];
+    onChange({ services: next });
+  };
+
+  const handleNumericBlur = (field: 'revenue' | 'ebitda' | 'netDebt' | 'activeClients' | 'employees') => {
+    const formatted = formatES(form[field]);
+    onChange({ [field]: formatted });
+  };
+
   const canProceed =
-    form.contactName && form.email && form.firmName && form.firmType && form.employees && form.revenue;
+    form.services.length > 0 &&
+    form.location.trim() !== '' &&
+    parseES(form.employees) > 0 &&
+    parseES(form.revenue) > 0 &&
+    parseES(form.ebitda) > 0;
+
+  const sliderPct = ((form.recurringPct - 10) / 90) * 100;
 
   return (
     <div className="max-w-3xl mx-auto px-4">
-      {/* Datos de contacto */}
+      {/* SECCIÓN 1 — Servicios */}
       <div className="mb-8">
         <h2
-          className="text-lg font-semibold mb-4"
+          className="text-lg font-semibold mb-1"
           style={{ fontFamily: ff.heading, color: C.navy }}
         >
-          Datos de contacto
+          Servicios que presta tu asesoría
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <FieldLabel required>Nombre completo</FieldLabel>
-            <input
-              type="text"
-              value={form.contactName}
-              onChange={(e) => onChange({ contactName: e.target.value })}
-              placeholder="Tu nombre"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <FieldLabel required>Email profesional</FieldLabel>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => onChange({ email: e.target.value })}
-              placeholder="tu@despacho.es"
-              style={inputStyle}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <FieldLabel>Teléfono</FieldLabel>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => onChange({ phone: e.target.value })}
-              placeholder="+34 600 000 000"
-              style={inputStyle}
-            />
-          </div>
+        <p className="text-xs mb-4" style={{ fontFamily: ff.mono, color: C.gray3 }}>
+          Selecciona todos los que apliquen
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {SERVICES.map((s) => {
+            const active = form.services.includes(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => toggleService(s)}
+                className="px-4 py-2 rounded-full text-sm transition-all"
+                style={{
+                  fontFamily: ff.body,
+                  border: `1px solid ${active ? C.navy : C.border1}`,
+                  background: active ? C.navy : C.white,
+                  color: active ? C.white : C.gray1,
+                  cursor: 'pointer',
+                }}
+              >
+                {s}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Datos del despacho */}
-      <div className="mb-8">
-        <h2
-          className="text-lg font-semibold mb-4"
-          style={{ fontFamily: ff.heading, color: C.navy }}
-        >
-          Tu despacho
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <FieldLabel required>Nombre del despacho</FieldLabel>
-            <input
-              type="text"
-              value={form.firmName}
-              onChange={(e) => onChange({ firmName: e.target.value })}
-              placeholder="Nombre de la firma"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <FieldLabel required>Tipo de despacho</FieldLabel>
-            <select
-              value={form.firmType}
-              onChange={(e) => onChange({ firmType: e.target.value })}
-              style={selectStyle}
-            >
-              <option value="">Selecciona…</option>
-              {FIRM_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <FieldLabel required>Número de empleados</FieldLabel>
-            <select
-              value={form.employees}
-              onChange={(e) => onChange({ employees: e.target.value })}
-              style={selectStyle}
-            >
-              <option value="">Selecciona…</option>
-              {EMPLOYEE_RANGES.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
+      {/* SECCIÓN 2 — Ubicación + Empleados */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div>
+          <FieldLabel required>Ubicación</FieldLabel>
+          <input
+            type="text"
+            value={form.location}
+            onChange={(e) => onChange({ location: e.target.value })}
+            placeholder="Ciudad o provincia"
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <FieldLabel required>Número de empleados</FieldLabel>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={form.employees}
+            onChange={(e) => onChange({ employees: e.target.value.replace(/[^\d.]/g, '') })}
+            onBlur={() => handleNumericBlur('employees')}
+            placeholder="Ej: 25"
+            style={inputStyle}
+          />
         </div>
       </div>
 
-      {/* Datos financieros */}
+      {/* DIVISOR */}
+      <div className="mb-8" style={{ borderTop: `1px dashed ${C.border1}` }} />
+
+      {/* SECCIÓN 3 — Datos financieros */}
       <div className="mb-8">
         <h2
-          className="text-lg font-semibold mb-4"
+          className="text-lg font-semibold mb-1"
           style={{ fontFamily: ff.heading, color: C.navy }}
         >
           Datos financieros
         </h2>
+        <p className="text-xs mb-4" style={{ fontFamily: ff.mono, color: C.gray3 }}>
+          Último ejercicio fiscal completo
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <FieldLabel required>Facturación anual (€)</FieldLabel>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={form.revenue}
-              onChange={(e) => onChange({ revenue: e.target.value })}
-              placeholder="Ej: 500000"
+              onChange={(e) => onChange({ revenue: e.target.value.replace(/[^\d.]/g, '') })}
+              onBlur={() => handleNumericBlur('revenue')}
+              placeholder="Ej: 1.200.000"
               style={inputStyle}
             />
           </div>
           <div>
-            <FieldLabel>EBITDA anual (€)</FieldLabel>
+            <FieldLabel required>EBITDA (€)</FieldLabel>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={form.ebitda}
-              onChange={(e) => onChange({ ebitda: e.target.value })}
-              placeholder="Ej: 120000"
+              onChange={(e) => onChange({ ebitda: e.target.value.replace(/[^\d.]/g, '') })}
+              onBlur={() => handleNumericBlur('ebitda')}
+              placeholder="Ej: 240.000"
               style={inputStyle}
             />
           </div>
         </div>
-        <p
-          className="mt-2 text-xs"
-          style={{ fontFamily: ff.body, color: C.gray3 }}
-        >
-          Si no conoces tu EBITDA, estimaremos un margen medio según tu tipo de despacho.
+      </div>
+
+      {/* SECCIÓN 4 — Slider recurrencia */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <FieldLabel>% Ingresos recurrentes</FieldLabel>
+          <span
+            className="text-sm px-2 py-0.5 rounded"
+            style={{
+              fontFamily: ff.mono,
+              color: C.navy,
+              background: C.bg1,
+              border: `1px solid ${C.border2}`,
+            }}
+          >
+            {form.recurringPct}%
+          </span>
+        </div>
+        <div className="relative">
+          <input
+            type="range"
+            min={10}
+            max={100}
+            step={5}
+            value={form.recurringPct}
+            onChange={(e) => onChange({ recurringPct: Number(e.target.value) })}
+            className="w-full h-2 rounded-full appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, ${C.navy} ${sliderPct}%, ${C.border1} ${sliderPct}%)`,
+            }}
+          />
+        </div>
+        <div className="flex justify-between mt-1">
+          <span className="text-[10px]" style={{ fontFamily: ff.mono, color: C.gray3 }}>10%</span>
+          <span className="text-[10px]" style={{ fontFamily: ff.mono, color: C.gray3 }}>100%</span>
+        </div>
+      </div>
+
+      {/* SECCIÓN 5 — Tendencia de crecimiento */}
+      <div className="mb-8">
+        <FieldLabel>Tendencia de crecimiento</FieldLabel>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {GROWTH_TRENDS.map((g) => {
+            const active = form.growthTrend === g;
+            return (
+              <button
+                key={g}
+                type="button"
+                onClick={() => onChange({ growthTrend: g })}
+                className="px-4 py-2 rounded-full text-sm transition-all"
+                style={{
+                  fontFamily: ff.body,
+                  border: `1px solid ${active ? C.navy : C.border1}`,
+                  background: active ? C.navy : C.white,
+                  color: active ? C.white : C.gray1,
+                  cursor: 'pointer',
+                }}
+              >
+                {g}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* SECCIÓN 6 — Deuda + Clientes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div>
+          <FieldLabel>Deuda financiera neta (€)</FieldLabel>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={form.netDebt}
+            onChange={(e) => onChange({ netDebt: e.target.value.replace(/[^\d.]/g, '') })}
+            onBlur={() => handleNumericBlur('netDebt')}
+            placeholder="0 si no hay"
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <FieldLabel>Clientes activos</FieldLabel>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={form.activeClients}
+            onChange={(e) => onChange({ activeClients: e.target.value.replace(/[^\d.]/g, '') })}
+            onBlur={() => handleNumericBlur('activeClients')}
+            placeholder="Ej: 350"
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
+      {/* INFO BOX */}
+      <div
+        className="rounded-lg p-4 mb-8 flex gap-3"
+        style={{ background: C.bg2, border: `1px solid ${C.border1}` }}
+      >
+        <Info size={18} className="flex-shrink-0 mt-0.5" style={{ color: C.gray2 }} />
+        <p className="text-xs leading-relaxed" style={{ fontFamily: ff.body, color: C.gray2 }}>
+          <strong>¿No tienes el EBITDA exacto?</strong> Beneficio neto + IS + Gastos financieros +
+          Amortizaciones. En asesorías bien gestionadas, el margen suele estar entre 15% y 25%.
         </p>
       </div>
 
@@ -419,15 +515,13 @@ const StepOne = ({
             cursor: canProceed ? 'pointer' : 'not-allowed',
           }}
         >
-          Ver valoración
+          Calcular valoración
           <ChevronRight size={16} />
         </button>
       </div>
     </div>
   );
 };
-
-// ── Step 2 (placeholder) ────────────────────────────────
 
 const StepTwo = ({ onBack }: { onBack: () => void }) => {
   const placeholders = [
