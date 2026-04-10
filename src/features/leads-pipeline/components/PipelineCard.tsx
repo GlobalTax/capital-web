@@ -214,20 +214,14 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
         </div>
 
         {/* Financial & Location */}
-        {(lead.revenue || lead.ebitda || lead.location) && (
+        {(lead.revenue || lead.ebitda || lead.location || onUpdateFinancials) && (
           <div className="space-y-0.5 text-xs text-muted-foreground">
-            {(lead.revenue || lead.ebitda) && (
-              <div className="flex items-center gap-3 text-sm font-medium text-foreground">
-                {lead.revenue ? (
-                  <span>Fact: <span className="text-blue-600">{formatCurrency(lead.revenue)}</span></span>
-                ) : null}
-                {lead.ebitda ? (
-                  <span>EBITDA: <span className="text-emerald-600">{formatCurrency(lead.ebitda)}</span></span>
-                ) : null}
-                {lead.ebitda && lead.revenue ? (
-                  <span>Margen: <span className="text-amber-600">{((lead.ebitda / lead.revenue) * 100).toFixed(1)}%</span></span>
-                ) : null}
-              </div>
+            {(lead.revenue || lead.ebitda || onUpdateFinancials) && (
+              <FinancialLine 
+                revenue={lead.revenue} 
+                ebitda={lead.ebitda} 
+                onUpdate={onUpdateFinancials}
+              />
             )}
             {lead.location ? (
               <span className="flex items-center truncate">
