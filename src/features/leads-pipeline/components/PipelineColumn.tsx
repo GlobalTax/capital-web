@@ -51,6 +51,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   adminUsers,
   onAssignLead,
   variantOptions,
+  onUpdateFinancials,
 }) => {
   const totalValue = formatTotal(leads);
   const leadIds = leads.map(l => l.id);
