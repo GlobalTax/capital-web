@@ -909,11 +909,5 @@ const LandingCalculadoraAsesorias = () => {
     </>
   );
 };
-        </main>
-        <Footer />
-      </div>
-    </>
-  );
-};
 
 export default LandingCalculadoraAsesorias;
