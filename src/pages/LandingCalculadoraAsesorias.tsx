@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, FileText, Building2, Calculator, ChevronRight } from 'lucide-react';
+import { Check, FileText, Building2, Calculator, ChevronRight, Info } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 
 // ── Palette ──────────────────────────────────────────────
@@ -27,46 +27,58 @@ const ff = {
 type Step = 1 | 2 | 3;
 
 interface FormData {
-  contactName: string;
-  email: string;
-  phone: string;
-  firmName: string;
-  firmType: string;
+  services: string[];
+  location: string;
   employees: string;
   revenue: string;
   ebitda: string;
+  recurringPct: number;
+  growthTrend: string;
+  netDebt: string;
+  activeClients: string;
 }
 
 const INITIAL_FORM: FormData = {
-  contactName: '',
-  email: '',
-  phone: '',
-  firmName: '',
-  firmType: '',
+  services: [],
+  location: '',
   employees: '',
   revenue: '',
   ebitda: '',
+  recurringPct: 70,
+  growthTrend: 'Creciendo 5-15%',
+  netDebt: '',
+  activeClients: '',
 };
 
-const FIRM_TYPES = [
-  'Asesoría fiscal y contable',
-  'Despacho de abogados',
-  'Gestoría administrativa',
-  'Consultoría de RRHH',
-  'Asesoría laboral',
-  'Correduría de seguros',
-  'Multidisciplinar',
-  'Otro',
+const SERVICES = [
+  'Fiscal',
+  'Contable',
+  'Laboral/Nóminas',
+  'Legal/Jurídico',
+  'Auditoría',
+  'Consultoría',
+  'Seguros',
+  'Inmobiliario',
 ];
 
-const EMPLOYEE_RANGES = [
-  '1-5',
-  '6-10',
-  '11-25',
-  '26-50',
-  '51-100',
-  '100+',
+const GROWTH_TRENDS = [
+  'Decreciendo',
+  'Estable',
+  'Creciendo 5-15%',
+  'Creciendo >15%',
 ];
+
+// ── Number formatting helpers ────────────────────────────
+const formatES = (val: string): string => {
+  const num = parseInt(val.replace(/\./g, ''), 10);
+  if (isNaN(num) || num === 0) return '';
+  return num.toLocaleString('es-ES');
+};
+
+const parseES = (val: string): number => {
+  const num = parseInt(val.replace(/\./g, ''), 10);
+  return isNaN(num) ? 0 : num;
+};
 
 // ── Components ───────────────────────────────────────────
 
