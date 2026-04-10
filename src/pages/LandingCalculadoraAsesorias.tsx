@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, FileText, Building2, Calculator, ChevronRight, Info } from 'lucide-react';
+import { Check, FileText, Building2, Calculator, ChevronRight, Info, TrendingUp, TrendingDown, Minus, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
 
 // ── Palette ──────────────────────────────────────────────
@@ -50,6 +50,26 @@ const INITIAL_FORM: FormData = {
   activeClients: '',
 };
 
+interface Factor {
+  text: string;
+  type: 'positive' | 'neutral' | 'negative';
+}
+
+interface ValuationResult {
+  evL: number;
+  evH: number;
+  evM: number;
+  eqM: number;
+  mL: number;
+  mM: number;
+  mH: number;
+  ingRec: number;
+  multIngRec: number;
+  margen: number;
+  revEmp: number;
+  factors: Factor[];
+}
+
 const SERVICES = [
   'Fiscal',
   'Contable',
@@ -78,6 +98,123 @@ const formatES = (val: string): string => {
 const parseES = (val: string): number => {
   const num = parseInt(val.replace(/\./g, ''), 10);
   return isNaN(num) ? 0 : num;
+};
+
+// ── Calculation logic ────────────────────────────────────
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const round1 = (v: number) => Math.round(v * 10) / 10;
+
+const calculateValuation = (form: FormData): ValuationResult => {
+  const revenue = parseES(form.revenue);
+  const ebitda = parseES(form.ebitda);
+  const employees = parseES(form.employees);
+  const netDebt = parseES(form.netDebt);
+  const clients = parseES(form.activeClients);
+  const rec = form.recurringPct;
+  const nServices = form.services.length;
+
+  // Base multiple by revenue size
+  let baseM: number;
+  if (revenue < 500_000) baseM = 3.5;
+  else if (revenue < 1_500_000) baseM = 4.25;
+  else if (revenue < 3_000_000) baseM = 5.25;
+  else if (revenue < 5_000_000) baseM = 6.0;
+  else if (revenue < 10_000_000) baseM = 6.75;
+  else baseM = 8.0;
+
+  // Quality adjustments
+  let a = 0;
+
+  // Recurrence
+  if (rec >= 90) a += 0.4;
+  else if (rec >= 75) a += 0.2;
+  else if (rec >= 60) a += 0.05;
+  else if (rec < 40) a -= 0.4;
+
+  // Services
+  if (nServices >= 5) a += 0.3;
+  else if (nServices >= 3) a += 0.15;
+  else if (nServices === 1) a -= 0.15;
+  if (form.services.includes('Auditoría')) a += 0.1;
+  if (form.services.includes('Consultoría')) a += 0.15;
+  if (form.services.includes('Legal/Jurídico')) a += 0.1;
+
+  // Growth
+  if (form.growthTrend === 'Creciendo >15%') a += 0.35;
+  else if (form.growthTrend === 'Creciendo 5-15%') a += 0.1;
+  else if (form.growthTrend === 'Decreciendo') a -= 0.4;
+
+  // EBITDA margin
+  const margin = revenue > 0 ? (ebitda / revenue) * 100 : 0;
+  if (margin >= 25) a += 0.2;
+  else if (margin >= 20) a += 0.1;
+  else if (margin < 10) a -= 0.3;
+
+  // Productivity
+  const revEmp = employees > 0 ? revenue / employees : 0;
+  if (revEmp >= 90_000) a += 0.15;
+  else if (revEmp < 40_000) a -= 0.15;
+
+  // Portfolio
+  if (clients >= 300) a += 0.15;
+  else if (clients > 0 && clients < 50) a -= 0.15;
+
+  // Cap adjustment
+  a = clamp(a, -1.0, 1.0);
+
+  // Central multiple
+  const mM = clamp(baseM + a, 3.0, 10.0);
+  const mL = clamp(round1(mM * 0.88), 2.5, 10.0);
+  const mH = clamp(round1(mM * 1.12), 2.5, 10.0);
+
+  const evM = Math.round(ebitda * mM);
+  const evL = Math.round(ebitda * mL);
+  const evH = Math.round(ebitda * mH);
+  const eqM = Math.max(0, evM - netDebt);
+
+  const ingRec = revenue * (rec / 100);
+  const multIngRec = ingRec > 0 ? round1(evM / ingRec) : 0;
+
+  // Factors
+  const factors: Factor[] = [];
+
+  // Services factor
+  if (nServices >= 4) factors.push({ text: `Oferta multidisciplinar (${nServices} servicios)`, type: 'positive' });
+  else if (nServices >= 2) factors.push({ text: `${nServices} líneas de servicio`, type: 'neutral' });
+  else factors.push({ text: 'Servicio único — riesgo de concentración', type: 'negative' });
+
+  // Recurrence
+  if (rec >= 80) factors.push({ text: 'Alta recurrencia — menor riesgo post-venta', type: 'positive' });
+  else if (rec >= 60) factors.push({ text: `Recurrencia del ${rec}%`, type: 'neutral' });
+  else factors.push({ text: `Baja recurrencia (${rec}%) — mayor riesgo`, type: 'negative' });
+
+  // Growth
+  if (form.growthTrend === 'Creciendo >15%') factors.push({ text: 'Crecimiento fuerte (>15%)', type: 'positive' });
+  else if (form.growthTrend === 'Creciendo 5-15%') factors.push({ text: 'Crecimiento moderado', type: 'positive' });
+  else if (form.growthTrend === 'Estable') factors.push({ text: 'Crecimiento estable', type: 'neutral' });
+  else factors.push({ text: 'Facturación decreciente', type: 'negative' });
+
+  // Margin
+  if (margin >= 25) factors.push({ text: `Margen EBITDA excelente (${margin.toFixed(0)}%)`, type: 'positive' });
+  else if (margin >= 15) factors.push({ text: `Margen EBITDA del ${margin.toFixed(0)}%`, type: 'neutral' });
+  else factors.push({ text: `Margen EBITDA bajo (${margin.toFixed(0)}%)`, type: 'negative' });
+
+  // Size
+  if (revenue >= 5_000_000) factors.push({ text: 'Tamaño plataforma — máximo interés PE', type: 'positive' });
+  else if (revenue >= 2_000_000) factors.push({ text: 'Tamaño atractivo para compradores', type: 'positive' });
+  else if (revenue >= 500_000) factors.push({ text: 'Tamaño bolt-on', type: 'neutral' });
+  else factors.push({ text: 'Micro-despacho — mercado limitado', type: 'negative' });
+
+  // Productivity
+  if (revEmp >= 80_000) factors.push({ text: `Alta productividad (${Math.round(revEmp / 1000)}K€/emp)`, type: 'positive' });
+  else if (revEmp > 0 && revEmp < 45_000) factors.push({ text: `Baja productividad (${Math.round(revEmp / 1000)}K€/emp)`, type: 'negative' });
+
+  // Portfolio
+  if (clients >= 300) factors.push({ text: 'Cartera diversificada', type: 'positive' });
+  else if (clients > 0 && clients < 50) factors.push({ text: 'Cartera concentrada', type: 'negative' });
+
+  return { evL, evH, evM, eqM, mL, mM, mH, ingRec, multIngRec, margen: margin, revEmp, factors };
 };
 
 // ── Components ───────────────────────────────────────────
@@ -523,11 +660,27 @@ const StepOne = ({
   );
 };
 
-const StepTwo = ({ onBack }: { onBack: () => void }) => {
-  const placeholders = [
-    { label: 'Valoración por facturación', value: '—' },
-    { label: 'Valoración por EBITDA', value: '—' },
-    { label: 'Rango estimado', value: '—' },
+const fmtEur = (v: number) => v.toLocaleString('es-ES') + ' €';
+
+const StepTwo = ({ result, onBack }: { result: ValuationResult; onBack: () => void }) => {
+  const factorIcon = (type: Factor['type']) => {
+    if (type === 'positive') return <TrendingUp size={14} style={{ color: '#22863a' }} />;
+    if (type === 'negative') return <TrendingDown size={14} style={{ color: '#cb2431' }} />;
+    return <Minus size={14} style={{ color: C.gray2 }} />;
+  };
+  const factorColor = (type: Factor['type']) => {
+    if (type === 'positive') return '#22863a';
+    if (type === 'negative') return '#cb2431';
+    return C.gray2;
+  };
+
+  const metrics = [
+    { label: 'Múltiplo central', value: `${result.mM.toFixed(1)}x` },
+    { label: 'Margen EBITDA', value: `${result.margen.toFixed(0)}%` },
+    { label: 'Equity Value', value: fmtEur(result.eqM) },
+    { label: 'Ingresos recurrentes', value: fmtEur(Math.round(result.ingRec)) },
+    { label: 'Múltiplo s/ recurrentes', value: `${result.multIngRec.toFixed(1)}x` },
+    { label: 'Fact. / empleado', value: `${Math.round(result.revEmp / 1000)}K €` },
   ];
 
   return (
@@ -545,27 +698,86 @@ const StepTwo = ({ onBack }: { onBack: () => void }) => {
         Basada en múltiplos de transacciones reales en el sector
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {placeholders.map((p) => (
+      {/* Primary card */}
+      <div
+        className="rounded-xl p-8 text-center mb-6"
+        style={{ background: C.navy }}
+      >
+        <div
+          className="text-[11px] uppercase tracking-wider mb-2"
+          style={{ fontFamily: ff.mono, color: C.gray3 }}
+        >
+          Enterprise Value central
+        </div>
+        <div
+          className="text-4xl sm:text-5xl font-bold mb-3"
+          style={{ fontFamily: ff.heading, color: C.white }}
+        >
+          {fmtEur(result.evM)}
+        </div>
+        <div
+          className="text-sm"
+          style={{ fontFamily: ff.mono, color: C.gold }}
+        >
+          Rango: {fmtEur(result.evL)} — {fmtEur(result.evH)}
+        </div>
+        <div
+          className="text-[11px] mt-1"
+          style={{ fontFamily: ff.mono, color: C.gray3 }}
+        >
+          Múltiplo {result.mL.toFixed(1)}x – {result.mH.toFixed(1)}x EBITDA
+        </div>
+      </div>
+
+      {/* Metrics grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+        {metrics.map((m) => (
           <div
-            key={p.label}
-            className="text-center rounded-lg p-6 border"
+            key={m.label}
+            className="rounded-lg p-4 border text-center"
             style={{ background: C.bg2, borderColor: C.border2 }}
           >
             <div
-              className="text-3xl font-bold mb-2"
+              className="text-lg font-bold mb-1"
               style={{ fontFamily: ff.heading, color: C.navy }}
             >
-              {p.value}
+              {m.value}
             </div>
             <div
-              className="text-[11px] uppercase tracking-wider"
+              className="text-[10px] uppercase tracking-wider"
               style={{ fontFamily: ff.mono, color: C.gray2 }}
             >
-              {p.label}
+              {m.label}
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Factors */}
+      <div className="mb-8">
+        <h3
+          className="text-sm font-semibold mb-3"
+          style={{ fontFamily: ff.mono, color: C.navy, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+        >
+          Factores de valoración
+        </h3>
+        <div className="space-y-2">
+          {result.factors.map((f, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-lg px-4 py-2.5 border"
+              style={{ borderColor: C.border2, background: C.white }}
+            >
+              {factorIcon(f.type)}
+              <span
+                className="text-sm"
+                style={{ fontFamily: ff.body, color: factorColor(f.type) }}
+              >
+                {f.text}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* CTA download */}
@@ -597,10 +809,11 @@ const StepTwo = ({ onBack }: { onBack: () => void }) => {
       <div className="flex justify-start">
         <button
           onClick={onBack}
-          className="text-sm underline"
+          className="flex items-center gap-2 text-sm"
           style={{ fontFamily: ff.body, color: C.gray2 }}
         >
-          ← Volver al formulario
+          <ArrowLeft size={14} />
+          Volver al formulario
         </button>
       </div>
     </div>
@@ -635,12 +848,24 @@ const Footer = () => (
 const LandingCalculadoraAsesorias = () => {
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
+  const [result, setResult] = useState<ValuationResult | null>(null);
 
   const handleChange = (partial: Partial<FormData>) =>
     setForm((prev) => ({ ...prev, ...partial }));
 
+  const handleCalculate = () => {
+    const r = calculateValuation(form);
+    setResult(r);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setStep(1);
+    setResult(null);
+  };
+
   useEffect(() => {
-    // hreflang
     const hreflangUrls: Record<string, string> = {
       es: 'https://capittal.es/lp/calculadora-asesorias',
       'x-default': 'https://capittal.es/lp/calculadora-asesorias',
@@ -673,11 +898,11 @@ const LandingCalculadoraAsesorias = () => {
         <Hero />
         <StatsBanner />
         <main className="flex-1" style={{ background: C.white }}>
-          <Stepper current={step} onStepClick={setStep} />
+          <Stepper current={step} onStepClick={(s) => { if (s === 1) handleBack(); }} />
           {step === 1 && (
-            <StepOne form={form} onChange={handleChange} onNext={() => setStep(2)} />
+            <StepOne form={form} onChange={handleChange} onNext={handleCalculate} />
           )}
-          {step === 2 && <StepTwo onBack={() => setStep(1)} />}
+          {step === 2 && result && <StepTwo result={result} onBack={handleBack} />}
         </main>
         <Footer />
       </div>
