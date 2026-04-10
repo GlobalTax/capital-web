@@ -1,47 +1,21 @@
 
 
-## Plan: PDF generation + lead logging on "Descargar informe PDF"
+## Plan: Conectar webhook de leads al descargar PDF
 
-### Summary
-Add a `generatePDF` function using jspdf (already installed) that creates a 4-page PDF and wire it to the download button in StepTwo. After download: button turns green, stepper advances to step 3, lead data is logged to console.
+### Cambio en `src/pages/LandingCalculadoraAsesorias.tsx`
 
-### Changes in `src/pages/LandingCalculadoraAsesorias.tsx`
-
-**1. Add jspdf import** at top of file:
+**1. Añadir constante WEBHOOK_URL** al inicio del archivo:
 ```typescript
-import jsPDF from 'jspdf';
+const WEBHOOK_URL = 'TU_URL_WEBHOOK';
 ```
 
-**2. Add `generateValuationPDF` function** (~200 lines, after `fmtEurShort`):
-- Receives `result`, `form`, `contact` as params
-- Creates 4-page PDF using jsPDF with Helvetica (built-in, no font issues):
+**2. Reemplazar `handleDownloaded`** (líneas 1462-1498): Añadir un `fetch` POST fire-and-forget con el payload especificado, envuelto en try-catch para no bloquear la descarga. Mantener el `console.log` existente y añadir `console.error` si falla.
 
-  **Page 1 — Cover**: Navy rect full page, gold line top, "CONFIDENCIAL" in gold, "Informe de Valoración" large white, firm name + location, date, "Capittal" branding + contact at bottom
+El payload será plano con los campos exactos solicitados: `nombre`, `email`, `tel`, `empresa`, `ubicacion`, `servicios`, `empleados`, `facturacion`, `ebitda`, `margen`, `recurrencia`, `crecimiento`, `deuda`, `clientes`, `multiplo`, `ev_low`, `ev_high`, `ev_mid`, `equity`, `timestamp`, `source`.
 
-  **Page 2 — Valuation**: Header bar navy with "CAPITTAL | INFORME DE VALORACIÓN | CONFIDENCIAL", valuation range large, metrics table (multiple, margin, equity) on gray bg, user data table (services, location, employees, revenue, EBITDA, margin, recurrence, growth, debt, clients), factors list with colored dots
-
-  **Page 3 — Market Context**: "CONTEXTO DE MERCADO · 2025–2026" in gold, 3 paragraphs about PE consolidation, 6-row buyer table (Afianza/BlackRock, Auren/Waterland, Asenza/Ufenau, Adlanter/Artá, Grant Thornton/New Mountain, ETL Global/KKR), conclusion on multiples
-
-  **Page 4 — Next Steps**: 4 numbered steps with descriptions, gold separator, contact details (Ausiàs March 36, 08010 Barcelona, 934 593 600, samuel@capittal.es, capittal.es), legal disclaimer
-
-- Returns and triggers download as `Valoracion_[FirmName]_Capittal.pdf`
-
-**3. Update StepTwo component**:
-- Add `downloaded` state (boolean)
-- Add `onDownloaded` callback prop to notify parent
-- Validate name + email before enabling download button
-- On click: generate PDF, download, set `downloaded=true`, call `onDownloaded(contact)`
-- Show green "✓ PDF descargado" button when downloaded
-
-**4. Update main component**:
-- Add `handleDownloaded(contact)` that:
-  - Advances stepper to step 3
-  - Logs JSON to console with all lead data + timestamp
-  - Adds `// TODO: connect webhook to send lead data to CRM/Supabase`
-- Pass `onDownloaded` to StepTwo
-
-**5. Update Stepper `onStepClick`** to allow clicking step 2 when on step 3.
-
-### Files modified
-- `src/pages/LandingCalculadoraAsesorias.tsx` only (no new files needed)
+### Detalle técnico
+- El fetch se ejecuta con `.catch()` para no bloquear (fire-and-forget)
+- Se loguea `[WEBHOOK_ERROR]` en consola si falla
+- Se mantiene el log `[LEAD_CAPTURED]` existente
+- Solo se modifica `src/pages/LandingCalculadoraAsesorias.tsx`
 
