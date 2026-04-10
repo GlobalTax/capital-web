@@ -26,6 +26,7 @@ interface PipelineColumnProps {
   adminUsers?: { user_id: string; full_name: string | null; email: string | null }[];
   onAssignLead?: (leadId: string, userId: string | null) => void;
   variantOptions?: EmailVariantOption[];
+  onUpdateFinancials?: (leadId: string, data: { revenue?: number | null; ebitda?: number | null }) => void;
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
@@ -50,6 +51,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   adminUsers,
   onAssignLead,
   variantOptions,
+  onUpdateFinancials,
 }) => {
   const totalValue = formatTotal(leads);
   const leadIds = leads.map(l => l.id);
@@ -115,6 +117,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         adminUsers={adminUsers}
                         onAssignLead={onAssignLead}
                         variantOptions={variantOptions}
+                        onUpdateFinancials={onUpdateFinancials ? (data) => onUpdateFinancials(lead.id, data) : undefined}
                       />
                     </div>
                   )}

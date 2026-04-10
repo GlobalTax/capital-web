@@ -56,6 +56,7 @@ export const LeadsPipelineView: React.FC = () => {
     updateStatusAsync,
     assignLead,
     registerCall,
+    updateFinancials,
   } = useLeadsPipeline();
 
   const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses('sell');
@@ -888,6 +889,7 @@ export const LeadsPipelineView: React.FC = () => {
                 onSelectAllInColumn={handleSelectAllInColumn}
                 adminUsers={adminUsers}
                 onAssignLead={handleAssignLead}
+                onUpdateFinancials={(leadId, data) => updateFinancials({ leadId, ...data })}
               />
             ))}
           </div>
