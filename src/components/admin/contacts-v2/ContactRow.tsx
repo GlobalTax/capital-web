@@ -219,28 +219,36 @@ const ContactRow: React.FC<ContactRowProps> = ({
 
         {/* 4. Channel */}
         <div onClick={(e) => e.stopPropagation()}>
-          <EditableSelect
-            value={contact.acquisition_channel_id || null}
-            options={channelOptions}
-            onSave={handleChannelChange}
-            placeholder="Canal"
-            emptyText="—"
-            allowClear
-            displayClassName="h-6 text-[11px] px-1.5 min-w-[80px] [&>span]:max-w-[90px]"
-          />
+          {['buyer', 'buyer_alert', 'rod_download'].includes(contact.origin) ? (
+            <span className="text-[11px] text-muted-foreground">—</span>
+          ) : (
+            <EditableSelect
+              value={contact.acquisition_channel_id || null}
+              options={channelOptions}
+              onSave={handleChannelChange}
+              placeholder="Canal"
+              emptyText="—"
+              allowClear
+              displayClassName="h-6 text-[11px] px-1.5 min-w-[80px] [&>span]:max-w-[90px]"
+            />
+          )}
         </div>
 
         {/* 5. Form */}
         <div onClick={(e) => e.stopPropagation()}>
-          <EditableSelect
-            value={contact.lead_form || null}
-            options={formOptions}
-            onSave={handleFormChange}
-            placeholder="Form"
-            emptyText="—"
-            allowClear
-            displayClassName="h-6 text-[11px] px-1.5 min-w-[70px] [&>span]:max-w-[90px]"
-          />
+          {['buyer', 'buyer_alert', 'rod_download'].includes(contact.origin) ? (
+            <span className="text-[11px] text-muted-foreground">—</span>
+          ) : (
+            <EditableSelect
+              value={contact.lead_form || null}
+              options={formOptions}
+              onSave={handleFormChange}
+              placeholder="Form"
+              emptyText="—"
+              allowClear
+              displayClassName="h-6 text-[11px] px-1.5 min-w-[70px] [&>span]:max-w-[90px]"
+            />
+          )}
         </div>
 
         {/* 6. Revenue */}
