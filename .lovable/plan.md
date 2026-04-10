@@ -1,44 +1,53 @@
 
 
-## Plan: Insertar 4 artículos de blog sobre consolidación de asesorías
+## Plan: Alinear estilos de /lp/calculadora-asesorias con /lp/calculadora-asesores
 
-### Resumen
-Ejecutar un script que inserte los 4 artículos en la tabla `blog_posts` de Supabase usando `supabase--read_query` o un migration/edge function approach. El contenido se formateará como HTML rico con estructura GEO (estadísticas, citas, tablas, enlaces internos) y se incluirán FAQs en `faq_data`.
+### Problema
+La página `/lp/calculadora-asesorias` usa estilos inline completamente personalizados (Playfair Display, DM Sans, palette navy/gold, inputs HTML nativos), mientras que `/lp/calculadora-asesores` usa el sistema de diseño estándar de Capittal (shadcn/ui: Card, Button, Input, Label, Select + UnifiedLayout + Tailwind classes).
 
-### Artículos a crear
+### Cambios en `src/pages/LandingCalculadoraAsesorias.tsx`
 
-| # | Slug | Categoría | Tags | Reading time |
-|---|------|-----------|------|-------------|
-| 1 | `consolidacion-asesorias-espana-2026` | M&A | consolidación, asesorías, private equity, España | 8 min |
-| 2 | `cuanto-vale-asesoria-multiplos-2026` | Valoración | valoración, múltiplos, EBITDA, asesorías | 7 min |
-| 3 | `vender-asesoria-guia-maximizar-precio` | M&A | venta, asesorías, due diligence, preparación | 9 min |
-| 4 | `crecer-comprando-plataforma-asesorias` | M&A | buy-and-build, plataforma, adquisiciones, asesorías | 8 min |
+**1. Envolver en UnifiedLayout + I18nProvider**
+- Importar `UnifiedLayout`, `I18nProvider`, `Badge`, `Toaster`
+- Reemplazar los componentes custom `Header` y footer por `UnifiedLayout variant="landing"`
+- Eliminar la constante `ff` (fuentes custom) y `C` (palette custom)
 
-### Contenido HTML
-Cada artículo se formateará con:
-- `<h2>` para secciones principales, `<h3>` para subsecciones
-- `<p>` con datos verificables y estadísticas (INE, TTR, fuentes reales)
-- `<strong>` para énfasis en datos clave
-- `<blockquote>` para citas/destacados
-- `<ul>`/`<ol>` para listas
-- Enlaces internos `<a href="/lp/calculadora-asesorias">` al CTA de la calculadora
-- Tablas HTML donde corresponda (compradores, múltiplos)
+**2. Reemplazar componentes custom por shadcn/ui**
+- `inputStyle` / `<input style={...}>` → `<Input>` de shadcn/ui
+- `selectStyle` / `<select style={...}>` → `<Select>` de shadcn/ui
+- `FieldLabel` custom → `<Label>` de shadcn/ui
+- Botones inline → `<Button>` de shadcn/ui
+- Contenedores con inline styles → `<Card>` de shadcn/ui + Tailwind classes
+- Service/growth chips → usar Button variant="outline" con toggle
 
-### FAQ data (JSON)
-Cada artículo incluirá 3-5 preguntas FAQ relevantes en el campo `faq_data` para schema FAQPage.
+**3. Actualizar Hero y Stepper**
+- Hero: usar clases Tailwind estándar (`bg-primary`, `text-primary-foreground`, etc.) en lugar de inline styles
+- Stepper: mantener estructura pero con clases Tailwind
+- StatsBanner: usar Card components
 
-### SEO
-- `meta_title`: optimizado con "[2026]" y keyword principal
-- `meta_description`: 155 chars max con CTA implícito
-- `author_name`: "Samuel Navarro"
-- `is_published`: true
-- `is_featured`: artículo 1 como featured
+**4. Actualizar StepOne (formulario)**
+- Grid layout con `Card className="p-6 max-w-3xl mx-auto"` como en AdvisorStepperForm
+- Secciones separadas con `<h3 className="text-lg font-semibold mb-4">` + `border-t pt-6`
+- Inputs con shadcn/ui Input + Label
+- Slider de recurrencia con Tailwind classes
 
-### Implementación
-1. Crear un script que use `psql` o la herramienta `supabase--read_query` para insertar los 4 posts
-2. Dado que solo tenemos acceso INSERT (no UPDATE), los datos deben ser correctos a la primera
-3. El contenido completo del usuario se convertirá a HTML semántico respetando la estructura proporcionada
+**5. Actualizar StepTwo (resultados)**
+- Cards de resultados con shadcn/ui Card
+- Mantener la lógica de valoración y PDF intacta
+- Usar Badge para tags y estados
+
+**6. Actualizar StepThree (confirmación)**
+- Card con shadcn/ui + Button
+
+**7. Mantener intacto**
+- Toda la lógica de cálculo (`compute`)
+- La generación de PDF (`generatePDF`)
+- El envío de webhook
+- El formulario de contacto y validaciones
 
 ### Archivos modificados
-Ninguno — es una inserción directa en base de datos.
+- `src/pages/LandingCalculadoraAsesorias.tsx` — refactor completo de estilos (lógica sin cambios)
+
+### Nota
+El archivo tiene 1552 líneas. El refactor cambiará los estilos visuales pero preservará toda la lógica de negocio, el cálculo de valoración, la generación de PDF, y el webhook.
 
