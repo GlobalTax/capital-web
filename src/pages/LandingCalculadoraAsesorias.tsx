@@ -100,6 +100,123 @@ const parseES = (val: string): number => {
   return isNaN(num) ? 0 : num;
 };
 
+// ── Calculation logic ────────────────────────────────────
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const round1 = (v: number) => Math.round(v * 10) / 10;
+
+const calculateValuation = (form: FormData): ValuationResult => {
+  const revenue = parseES(form.revenue);
+  const ebitda = parseES(form.ebitda);
+  const employees = parseES(form.employees);
+  const netDebt = parseES(form.netDebt);
+  const clients = parseES(form.activeClients);
+  const rec = form.recurringPct;
+  const nServices = form.services.length;
+
+  // Base multiple by revenue size
+  let baseM: number;
+  if (revenue < 500_000) baseM = 3.5;
+  else if (revenue < 1_500_000) baseM = 4.25;
+  else if (revenue < 3_000_000) baseM = 5.25;
+  else if (revenue < 5_000_000) baseM = 6.0;
+  else if (revenue < 10_000_000) baseM = 6.75;
+  else baseM = 8.0;
+
+  // Quality adjustments
+  let a = 0;
+
+  // Recurrence
+  if (rec >= 90) a += 0.4;
+  else if (rec >= 75) a += 0.2;
+  else if (rec >= 60) a += 0.05;
+  else if (rec < 40) a -= 0.4;
+
+  // Services
+  if (nServices >= 5) a += 0.3;
+  else if (nServices >= 3) a += 0.15;
+  else if (nServices === 1) a -= 0.15;
+  if (form.services.includes('Auditoría')) a += 0.1;
+  if (form.services.includes('Consultoría')) a += 0.15;
+  if (form.services.includes('Legal/Jurídico')) a += 0.1;
+
+  // Growth
+  if (form.growthTrend === 'Creciendo >15%') a += 0.35;
+  else if (form.growthTrend === 'Creciendo 5-15%') a += 0.1;
+  else if (form.growthTrend === 'Decreciendo') a -= 0.4;
+
+  // EBITDA margin
+  const margin = revenue > 0 ? (ebitda / revenue) * 100 : 0;
+  if (margin >= 25) a += 0.2;
+  else if (margin >= 20) a += 0.1;
+  else if (margin < 10) a -= 0.3;
+
+  // Productivity
+  const revEmp = employees > 0 ? revenue / employees : 0;
+  if (revEmp >= 90_000) a += 0.15;
+  else if (revEmp < 40_000) a -= 0.15;
+
+  // Portfolio
+  if (clients >= 300) a += 0.15;
+  else if (clients > 0 && clients < 50) a -= 0.15;
+
+  // Cap adjustment
+  a = clamp(a, -1.0, 1.0);
+
+  // Central multiple
+  const mM = clamp(baseM + a, 3.0, 10.0);
+  const mL = clamp(round1(mM * 0.88), 2.5, 10.0);
+  const mH = clamp(round1(mM * 1.12), 2.5, 10.0);
+
+  const evM = Math.round(ebitda * mM);
+  const evL = Math.round(ebitda * mL);
+  const evH = Math.round(ebitda * mH);
+  const eqM = Math.max(0, evM - netDebt);
+
+  const ingRec = revenue * (rec / 100);
+  const multIngRec = ingRec > 0 ? round1(evM / ingRec) : 0;
+
+  // Factors
+  const factors: Factor[] = [];
+
+  // Services factor
+  if (nServices >= 4) factors.push({ text: `Oferta multidisciplinar (${nServices} servicios)`, type: 'positive' });
+  else if (nServices >= 2) factors.push({ text: `${nServices} líneas de servicio`, type: 'neutral' });
+  else factors.push({ text: 'Servicio único — riesgo de concentración', type: 'negative' });
+
+  // Recurrence
+  if (rec >= 80) factors.push({ text: 'Alta recurrencia — menor riesgo post-venta', type: 'positive' });
+  else if (rec >= 60) factors.push({ text: `Recurrencia del ${rec}%`, type: 'neutral' });
+  else factors.push({ text: `Baja recurrencia (${rec}%) — mayor riesgo`, type: 'negative' });
+
+  // Growth
+  if (form.growthTrend === 'Creciendo >15%') factors.push({ text: 'Crecimiento fuerte (>15%)', type: 'positive' });
+  else if (form.growthTrend === 'Creciendo 5-15%') factors.push({ text: 'Crecimiento moderado', type: 'positive' });
+  else if (form.growthTrend === 'Estable') factors.push({ text: 'Crecimiento estable', type: 'neutral' });
+  else factors.push({ text: 'Facturación decreciente', type: 'negative' });
+
+  // Margin
+  if (margin >= 25) factors.push({ text: `Margen EBITDA excelente (${margin.toFixed(0)}%)`, type: 'positive' });
+  else if (margin >= 15) factors.push({ text: `Margen EBITDA del ${margin.toFixed(0)}%`, type: 'neutral' });
+  else factors.push({ text: `Margen EBITDA bajo (${margin.toFixed(0)}%)`, type: 'negative' });
+
+  // Size
+  if (revenue >= 5_000_000) factors.push({ text: 'Tamaño plataforma — máximo interés PE', type: 'positive' });
+  else if (revenue >= 2_000_000) factors.push({ text: 'Tamaño atractivo para compradores', type: 'positive' });
+  else if (revenue >= 500_000) factors.push({ text: 'Tamaño bolt-on', type: 'neutral' });
+  else factors.push({ text: 'Micro-despacho — mercado limitado', type: 'negative' });
+
+  // Productivity
+  if (revEmp >= 80_000) factors.push({ text: `Alta productividad (${Math.round(revEmp / 1000)}K€/emp)`, type: 'positive' });
+  else if (revEmp > 0 && revEmp < 45_000) factors.push({ text: `Baja productividad (${Math.round(revEmp / 1000)}K€/emp)`, type: 'negative' });
+
+  // Portfolio
+  if (clients >= 300) factors.push({ text: 'Cartera diversificada', type: 'positive' });
+  else if (clients > 0 && clients < 50) factors.push({ text: 'Cartera concentrada', type: 'negative' });
+
+  return { evL, evH, evM, eqM, mL, mM, mH, ingRec, multIngRec, margen: margin, revEmp, factors };
+};
+
 // ── Components ───────────────────────────────────────────
 
 const Header = () => (
