@@ -194,12 +194,12 @@ const calculateValuation = (form: FormData): ValuationResult => {
 // ── Components ───────────────────────────────────────────
 
 const Hero = () => (
-  <section className="w-full bg-primary">
+  <section className="w-full bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0c1222]">
     <div className="max-w-4xl mx-auto text-center px-4 py-16 sm:py-20">
       <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-primary-foreground">
         ¿Cuánto vale tu asesoría?
       </h1>
-      <p className="text-base sm:text-lg max-w-2xl mx-auto text-muted-foreground/80 leading-relaxed">
+      <p className="text-base sm:text-lg max-w-2xl mx-auto text-slate-300/80 leading-relaxed">
         Descubre en 2 minutos el valor estimado de tu despacho profesional,
         basado en múltiplos de mercado reales de transacciones en España.
       </p>
@@ -1211,9 +1211,6 @@ const LandingCalculadoraAsesoriasInner = () => {
         keywords="valoración asesoría, vender asesoría, cuánto vale mi despacho, valorar gestoría, M&A asesorías España"
       />
       <UnifiedLayout variant="landing">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <h1 className="sr-only">Calculadora de Valoración para Asesorías Profesionales</h1>
-        </div>
 
         <Hero />
         <StatsBanner />
