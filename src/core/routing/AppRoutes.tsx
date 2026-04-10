@@ -211,6 +211,8 @@ export const AppRoutes = () => {
         <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
         <Route path="/lp/calculadora-asesores" element={<LandingCalculadoraAsesores />} />
         <Route path="/lp/calculadora-asesores/*" element={<LandingCalculadoraAsesores />} />
+        <Route path="/lp/calculadora-asesorias" element={<LandingCalculadoraAsesorias />} />
+        <Route path="/lp/calculadora-asesorias/*" element={<LandingCalculadoraAsesorias />} />
         <Route path="/lp/calculadora-meta" element={<LandingCalculatorMeta />} />
         <Route path="/lp/calculadora-meta/*" element={<LandingCalculatorMeta />} />
         <Route path="/lp/calculadora-meta/gracias" element={<LandingCalculatorMetaThanks />} />
