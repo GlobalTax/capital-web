@@ -86,6 +86,96 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
+const parseSpanishNumber = (val: string): number | null => {
+  const cleaned = val.replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? null : num;
+};
+
+const FinancialLine: React.FC<{
+  revenue: number | null;
+  ebitda: number | null;
+  onUpdate?: (data: { revenue?: number | null; ebitda?: number | null }) => void;
+}> = ({ revenue, ebitda, onUpdate }) => {
+  const [editing, setEditing] = useState(false);
+  const [revInput, setRevInput] = useState('');
+  const [ebitdaInput, setEbitdaInput] = useState('');
+
+  const startEditing = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRevInput(revenue ? String(revenue) : '');
+    setEbitdaInput(ebitda ? String(ebitda) : '');
+    setEditing(true);
+  }, [revenue, ebitda]);
+
+  const handleSave = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newRev = revInput ? parseSpanishNumber(revInput) : null;
+    const newEbitda = ebitdaInput ? parseSpanishNumber(ebitdaInput) : null;
+    onUpdate?.({ revenue: newRev, ebitda: newEbitda });
+    setEditing(false);
+  }, [revInput, ebitdaInput, onUpdate]);
+
+  const handleCancel = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditing(false);
+  }, []);
+
+  if (editing) {
+    return (
+      <div data-financial-edit className="flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-1.5">
+          <Input
+            placeholder="Facturación"
+            value={revInput}
+            onChange={e => setRevInput(e.target.value)}
+            className="h-6 text-xs px-1.5 w-20"
+            autoFocus
+            onKeyDown={e => { if (e.key === 'Enter') handleSave(e as any); if (e.key === 'Escape') handleCancel(e as any); }}
+          />
+          <Input
+            placeholder="EBITDA"
+            value={ebitdaInput}
+            onChange={e => setEbitdaInput(e.target.value)}
+            className="h-6 text-xs px-1.5 w-20"
+            onKeyDown={e => { if (e.key === 'Enter') handleSave(e as any); if (e.key === 'Escape') handleCancel(e as any); }}
+          />
+          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={handleSave}>
+            <Check className="h-3 w-3 text-emerald-600" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={handleCancel}>
+            <XIcon className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const hasData = revenue || ebitda;
+
+  return (
+    <div className="flex items-center gap-3 text-sm font-medium text-foreground group/fin">
+      {revenue ? (
+        <span>Fact: <span className="text-blue-600">{formatCurrency(revenue)}</span></span>
+      ) : null}
+      {ebitda ? (
+        <span>EBITDA: <span className="text-emerald-600">{formatCurrency(ebitda)}</span></span>
+      ) : null}
+      {ebitda && revenue ? (
+        <span>Margen: <span className="text-amber-600">{((ebitda / revenue) * 100).toFixed(1)}%</span></span>
+      ) : null}
+      {!hasData && onUpdate && (
+        <span className="text-muted-foreground text-xs italic">Sin datos financieros</span>
+      )}
+      {onUpdate && (
+        <button onClick={startEditing} className="opacity-0 group-hover/fin:opacity-100 transition-opacity ml-auto">
+          <Pencil className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+        </button>
+      )}
+    </div>
+  );
+};
+
 const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   lead,
   assignedUserName,
