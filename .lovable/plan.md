@@ -1,33 +1,33 @@
 
 
-## Plan: Añadir lógica de cálculo y resultados al Paso 2
+## Plan: Rediseñar StepTwo con pantalla de resultados completa
 
-### Archivo: `src/pages/LandingCalculadoraAsesorias.tsx`
+### Resumen
+Reemplazar el componente `StepTwo` (líneas 663-821) con la pantalla de resultados de 9 secciones especificada, incluyendo hero de resultados, métricas, barras de progreso, compradores activos, y CTA con formulario de contacto.
 
-**1. Añadir interface `ValuationResult` y tipo `Factor`** (después de `FormData`):
-- `ValuationResult`: `evL`, `evH`, `evM`, `eqM`, `mL`, `mM`, `mH`, `ingRec`, `multIngRec`, `margen`, `revEmp`, `factors`
-- `Factor`: `{ text: string; type: 'positive' | 'neutral' | 'negative' }`
+### Cambios en `src/pages/LandingCalculadoraAsesorias.tsx`
 
-**2. Añadir función `calculateValuation(form: FormData): ValuationResult`** (después de `parseES`):
-- Parsea valores del formulario con `parseES`
-- Calcula `baseM` según rangos de facturación (6 tramos)
-- Calcula ajuste `a` sumando los 7 sub-ajustes (recurrencia, servicios, crecimiento, margen, productividad, cartera), capeado a ±1.0
-- `mM = clamp(baseM + a, 3.0, 10.0)`
-- `mL = clamp(round(mM × 0.88, 1), 2.5, 10.0)`, `mH = clamp(round(mM × 1.12, 1), 2.5, 10.0)`
-- Calcula EV, equity, ingresos recurrentes, múltiplo s/ recurrentes, margen, rev/emp
-- Genera array de factores según las reglas especificadas
+**1. Añadir estado de contacto al componente principal** para el formulario CTA (nombre, email, teléfono, nombre asesoría).
 
-**3. Añadir estado `result` al componente principal**:
-- `const [result, setResult] = useState<ValuationResult | null>(null)`
+**2. Pasar `form` al StepTwo** para acceder a datos del formulario (empleados, etc.) en las barras.
 
-**4. Modificar `onNext` del Step 1** para ejecutar el cálculo, guardar resultado, cambiar a paso 2, y scroll top
+**3. Reescribir `StepTwo` completamente con estas 9 secciones:**
 
-**5. Reescribir `StepTwo`** para recibir `result` y mostrar:
-- Tarjeta principal con `evM` formateado grande + rango `evL – evH`
-- Grid de métricas: múltiplo central, margen EBITDA, equity value, ingresos recurrentes, múltiplo s/ recurrentes, fact/empleado
-- Lista de factores con indicador de color (verde/gris/rojo según tipo)
-- Botón "Descargar informe PDF" (disabled, placeholder)
-- Botón "← Volver al formulario"
+- **1. Hero de resultados**: Overline mono "RANGO DE VALORACIÓN ESTIMADO (ENTERPRISE VALUE)", rango grande Playfair "€X – €Y", valor central, método en mono
+- **2. Grid 3 métricas** con separadores 1px: Múltiplo (central + rango), Margen EBITDA (% + benchmark semántico), Equity Value (EV - deuda)
+- **3. Box ingresos recurrentes** (borde dashed): múltiplo Playfair grande + texto explicativo con rango habitual 0,7–1,5x
+- **4. Barra facturación/empleado**: barra de progreso con color semáforo (verde ≥70K, ámbar ≥50K, rojo <50K), ticks €30K/€60K/€90K/€120K+
+- **5. Barra posición en mercado**: escala 3.0x–10.0x con marker circular en el múltiplo, label "X.Xx aplicado"
+- **6. Factores**: grid 2 columnas con dots de color (verde/ámbar/rojo) + texto
+- **7. Bloque compradores activos**: fondo #161B22, overline gold, 2 párrafos contexto, 3 cards (Afianza/BlackRock, Auren/Waterland, Asenza/Ufenau) con datos reales
+- **8. Botones**: "← Modificar datos" (secondary) + "Quiero un informe detallado" (primary, scroll a CTA)
+- **9. CTA section**: fondo #161B22, título Playfair, 4 inputs dark (nombre, email, teléfono, nombre asesoría), botón gold "Descargar informe PDF", disclaimer RGPD
 
-### Sin cambios en otros archivos
+### Detalles técnicos
+- Benchmark margen EBITDA: ≥25% "Excelente", ≥15% "En media", <15% "Por debajo"
+- Barra rev/emp: max 120K, color dinámico por umbral
+- Barra mercado: posición proporcional del múltiplo en escala 3–10
+- Scroll suave al CTA desde botón primary
+- Formulario CTA sin lógica de envío por ahora (solo estructura visual)
+- Solo se modifica `src/pages/LandingCalculadoraAsesorias.tsx`
 
