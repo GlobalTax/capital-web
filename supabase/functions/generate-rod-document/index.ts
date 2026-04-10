@@ -32,7 +32,8 @@ interface RODRequest {
 const INTERNAL_EMAIL_RECIPIENTS = [
   'samuel@capittal.es',
   'marcc@capittal.es',
-  'oriol@capittal.es'
+  'oriol@capittal.es',
+  'lluis@capittal.es'
 ];
 
 serve(async (req) => {
