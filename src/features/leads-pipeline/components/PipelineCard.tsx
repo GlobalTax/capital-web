@@ -56,6 +56,7 @@ interface PipelineCardProps {
   adminUsers?: AdminUserSimple[];
   onAssignLead?: (leadId: string, userId: string | null) => void;
   variantOptions?: EmailVariantOption[];
+  onUpdateFinancials?: (data: { revenue?: number | null; ebitda?: number | null }) => void;
 }
 
 const getBadgeColor = (name: string, type: 'form' | 'channel'): string => {
