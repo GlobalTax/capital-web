@@ -1468,36 +1468,40 @@ const LandingCalculadoraAsesorias = () => {
 
     const revenue = parseES(form.revenue);
     const ebitda = parseES(form.ebitda);
+    const ts = new Date().toISOString();
 
-    // TODO: connect webhook to send lead data to CRM/Supabase
-    console.log('[LEAD_CAPTURED]', JSON.stringify({
-      contact: {
-        name: contact.name,
-        email: contact.email,
-        phone: contact.phone,
-        firmName: contact.firmName,
-      },
-      form: {
-        services: form.services,
-        location: form.location,
-        employees: form.employees,
-        revenue,
-        ebitda,
-        margen: result?.margen,
-        recurringPct: form.recurringPct,
-        growthTrend: form.growthTrend,
-        netDebt: parseES(form.netDebt),
-        activeClients: parseES(form.activeClients),
-      },
-      valuation: {
-        multiplo: result?.mM,
-        evLow: result?.evL,
-        evMid: result?.evM,
-        evHigh: result?.evH,
-        equityValue: result?.eqM,
-      },
-      timestamp: new Date().toISOString(),
-    }, null, 2));
+    const payload = {
+      nombre: contact.name,
+      email: contact.email,
+      tel: contact.phone,
+      empresa: contact.firmName,
+      ubicacion: form.location,
+      servicios: form.services,
+      empleados: form.employees,
+      facturacion: revenue,
+      ebitda,
+      margen: result?.margen ?? 0,
+      recurrencia: form.recurringPct,
+      crecimiento: form.growthTrend,
+      deuda: parseES(form.netDebt),
+      clientes: parseES(form.activeClients),
+      multiplo: result?.mM ?? 0,
+      ev_low: result?.evL ?? 0,
+      ev_high: result?.evH ?? 0,
+      ev_mid: result?.evM ?? 0,
+      equity: result?.eqM ?? 0,
+      timestamp: ts,
+      source: 'calculadora-asesorias',
+    };
+
+    console.log('[LEAD_CAPTURED]', JSON.stringify(payload, null, 2));
+
+    // Fire-and-forget webhook — never blocks PDF download
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(err => console.error('[WEBHOOK_ERROR]', err));
   };
 
   useEffect(() => {
