@@ -366,6 +366,34 @@ export const useLeadsPipeline = () => {
     },
   });
 
+  // Update financials mutation (optimistic)
+  const updateFinancialsMutation = useMutation({
+    onMutate: async ({ leadId, revenue, ebitda }: { leadId: string; revenue?: number | null; ebitda?: number | null }) => {
+      await queryClient.cancelQueries({ queryKey: ['leads-pipeline'] });
+      const previous = queryClient.getQueryData<PipelineLead[]>(['leads-pipeline']);
+      queryClient.setQueryData<PipelineLead[]>(['leads-pipeline'], (old = []) =>
+        old.map(l => l.id === leadId ? { ...l, ...(revenue !== undefined ? { revenue } : {}), ...(ebitda !== undefined ? { ebitda } : {}) } : l)
+      );
+      return { previous };
+    },
+    mutationFn: async ({ leadId, revenue, ebitda }: { leadId: string; revenue?: number | null; ebitda?: number | null }) => {
+      const origin = getLeadOrigin(leadId);
+      const table = getTableName(origin);
+      const updateData: any = {};
+      if (revenue !== undefined) updateData.revenue = revenue;
+      if (ebitda !== undefined) updateData.ebitda = ebitda;
+      const { error } = await supabase.from(table as any).update(updateData).eq('id', leadId);
+      if (error) throw error;
+    },
+    onError: (error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['leads-pipeline'], context.previous);
+      toast.error('Error al actualizar datos financieros', { description: error.message });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads-pipeline'] });
+    },
+  });
+
   // Memoized grouping
   const leadsByStatus = useMemo(() => {
     return leads.reduce((acc, lead) => {
@@ -390,6 +418,7 @@ export const useLeadsPipeline = () => {
     addActivity: addActivityMutation.mutate,
     updateNotes: updateNotesMutation.mutate,
     registerCall: registerCallMutation.mutate,
+    updateFinancials: updateFinancialsMutation.mutate,
   };
 };
 
