@@ -1213,12 +1213,6 @@ const LandingCalculadoraAsesoriasInner = () => {
       <UnifiedLayout variant="landing">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <h1 className="sr-only">Calculadora de Valoración para Asesorías Profesionales</h1>
-
-          <div className="flex justify-center mb-6">
-            <Badge variant="secondary" className="text-sm px-4 py-2 bg-primary/10 text-primary">
-              🎯 Herramienta gratuita
-            </Badge>
-          </div>
         </div>
 
         <Hero />
