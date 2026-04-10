@@ -117,6 +117,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         adminUsers={adminUsers}
                         onAssignLead={onAssignLead}
                         variantOptions={variantOptions}
+                        onUpdateFinancials={onUpdateFinancials ? (data) => onUpdateFinancials(lead.id, data) : undefined}
                       />
                     </div>
                   )}
