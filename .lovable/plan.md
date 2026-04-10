@@ -1,53 +1,38 @@
 
 
-## Plan: Alinear estilos de /lp/calculadora-asesorias con /lp/calculadora-asesores
+## Plan: Reemplazar contenido de los 4 artículos con el texto completo original
 
 ### Problema
-La página `/lp/calculadora-asesorias` usa estilos inline completamente personalizados (Playfair Display, DM Sans, palette navy/gold, inputs HTML nativos), mientras que `/lp/calculadora-asesores` usa el sistema de diseño estándar de Capittal (shadcn/ui: Card, Button, Input, Label, Select + UnifiedLayout + Tailwind classes).
+Los 4 artículos en `blog_posts` se insertaron como resúmenes HTML compactos (1500-2000 chars) en lugar del contenido completo que proporcionaste (4000-8000+ chars por artículo). Falta la narrativa detallada, los párrafos explicativos, las secciones completas y el tono editorial original.
 
-### Cambios en `src/pages/LandingCalculadoraAsesorias.tsx`
+### Solución
+Dado que solo tenemos acceso INSERT (no UPDATE) vía `psql`, crearemos una **migración SQL** que haga UPDATE de los 4 artículos existentes, reemplazando el campo `content` con el texto completo convertido a HTML semántico.
 
-**1. Envolver en UnifiedLayout + I18nProvider**
-- Importar `UnifiedLayout`, `I18nProvider`, `Badge`, `Toaster`
-- Reemplazar los componentes custom `Header` y footer por `UnifiedLayout variant="landing"`
-- Eliminar la constante `ff` (fuentes custom) y `C` (palette custom)
+### Contenido a insertar (por artículo)
 
-**2. Reemplazar componentes custom por shadcn/ui**
-- `inputStyle` / `<input style={...}>` → `<Input>` de shadcn/ui
-- `selectStyle` / `<select style={...}>` → `<Select>` de shadcn/ui
-- `FieldLabel` custom → `<Label>` de shadcn/ui
-- Botones inline → `<Button>` de shadcn/ui
-- Contenedores con inline styles → `<Card>` de shadcn/ui + Tailwind classes
-- Service/growth chips → usar Button variant="outline" con toggle
+| # | Slug | Chars aprox. del contenido completo |
+|---|------|-------------------------------------|
+| 1 | `consolidacion-asesorias-espana-2026` | ~5500 |
+| 2 | `cuanto-vale-asesoria-multiplos-2026` | ~6000 |
+| 3 | `vender-asesoria-guia-maximizar-precio` | ~7000 |
+| 4 | `crecer-comprando-plataforma-asesorias` | ~7500 |
 
-**3. Actualizar Hero y Stepper**
-- Hero: usar clases Tailwind estándar (`bg-primary`, `text-primary-foreground`, etc.) en lugar de inline styles
-- Stepper: mantener estructura pero con clases Tailwind
-- StatsBanner: usar Card components
+### Formato HTML
+Cada artículo se convertirá a HTML rico con:
+- `<h2>` para secciones principales, `<h3>` para subsecciones
+- `<p>` con todo el texto narrativo completo (cada párrafo del original)
+- `<strong>` para datos clave y estadísticas
+- `<blockquote>` para citas destacadas
+- `<table>` donde corresponda (compradores, múltiplos)
+- `<ul>`/`<ol>` para listas
+- `<a href="/lp/calculadora-asesorias">` para CTAs internos
+- Se preservará el tono editorial original sin resumir ni recortar
 
-**4. Actualizar StepOne (formulario)**
-- Grid layout con `Card className="p-6 max-w-3xl mx-auto"` como en AdvisorStepperForm
-- Secciones separadas con `<h3 className="text-lg font-semibold mb-4">` + `border-t pt-6`
-- Inputs con shadcn/ui Input + Label
-- Slider de recurrencia con Tailwind classes
+### Implementación
+1. Crear migración SQL con 4 sentencias UPDATE (una por artículo)
+2. Desactivar temporalmente el trigger `trigger_google_indexing` para evitar el error de `net.http_post`
+3. Cada UPDATE reemplaza solo el campo `content` — el resto de campos (title, meta, FAQ, etc.) se mantienen intactos
 
-**5. Actualizar StepTwo (resultados)**
-- Cards de resultados con shadcn/ui Card
-- Mantener la lógica de valoración y PDF intacta
-- Usar Badge para tags y estados
-
-**6. Actualizar StepThree (confirmación)**
-- Card con shadcn/ui + Button
-
-**7. Mantener intacto**
-- Toda la lógica de cálculo (`compute`)
-- La generación de PDF (`generatePDF`)
-- El envío de webhook
-- El formulario de contacto y validaciones
-
-### Archivos modificados
-- `src/pages/LandingCalculadoraAsesorias.tsx` — refactor completo de estilos (lógica sin cambios)
-
-### Nota
-El archivo tiene 1552 líneas. El refactor cambiará los estilos visuales pero preservará toda la lógica de negocio, el cálculo de valoración, la generación de PDF, y el webhook.
+### Archivos
+- Nueva migración SQL en `supabase/migrations/`
 
