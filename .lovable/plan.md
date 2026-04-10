@@ -1,33 +1,47 @@
 
 
-## Plan: Rediseñar StepTwo con pantalla de resultados completa
+## Plan: PDF generation + lead logging on "Descargar informe PDF"
 
-### Resumen
-Reemplazar el componente `StepTwo` (líneas 663-821) con la pantalla de resultados de 9 secciones especificada, incluyendo hero de resultados, métricas, barras de progreso, compradores activos, y CTA con formulario de contacto.
+### Summary
+Add a `generatePDF` function using jspdf (already installed) that creates a 4-page PDF and wire it to the download button in StepTwo. After download: button turns green, stepper advances to step 3, lead data is logged to console.
 
-### Cambios en `src/pages/LandingCalculadoraAsesorias.tsx`
+### Changes in `src/pages/LandingCalculadoraAsesorias.tsx`
 
-**1. Añadir estado de contacto al componente principal** para el formulario CTA (nombre, email, teléfono, nombre asesoría).
+**1. Add jspdf import** at top of file:
+```typescript
+import jsPDF from 'jspdf';
+```
 
-**2. Pasar `form` al StepTwo** para acceder a datos del formulario (empleados, etc.) en las barras.
+**2. Add `generateValuationPDF` function** (~200 lines, after `fmtEurShort`):
+- Receives `result`, `form`, `contact` as params
+- Creates 4-page PDF using jsPDF with Helvetica (built-in, no font issues):
 
-**3. Reescribir `StepTwo` completamente con estas 9 secciones:**
+  **Page 1 — Cover**: Navy rect full page, gold line top, "CONFIDENCIAL" in gold, "Informe de Valoración" large white, firm name + location, date, "Capittal" branding + contact at bottom
 
-- **1. Hero de resultados**: Overline mono "RANGO DE VALORACIÓN ESTIMADO (ENTERPRISE VALUE)", rango grande Playfair "€X – €Y", valor central, método en mono
-- **2. Grid 3 métricas** con separadores 1px: Múltiplo (central + rango), Margen EBITDA (% + benchmark semántico), Equity Value (EV - deuda)
-- **3. Box ingresos recurrentes** (borde dashed): múltiplo Playfair grande + texto explicativo con rango habitual 0,7–1,5x
-- **4. Barra facturación/empleado**: barra de progreso con color semáforo (verde ≥70K, ámbar ≥50K, rojo <50K), ticks €30K/€60K/€90K/€120K+
-- **5. Barra posición en mercado**: escala 3.0x–10.0x con marker circular en el múltiplo, label "X.Xx aplicado"
-- **6. Factores**: grid 2 columnas con dots de color (verde/ámbar/rojo) + texto
-- **7. Bloque compradores activos**: fondo #161B22, overline gold, 2 párrafos contexto, 3 cards (Afianza/BlackRock, Auren/Waterland, Asenza/Ufenau) con datos reales
-- **8. Botones**: "← Modificar datos" (secondary) + "Quiero un informe detallado" (primary, scroll a CTA)
-- **9. CTA section**: fondo #161B22, título Playfair, 4 inputs dark (nombre, email, teléfono, nombre asesoría), botón gold "Descargar informe PDF", disclaimer RGPD
+  **Page 2 — Valuation**: Header bar navy with "CAPITTAL | INFORME DE VALORACIÓN | CONFIDENCIAL", valuation range large, metrics table (multiple, margin, equity) on gray bg, user data table (services, location, employees, revenue, EBITDA, margin, recurrence, growth, debt, clients), factors list with colored dots
 
-### Detalles técnicos
-- Benchmark margen EBITDA: ≥25% "Excelente", ≥15% "En media", <15% "Por debajo"
-- Barra rev/emp: max 120K, color dinámico por umbral
-- Barra mercado: posición proporcional del múltiplo en escala 3–10
-- Scroll suave al CTA desde botón primary
-- Formulario CTA sin lógica de envío por ahora (solo estructura visual)
-- Solo se modifica `src/pages/LandingCalculadoraAsesorias.tsx`
+  **Page 3 — Market Context**: "CONTEXTO DE MERCADO · 2025–2026" in gold, 3 paragraphs about PE consolidation, 6-row buyer table (Afianza/BlackRock, Auren/Waterland, Asenza/Ufenau, Adlanter/Artá, Grant Thornton/New Mountain, ETL Global/KKR), conclusion on multiples
+
+  **Page 4 — Next Steps**: 4 numbered steps with descriptions, gold separator, contact details (Ausiàs March 36, 08010 Barcelona, 934 593 600, samuel@capittal.es, capittal.es), legal disclaimer
+
+- Returns and triggers download as `Valoracion_[FirmName]_Capittal.pdf`
+
+**3. Update StepTwo component**:
+- Add `downloaded` state (boolean)
+- Add `onDownloaded` callback prop to notify parent
+- Validate name + email before enabling download button
+- On click: generate PDF, download, set `downloaded=true`, call `onDownloaded(contact)`
+- Show green "✓ PDF descargado" button when downloaded
+
+**4. Update main component**:
+- Add `handleDownloaded(contact)` that:
+  - Advances stepper to step 3
+  - Logs JSON to console with all lead data + timestamp
+  - Adds `// TODO: connect webhook to send lead data to CRM/Supabase`
+- Pass `onDownloaded` to StepTwo
+
+**5. Update Stepper `onStepClick`** to allow clicking step 2 when on step 3.
+
+### Files modified
+- `src/pages/LandingCalculadoraAsesorias.tsx` only (no new files needed)
 
