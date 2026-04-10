@@ -1,42 +1,33 @@
 
 
-## Plan: Rediseñar Step 1 del formulario de calculadora-asesorias
+## Plan: Añadir lógica de cálculo y resultados al Paso 2
 
-### Resumen
-Reemplazar completamente el `StepOne` y el `FormData` del archivo `src/pages/LandingCalculadoraAsesorias.tsx` con las 6 secciones especificadas, slider de recurrencia, chips multiselect/single-select, inputs numéricos con formateo español, y validación.
+### Archivo: `src/pages/LandingCalculadoraAsesorias.tsx`
 
-### Cambios en `src/pages/LandingCalculadoraAsesorias.tsx`
+**1. Añadir interface `ValuationResult` y tipo `Factor`** (después de `FormData`):
+- `ValuationResult`: `evL`, `evH`, `evM`, `eqM`, `mL`, `mM`, `mH`, `ingRec`, `multIngRec`, `margen`, `revEmp`, `factors`
+- `Factor`: `{ text: string; type: 'positive' | 'neutral' | 'negative' }`
 
-**1. Actualizar `FormData` interface y `INITIAL_FORM`:**
-- Eliminar: `contactName`, `email`, `phone`, `firmName`, `firmType` (se moverán al paso de contacto/informe más adelante)
-- Añadir: `services: string[]`, `location: string`, `employees: string`, `revenue: string`, `ebitda: string`, `recurringPct: number` (default 70), `growthTrend: string` (default "Creciendo 5-15%"), `netDebt: string`, `activeClients: string`
+**2. Añadir función `calculateValuation(form: FormData): ValuationResult`** (después de `parseES`):
+- Parsea valores del formulario con `parseES`
+- Calcula `baseM` según rangos de facturación (6 tramos)
+- Calcula ajuste `a` sumando los 7 sub-ajustes (recurrencia, servicios, crecimiento, margen, productividad, cartera), capeado a ±1.0
+- `mM = clamp(baseM + a, 3.0, 10.0)`
+- `mL = clamp(round(mM × 0.88, 1), 2.5, 10.0)`, `mH = clamp(round(mM × 1.12, 1), 2.5, 10.0)`
+- Calcula EV, equity, ingresos recurrentes, múltiplo s/ recurrentes, margen, rev/emp
+- Genera array de factores según las reglas especificadas
 
-**2. Eliminar constantes obsoletas:** `FIRM_TYPES`, `EMPLOYEE_RANGES`
+**3. Añadir estado `result` al componente principal**:
+- `const [result, setResult] = useState<ValuationResult | null>(null)`
 
-**3. Añadir constantes nuevas:**
-- `SERVICES`: array de 8 strings (Fiscal, Contable, Laboral/Nóminas, etc.)
-- `GROWTH_TRENDS`: array de 4 opciones
+**4. Modificar `onNext` del Step 1** para ejecutar el cálculo, guardar resultado, cambiar a paso 2, y scroll top
 
-**4. Añadir helper de formateo numérico:**
-- `formatES(value)`: formatea con `toLocaleString('es-ES')` al blur
-- `parseES(value)`: limpia puntos para obtener número raw
-- Usar `onBlur` en inputs numéricos para aplicar formateo
+**5. Reescribir `StepTwo`** para recibir `result` y mostrar:
+- Tarjeta principal con `evM` formateado grande + rango `evL – evH`
+- Grid de métricas: múltiplo central, margen EBITDA, equity value, ingresos recurrentes, múltiplo s/ recurrentes, fact/empleado
+- Lista de factores con indicador de color (verde/gris/rojo según tipo)
+- Botón "Descargar informe PDF" (disabled, placeholder)
+- Botón "← Volver al formulario"
 
-**5. Reescribir componente `StepOne` con las 6 secciones:**
-
-- **Sección 1** — "Servicios que presta tu asesoría": chips multiselect con toggle, borde `#E2E4E8` inactivo, fondo `#161B22` + texto blanco activo
-- **Sección 2** — Grid 2 cols: Ubicación (text input) + Empleados (input numérico)
-- **Divisor dashed** — `border-dashed` con color `#E2E4E8`
-- **Sección 3** — "Datos financieros" con subtítulo mono: Facturación + EBITDA en grid 2 cols, inputs con formateo `es-ES` on blur
-- **Sección 4** — Slider % Ingresos recurrentes: HTML `<input type="range">` con min=10, max=100, step=5, default=70. Badge monospace a la derecha mostrando `{value}%`. Track estilizado con CSS inline (navy para filled, border para unfilled)
-- **Sección 5** — Tendencia de crecimiento: chips single-select, default "Creciendo 5-15%"
-- **Sección 6** — Grid 2 cols: Deuda financiera neta + Clientes activos (opcionales)
-- **Info box** — Fondo `#F9FAFB`, borde `#E2E4E8`, texto explicativo sobre EBITDA
-- **Botón** — "Calcular valoración", disabled hasta validación completa, fondo `#161B22`
-
-**6. Validación para habilitar botón:**
-`services.length > 0 && location.trim() && parseInt(employees) > 0 && parseES(revenue) > 0 && parseES(ebitda) > 0`
-
-### Archivos modificados
-Solo `src/pages/LandingCalculadoraAsesorias.tsx` — cambios internos al componente existente.
+### Sin cambios en otros archivos
 
