@@ -660,11 +660,27 @@ const StepOne = ({
   );
 };
 
-const StepTwo = ({ onBack }: { onBack: () => void }) => {
-  const placeholders = [
-    { label: 'Valoración por facturación', value: '—' },
-    { label: 'Valoración por EBITDA', value: '—' },
-    { label: 'Rango estimado', value: '—' },
+const fmtEur = (v: number) => v.toLocaleString('es-ES') + ' €';
+
+const StepTwo = ({ result, onBack }: { result: ValuationResult; onBack: () => void }) => {
+  const factorIcon = (type: Factor['type']) => {
+    if (type === 'positive') return <TrendingUp size={14} style={{ color: '#22863a' }} />;
+    if (type === 'negative') return <TrendingDown size={14} style={{ color: '#cb2431' }} />;
+    return <Minus size={14} style={{ color: C.gray2 }} />;
+  };
+  const factorColor = (type: Factor['type']) => {
+    if (type === 'positive') return '#22863a';
+    if (type === 'negative') return '#cb2431';
+    return C.gray2;
+  };
+
+  const metrics = [
+    { label: 'Múltiplo central', value: `${result.mM.toFixed(1)}x` },
+    { label: 'Margen EBITDA', value: `${result.margen.toFixed(0)}%` },
+    { label: 'Equity Value', value: fmtEur(result.eqM) },
+    { label: 'Ingresos recurrentes', value: fmtEur(Math.round(result.ingRec)) },
+    { label: 'Múltiplo s/ recurrentes', value: `${result.multIngRec.toFixed(1)}x` },
+    { label: 'Fact. / empleado', value: `${Math.round(result.revEmp / 1000)}K €` },
   ];
 
   return (
@@ -682,27 +698,86 @@ const StepTwo = ({ onBack }: { onBack: () => void }) => {
         Basada en múltiplos de transacciones reales en el sector
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {placeholders.map((p) => (
+      {/* Primary card */}
+      <div
+        className="rounded-xl p-8 text-center mb-6"
+        style={{ background: C.navy }}
+      >
+        <div
+          className="text-[11px] uppercase tracking-wider mb-2"
+          style={{ fontFamily: ff.mono, color: C.gray3 }}
+        >
+          Enterprise Value central
+        </div>
+        <div
+          className="text-4xl sm:text-5xl font-bold mb-3"
+          style={{ fontFamily: ff.heading, color: C.white }}
+        >
+          {fmtEur(result.evM)}
+        </div>
+        <div
+          className="text-sm"
+          style={{ fontFamily: ff.mono, color: C.gold }}
+        >
+          Rango: {fmtEur(result.evL)} — {fmtEur(result.evH)}
+        </div>
+        <div
+          className="text-[11px] mt-1"
+          style={{ fontFamily: ff.mono, color: C.gray3 }}
+        >
+          Múltiplo {result.mL.toFixed(1)}x – {result.mH.toFixed(1)}x EBITDA
+        </div>
+      </div>
+
+      {/* Metrics grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+        {metrics.map((m) => (
           <div
-            key={p.label}
-            className="text-center rounded-lg p-6 border"
+            key={m.label}
+            className="rounded-lg p-4 border text-center"
             style={{ background: C.bg2, borderColor: C.border2 }}
           >
             <div
-              className="text-3xl font-bold mb-2"
+              className="text-lg font-bold mb-1"
               style={{ fontFamily: ff.heading, color: C.navy }}
             >
-              {p.value}
+              {m.value}
             </div>
             <div
-              className="text-[11px] uppercase tracking-wider"
+              className="text-[10px] uppercase tracking-wider"
               style={{ fontFamily: ff.mono, color: C.gray2 }}
             >
-              {p.label}
+              {m.label}
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Factors */}
+      <div className="mb-8">
+        <h3
+          className="text-sm font-semibold mb-3"
+          style={{ fontFamily: ff.mono, color: C.navy, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+        >
+          Factores de valoración
+        </h3>
+        <div className="space-y-2">
+          {result.factors.map((f, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-lg px-4 py-2.5 border"
+              style={{ borderColor: C.border2, background: C.white }}
+            >
+              {factorIcon(f.type)}
+              <span
+                className="text-sm"
+                style={{ fontFamily: ff.body, color: factorColor(f.type) }}
+              >
+                {f.text}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* CTA download */}
@@ -734,10 +809,11 @@ const StepTwo = ({ onBack }: { onBack: () => void }) => {
       <div className="flex justify-start">
         <button
           onClick={onBack}
-          className="text-sm underline"
+          className="flex items-center gap-2 text-sm"
           style={{ fontFamily: ff.body, color: C.gray2 }}
         >
-          ← Volver al formulario
+          <ArrowLeft size={14} />
+          Volver al formulario
         </button>
       </div>
     </div>
